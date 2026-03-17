@@ -4,101 +4,492 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.MatchType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Drive.PositionState;
+import frc.robot.util.AllianceUtil;
+import frc.robot.util.Elastic;
+import frc.robot.util.Logger;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
 
 /**
- * The methods in this class are called automatically corresponding to each mode, as described in
- * the TimedRobot documentation. If you change the name of this class or the package after creating
- * this project, you must also update the Main.java file in the project.
+ * Remember to feed the robot at least 3 FIRST brand lemons each day to keep it happy and bug-free.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  public Robot() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
-  }
+    public static final int FAIL = -1;
+    public static final int PASS = 1;
+    public static final int DONE = 2;
+    public static final int CONT = 3;
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
-  @Override
-  public void robotPeriodic() {}
+    public static final int NEO_CURRENT_LIMIT = 60;
+    public static final int NEO_550_CURRENT_LIMIT = 30;
+    public static final int VORTEX_CURRENT_LIMIT = 80;
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
-  @Override
-  public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
-  }
+    private static final String kNoAuto = "No Auto";
+    private static final String kTestAuto = "Test Auto";
+    private static final String kCenterOutAuto = "Center Outpost Auto";
+    private static final String kCenterDepAuto = "Center Depot Auto";
+    private static final String kOutpostAuto = "Outpost Auto (Safe)";
+    private static final String kRiskyOutpostAuto = "Outpost Auto (Risky)";
+    private static final String kDepotAuto = "Depot Auto (Safe)";
+    private static final String kRiskyDepotAuto = "Depot Auto (Risky)";
+    private static final String kClimb = "Climb";
+    private static final String kNoClimb = "No Climb";
+    private String m_sideSelected;
+    private String m_climbSelected;
+    private final SendableChooser<String> side_chooser = new SendableChooser<>();
+    private final SendableChooser<String> climb_chooser = new SendableChooser<>();
 
-  /** This function is called periodically during autonomous. */
-  @Override
-  public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
+    private enum WheelState {
+        TELEOP,
+        LOCK_WHEELS,
+        AUTO_DRIVE,
+        AUTO_AIM,
     }
-  }
 
-  /** This function is called once when teleop is enabled. */
-  @Override
-  public void teleopInit() {}
+    WheelState currentWheelState = WheelState.TELEOP;
 
-  /** This function is called periodically during operator control. */
-  @Override
-  public void teleopPeriodic() {}
+    double currentAdjustedHubDistance = 0;
 
-  /** This function is called once when the robot is disabled. */
-  @Override
-  public void disabledInit() {}
+    private PowerDistribution pdh;
 
-  /** This function is called periodically when disabled. */
-  @Override
-  public void disabledPeriodic() {}
+    private final Field2d field2d = new Field2d();
 
-  /** This function is called once when test mode is enabled. */
-  @Override
-  public void testInit() {}
+    private Controls controls;
+    private Drive drive;
+    private Shooter shooter;
+    private Hopper hopper;
+    private Grabber grabber;
+    private Climber climber;
+    private Odometry odometry;
+    private Auto auto;
 
-  /** This function is called periodically during test mode. */
-  @Override
-  public void testPeriodic() {}
+    private Timer dsConnectTimer = new Timer();
 
-  /** This function is called once when the robot is first started up. */
-  @Override
-  public void simulationInit() {}
+    /**
+     * This function is run when the robot is first started up and should be used for any
+     * initialization code.
+     */
+    public Robot() {
+        side_chooser.setDefaultOption("No Auto", kNoAuto);
+        side_chooser.addOption("Outpost (Risky)", kOutpostAuto);
+        side_chooser.addOption("Outpost (Safe)", kRiskyDepotAuto);
+        side_chooser.addOption("Center", kCenterOutAuto);
+        // side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
+        // side_chooser.addOption("Center -> Depot", kCenterDepAuto);
+        side_chooser.addOption("Depot (Risky)", kDepotAuto);
+        side_chooser.addOption("Depot (Safe)", kRiskyDepotAuto);
+        // side_chooser.addOption("Test", kTestAuto);
 
-  /** This function is called periodically whilst in simulation. */
-  @Override
-  public void simulationPeriodic() {}
+        climb_chooser.setDefaultOption("No Climb", kNoClimb);
+        climb_chooser.addOption("Climb", kClimb);
+
+        SmartDashboard.putData("Auto | Side Chooser", side_chooser);
+        SmartDashboard.putData("Auto | Climb Chooser", climb_chooser);
+
+        // SmartDashboard.putNumber("TargetHoodAngleDegrees", 5);
+        // SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
+        // SmartDashboard.putNumber("TargetRightWheelRPM", 0);
+
+        // SmartDashboard.putNumber("ShooterRPM", 0);
+        // SmartDashboard.putNumber("HoodAngle", 0);
+
+        pdh = new PowerDistribution(2, ModuleType.kRev);
+
+        controls = new Controls();
+        drive = new Drive();
+        shooter = new Shooter();
+        hopper = new Hopper();
+        grabber = new Grabber();
+        climber = new Climber();
+        odometry = new Odometry(drive);
+        auto = new Auto(drive, shooter, hopper, climber, grabber);
+
+        // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
+
+        dsConnectTimer.restart();
+        DriverStation.waitForDsConnection(0);
+        dsConnectTimer.stop();
+
+        Elastic.selectTab("Setup");
+        Elastic.sendNotification(
+            new Notification(
+                NotificationLevel.INFO, 
+                "DS Connected in " + dsConnectTimer.get() + " seconds.", 
+                DriverStation.getMatchType().equals(MatchType.Elimination) ?
+                "high cortisol drive team" : "low cortisol drive team"
+            )
+            .withAutomaticHeight()
+            .withDisplaySeconds(5)
+        );
+    }
+
+    /**
+     * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
+     * that you want ran during disabled, autonomous, teleoperated and test.
+     *
+     * <p>This runs after the mode specific periodic functions, but before LiveWindow and
+     * SmartDashboard integrated updating.
+     */
+    @Override
+    public void robotPeriodic() {
+        // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
+
+        // Odometry and Pose
+        odometry.updateVisionEstimators();
+
+        drive.updatePoseEstimator();
+
+        if (odometry.getCamera1Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera1Pose(), Odometry.CAMERA1_STD_DEVS);
+            // Logger.logStruct("BRSwerveCameraPose", odometry.getCamera1Pose().estimatedPose);
+        }
+
+        if (odometry.getCamera2Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera2Pose(), Odometry.CAMERA2_STD_DEVS);
+            // Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
+        }
+
+        if (odometry.getCamera3Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
+            // Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
+        }
+
+        if (odometry.getCamera4Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera4Pose(), Odometry.CAMERA4_STD_DEVS);
+            // Logger.logStruct("FLBarCameraPose", odometry.getCamera4Pose().estimatedPose);
+        }
+
+        Logger.logStruct("currentPose2d", Drive.getPose());
+
+        field2d.setRobotPose(Drive.getPose());
+        SmartDashboard.putData("Field", field2d);
+
+        // Match Time and Hub State
+        double matchTime = DriverStation.getMatchTime();
+        SmartDashboard.putNumber("Match Time", matchTime);
+        SmartDashboard.putNumber("Time Until Shift", AllianceUtil.timeUntilHubStateChange(matchTime));
+        SmartDashboard.putBoolean("Hub Active", AllianceUtil.isOurHubActive(matchTime));
+
+        shooter.printWheelRPMs();
+
+        m_sideSelected = side_chooser.getSelected();
+        m_climbSelected = climb_chooser.getSelected();
+    }
+
+    /**
+     * This autonomous (along with the chooser code above) shows how to select between different
+     * autonomous modes using the dashboard. The sendable chooser code works with the Java
+     * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
+     * uncomment the getString line to get the auto name from the text box below the Gyro
+     *
+     * <p>You can add additional auto modes by adding additional comparisons to the switch structure
+     * below with additional strings. If using the SendableChooser make sure to add them to the
+     * chooser code above as well.
+     */
+    @Override
+    public void autonomousInit() {
+        m_sideSelected = side_chooser.getSelected();
+        m_climbSelected = climb_chooser.getSelected();
+
+        Elastic.selectTab("Autonomous");
+        Elastic.sendNotification(
+            new Notification(
+                NotificationLevel.INFO, 
+                "Autonomous Start", 
+                "Drivers behind the lines..."
+            )
+            .withAutomaticHeight()
+            .withDisplaySeconds(3)
+        );
+    }
+
+    /** This function is called periodically during autonomous. */
+    @Override
+    public void autonomousPeriodic() {
+        boolean climb = m_climbSelected == kClimb;
+
+        switch (m_sideSelected) {
+            case kCenterDepAuto:
+                // Put custom auto code here
+                break;
+            case kCenterOutAuto:
+                auto.centerOut(climb);
+                break;
+            case kRiskyOutpostAuto:
+                auto.outpostAutoTwoPass();
+                break;
+            case kOutpostAuto:
+                auto.outpostAuto();
+                break;
+            case kRiskyDepotAuto:
+                auto.depotAuto();
+                break;
+            case kDepotAuto:
+                auto.depotAutoTwoPass();
+                break;
+            case kNoAuto:
+                break;
+            case kTestAuto:
+                auto.testAuto();
+                break;
+            default:
+                // Put default auto code here
+                break;
+        }
+    }
+
+    /** This function is called once when teleop is enabled. */
+    @Override
+    public void teleopInit() {
+        Elastic.selectTab("Teleop");
+        Elastic.sendNotification(
+            new Notification(
+                NotificationLevel.INFO, 
+                "Teleop Start", 
+                "GO! GO! GO!"
+            )
+            .withAutomaticHeight()
+            .withDisplaySeconds(3)
+        );
+    }
+
+    /** This function is called periodically during operator control. */
+    @Override
+    public void teleopPeriodic() {
+        wheelControl();
+        shooterControl();
+        grabberControl();
+        climberControl();
+        elasticControl();
+    }
+
+    /** This function is called once when the robot is disabled. */
+    @Override
+    public void disabledInit() {}
+
+    /** This function is called periodically when disabled. */
+    @Override
+    public void disabledPeriodic() {}
+
+    /** This function is called once when test mode is enabled. */
+    @Override
+    public void testInit() {
+        // climber.zeroClimberEncoder();
+    }
+
+    /** This function is called periodically during test mode. */
+    @Override
+    public void testPeriodic() {
+        // wheelControl();
+        // testShooterControl();
+        // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
+        // grabberControl();
+        //hopper.indexFuel();
+        //shooterControl();
+        //shooter.setTargetRPMs(3800,3800);
+        // shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
+        // climberControl();
+        // grabberControl();
+
+        climber.zeroClimberEncoder();
+        manualClimberControl();
+
+        shooter.stopHood();
+        shooter.stopWheels();
+        grabber.stopGrabber();
+        grabber.stopWheel();
+        drive.stopWheels();
+    }
+
+    /** This function is called once when the robot is first started up. */
+    @Override
+    public void simulationInit() {}
+
+    /** This function is called periodically whilst in simulation. */
+    @Override
+    public void simulationPeriodic() {}
+
+    private void wheelControl() {
+        boolean resetGyro = controls.resetGyro();
+        boolean fieldDrive = controls.getFieldDrive();
+        boolean lockWheels = controls.getWheelLock();
+        boolean autoAlign = controls.getAutoAlign();
+        boolean autoAim = controls.getAutoAim();
+
+        double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
+        double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
+        double rotatePowerCcwPos = controls.getRotatePowerCcwPositive();
+        double rightStickY = controls.getRightY();
+
+        currentAdjustedHubDistance = drive.getAdjustedHubDistanceMeters(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
+
+        PositionState currentPositionState = drive.getPositionState();
+
+        if (resetGyro) {
+            drive.resetGyro();
+        }
+
+        if (lockWheels) {
+            currentWheelState = WheelState.LOCK_WHEELS;
+        } else if (autoAlign && currentPositionState == PositionState.HOME) {
+            if (currentWheelState != WheelState.AUTO_DRIVE) {
+                drive.otfReset();
+            }
+
+            currentWheelState = WheelState.AUTO_DRIVE;
+        } else if (autoAim) {
+            currentWheelState = WheelState.AUTO_AIM;
+        } else {
+            currentWheelState = WheelState.TELEOP;
+        }
+
+        if (currentWheelState == WheelState.LOCK_WHEELS) {
+            drive.lockWheels();
+        } else if (currentWheelState == WheelState.AUTO_DRIVE) {
+            drive.climbLineUp();
+        } else if (currentWheelState == WheelState.AUTO_AIM) {
+            drive.shootAndDrive(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
+        } else if (currentWheelState == WheelState.TELEOP) {
+            drive.teleopDrive(
+                forwardPowerFwdPos,
+                strafePowerLeftPos,
+                rotatePowerCcwPos,
+                fieldDrive,
+                drive.getCenterOfRotation(rotatePowerCcwPos, rightStickY)
+            );
+        }
+    }
+
+    public void shooterControl() {
+        boolean shootReady = controls.getShooterSafety();
+        boolean shootButton = controls.getShootButton();
+        boolean reverseIndexer = controls.getReverseIndexer();
+        // boolean atTargetRPM = shooter.atTargetRPM();
+
+        PositionState currentPositionState = drive.getPositionState();
+
+        if (currentPositionState == PositionState.TRENCH) {
+            shootReady = false;
+        }
+
+        // we always run the flywheel
+        // System.out.println("current distance to hub: " + drive.getHubDistance());
+        shooter.setTargetDistance(currentAdjustedHubDistance, shootReady);
+        
+        if (shootButton && shootReady) {
+            hopper.indexFuel();
+        } else if (reverseIndexer) {
+            hopper.reverseIndexer();
+        } else {
+            hopper.stopMotors();
+        }
+    }
+
+    public void grabberControl() {
+        boolean intakeUp = controls.getIntakeUp();
+        boolean intakeDown = controls.getIntakeDown();
+        boolean runIntake = controls.getRunIntake();
+        boolean reverseIntake = controls.getReverseIntake();
+
+        if (runIntake) {
+            grabber.intake();
+        } else if (reverseIntake) {
+            grabber.outtake();
+        } else {
+            grabber.stopWheel();
+        }
+
+        if (intakeDown) {
+            grabber.lowerGrabber();
+        } else if (intakeUp) {
+            grabber.raiseGrabber();
+        } else {
+            grabber.stopGrabber();
+        }
+    }
+
+    public void climberControl() {
+        boolean actuateClimber = controls.getClimberActuate();
+        int climberDirection = controls.getClimberDirection();
+
+        if (actuateClimber) {
+            if (climberDirection == 1) {
+                climber.moveClimberUp();
+            } else {
+                climber.moveClimberDown();
+            }
+        } else {
+            climber.stopClimberMotor();
+        }
+    }
+
+    public void manualClimberControl() {
+        boolean actuateClimber = controls.getClimberActuate();
+        int climberDirection = controls.getClimberDirection();
+
+        if (actuateClimber) {
+            if (climberDirection == 1) {
+                climber.manualClimberUp();
+            } else {
+                climber.manualClimberDown();
+            }
+        } else {
+            climber.stopClimberMotor();
+        }
+    }
+
+    public void elasticControl() {
+        PositionState currentPositionState = drive.getPositionState();
+
+        if (currentPositionState == Drive.PositionState.AWAY) {
+            Elastic.selectTab("Defense");
+        } else {
+            if (AllianceUtil.isEndgame(DriverStation.getMatchTime())) {
+                Elastic.selectTab("Endgame");
+            } else {
+                if (AllianceUtil.isRedAlliance()) {
+                    Elastic.selectTab("Teleop (Red)");
+                } else {
+                    Elastic.selectTab("Teleop (Blue)");
+                }
+            }
+        }
+    }
+    
+    /*********************************/
+    /**********TEST PROGRAMS**********/
+    /*********************************/
+
+    public void testShooterControl() {
+        boolean shootReady = controls.getShooterSafety();
+        boolean shootButton = controls.getShootButton();
+        boolean reverseIndexer = controls.getReverseIndexer();
+        // boolean atTargetRPM = shooter.atTargetRPM();
+
+        // we always run the flywheel but the hood should be down if we aren't ready
+        if (shootReady) {
+            shooter.setTargetRPMs(SmartDashboard.getNumber("TargetRightWheelRPM", 0), SmartDashboard.getNumber("TargetLeftWheelRPM", 0));
+            shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
+        } else {
+            shooter.stopWheels();
+        }
+
+        if (shootButton && shootReady) {
+            hopper.indexFuel();
+        } else if (reverseIndexer) {
+            hopper.reverseIndexer();
+        } else {
+            hopper.stopMotors();
+        }
+    }
 }
