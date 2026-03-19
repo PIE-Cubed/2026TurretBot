@@ -126,11 +126,11 @@ public class Drive {
 
     private static SwerveDrivePoseEstimator aprilTagsEstimator;
 
-    private Pose2d lastPose = new Pose2d();
-    private Pose2d currPose = new Pose2d();
+    private static Pose2d lastPose = new Pose2d();
+    private static Pose2d currPose = new Pose2d();
 
     // private AHRS ahrs;
-    private Navx navx;
+    private static Navx navx;
     private final int NAVX_CAN_ID = 3;
 
     public static enum PositionState {
@@ -694,7 +694,7 @@ public class Drive {
     /**
      * @return The robot yaw rate, measured in radians per second.
      */
-    public double getYawRateRadians() {
+    public static double getYawRateRadians() {
         return navx.getAngularVel()[2].in(RadiansPerSecond);
     }
 
@@ -864,7 +864,7 @@ public class Drive {
     /**
      * Returns the current velocity of the robot as a Transform2d.
      */
-    public Transform2d getVelocity() {
+    public static Transform2d getVelocity() {
         // Multiplied by the ammount of loops per second to get units per second
         Transform2d velocityMeters = currPose.minus(lastPose).times(50);
 
