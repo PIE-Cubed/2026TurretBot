@@ -28,6 +28,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import frc.robot.Constants.FieldConstants;
+import frc.robot.util.AllianceUtil;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
@@ -100,14 +102,9 @@ public class Turret {
         turretPID.setTolerance(TURRET_TOLERANCE);
     }
 
-    public int pointAtWithVelocity(Pose2d targetPose) {
-        Transform2d turretVelocity = new Transform2d(
-            Drive.getVelocity().getX() - Drive.getYawRateRadians() * turretPosOffset.getY(), 
-            Drive.getVelocity().getY() + Drive.getYawRateRadians() * turretPosOffset.getX(), 
-            Rotation2d.kZero
-        );
+    public int pointAtWithVelocity(Pose2d targetPose, double inAirTime) {
 
-        return pointAt(targetPose.plus(turretVelocity.inverse()));
+        return pointAt(targetPose.plus(getCurrentVelocity().inverse().times(inAirTime)));
     }
 
     public int pointAt(Pose2d targetPose) {
@@ -151,5 +148,21 @@ public class Turret {
         }
 
         return Robot.CONT;
+    }
+
+    public Transform2d getCurrentVelocity() {
+        return new Transform2d(
+            Drive.getVelocity().getX() - Drive.getYawRateRadians() * turretPosOffset.getY(), 
+            Drive.getVelocity().getY() + Drive.getYawRateRadians() * turretPosOffset.getX(), 
+            Rotation2d.kZero
+        );
+    }
+
+    public double getAdjustedHubDistance() {
+        return Drive.getPose().getTranslation().getDistance((
+            AllianceUtil.isRedAlliance() 
+            ? FieldConstants.hubRedAlliance.getTranslation() 
+            : FieldConstants.hubBlueAlliance.getTranslation()
+        ).minus(getCurrentVelocity().getTranslation()));
     }
 }

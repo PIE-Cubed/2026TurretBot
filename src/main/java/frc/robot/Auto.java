@@ -73,14 +73,14 @@ public class Auto {
         this.climber = climber;
         this.grabber = grabber;
 
-        centerOCO1 = Choreo.loadTrajectory("centerOCO1");
-        depotNCOld = Choreo.loadTrajectory("depotNC");
-        depotNC1 = Choreo.loadTrajectory("depotV2NC1");
-        depotNC2 = Choreo.loadTrajectory("depotV2NC2");
-        outpostNCOld = Choreo.loadTrajectory("outpostNC");
-        outpostNC1 = Choreo.loadTrajectory("outpostV2NC1");
-        outpostNC2 = Choreo.loadTrajectory("outpostV2NC2");
-        testAuto = Choreo.loadTrajectory("testAuto");
+        // centerOCO1 = Choreo.loadTrajectory("centerOCO1");
+        // depotNCOld = Choreo.loadTrajectory("depotNC");
+        // depotNC1 = Choreo.loadTrajectory("depotV2NC1");
+        // depotNC2 = Choreo.loadTrajectory("depotV2NC2");
+        // outpostNCOld = Choreo.loadTrajectory("outpostNC");
+        // outpostNC1 = Choreo.loadTrajectory("outpostV2NC1");
+        // outpostNC2 = Choreo.loadTrajectory("outpostV2NC2");
+        // testAuto = Choreo.loadTrajectory("testAuto");
     }
 
     public void resetAuto() {
@@ -111,14 +111,14 @@ public class Auto {
 
         switch (step) {
             case 1:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
 
                 waitTimer.restart();
 
                 status = atMarker(outpostNCOld, "Lower Grabber");
                 break;
             case 2:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.lowerGrabber();
 
                 if (waitTimer.hasElapsed(0.8)) {
@@ -129,26 +129,26 @@ public class Auto {
 
                 break;
             case 3:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.stopGrabber();
                 grabber.intake();
 
                 status = atMarker(outpostNCOld, "Intake");
                 break;
             case 4:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.intake();
 
                 status = atMarker(outpostNCOld, "Stop Intake");
                 break;
             case 5:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.intake();
 
                 status = pathStatus;
                 break;
             case 6:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
 
                 if (shooter.atTargetRPM()) {
                     status = Robot.DONE;
@@ -160,7 +160,7 @@ public class Auto {
 
                 break;
             case 7:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
 
                 if (waitTimer.hasElapsed(0)) {
@@ -174,7 +174,7 @@ public class Auto {
 
                 break;
             case 8:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 waitTimer.restart();
@@ -189,7 +189,7 @@ public class Auto {
 
                 break;
             // case 9:
-            //     shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+            //     shooter.autoAdjust(true);
             //     hopper.indexFuel();
             //     grabber.stopGrabber();
             //     grabber.stopWheel();
@@ -221,7 +221,7 @@ public class Auto {
 
         switch (step) {
             case 1: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 waitTimer.restart();
                 choreoPathFollower(outpostNC1);
 
@@ -229,7 +229,7 @@ public class Auto {
 
                 break;
             case 2: // Lower grabber for 1 second
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.lowerGrabber();
                 choreoPathFollower(outpostNC1);
 
@@ -243,7 +243,7 @@ public class Auto {
 
                 break;
             case 3: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.autoLowerGrabber();
                 choreoPathFollower(outpostNC1);
 
@@ -251,7 +251,7 @@ public class Auto {
 
                 break;
             case 4: // Intaking until marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.autoLowerGrabber();
                 grabber.intake();
                 choreoPathFollower(outpostNC1);
@@ -260,7 +260,7 @@ public class Auto {
 
                 break;
             case 5: // Spinning up and waiting for path to finish
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.autoLowerGrabber();
                 grabber.intake();
 
@@ -268,7 +268,7 @@ public class Auto {
 
                 break;
             case 6: // Making sure that the shooter is at the target RPM
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.stopGrabber();
                 grabber.stopWheel();
                 choreoPathFollower(outpostNC1);
@@ -284,7 +284,7 @@ public class Auto {
 
                 break;
             case 7: // Shoot and jostle hopper for 3 seconds
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 // choreoPathFollower(outpostNC1);
@@ -299,7 +299,7 @@ public class Auto {
                 
                 break;
             case 8: // Pass 1 done, setup for pass 2
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 hopper.stopMotors();
                 grabber.stopWheel();
 
@@ -309,7 +309,7 @@ public class Auto {
 
                 break;
             case 9: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.resetJostle();
                 choreoPathFollower(outpostNC2);
 
@@ -317,7 +317,7 @@ public class Auto {
 
                 break;
             case 10: // Intaking until marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
 
                 // shooter.stopWheels();
                 // shooter.stopHood();
@@ -329,7 +329,7 @@ public class Auto {
 
                 break;
             case 11: // Spin up and wait for path to finish
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.autoLowerGrabber();
                 grabber.stopWheel();
 
@@ -337,7 +337,7 @@ public class Auto {
 
                 break;
             case 12: // Making sure shooter is spun up
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.stopGrabber();
                 choreoPathFollower(outpostNC2);
 
@@ -351,7 +351,7 @@ public class Auto {
 
                 break;
             case 13:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 waitTimer.restart();
@@ -392,7 +392,7 @@ public class Auto {
 
         switch (step) {
             case 1:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
 
                 if (shooter.atTargetRPM()) {
                     status = Robot.DONE;
@@ -406,7 +406,7 @@ public class Auto {
                 
                 break;
             case 2:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 // status = atMarker(centerOCO1, "Stop Shooting");
                 if (waitTimer.hasElapsed(3)) {
@@ -424,7 +424,7 @@ public class Auto {
                     return Robot.DONE;
                 }
 
-                shooter.setTargetDistance(40.5, false);
+                shooter.autoAdjust(false);
                 hopper.stopMotors();
                 status = choreoPathFollower(centerOCO1);
 
@@ -432,7 +432,7 @@ public class Auto {
 
                 break;
             case 4:
-                shooter.setTargetDistance(40.5, false);
+                shooter.autoAdjust(false);
 
                 status = climber.autoClimberDown();
 
@@ -440,7 +440,7 @@ public class Auto {
                 
                 break;
             case 5:
-                shooter.setTargetDistance(40.5, false);
+                shooter.autoAdjust(false);
 
                 climber.stopClimberMotor();
 
@@ -518,14 +518,14 @@ public class Auto {
 
         switch (step) {
             case 1:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
 
                 waitTimer.restart();
 
                 status = atMarker(depotNCOld, "Lower Grabber");
                 break;
             case 2:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.lowerGrabber();
 
                 if (waitTimer.hasElapsed(0.8)) {
@@ -536,26 +536,26 @@ public class Auto {
 
                 break;
             case 3:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.stopGrabber();
                 grabber.intake();
 
                 status = atMarker(depotNCOld, "Intake");
                 break;
             case 4:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.intake();
 
                 status = atMarker(depotNCOld, "Stop Intake");
                 break;
             case 5:
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.intake();
 
                 status = pathStatus;
                 break;
             case 6:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
 
                 if (shooter.atTargetRPM()) {
                     status = Robot.DONE;
@@ -567,7 +567,7 @@ public class Auto {
 
                 break;
             case 7:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
 
                 if (waitTimer.hasElapsed(0)) {
@@ -581,7 +581,7 @@ public class Auto {
 
                 break;
             case 8:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 waitTimer.restart();
@@ -596,7 +596,7 @@ public class Auto {
 
                 break;
             // case 9:
-            //     shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+            //     shooter.autoAdjust(true);
             //     hopper.indexFuel();
             //     grabber.stopGrabber();
             //     grabber.stopWheel();
@@ -628,7 +628,7 @@ public class Auto {
 
         switch (step) {
             case 1: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 waitTimer.restart();
                 choreoPathFollower(depotNC1);
 
@@ -636,7 +636,7 @@ public class Auto {
 
                 break;
             case 2: // Lower grabber for 1 second
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.lowerGrabber();
                 choreoPathFollower(depotNC1);
 
@@ -648,7 +648,7 @@ public class Auto {
 
                 break;
             case 3: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.stopGrabber();
                 choreoPathFollower(depotNC1);
 
@@ -656,7 +656,7 @@ public class Auto {
 
                 break;
             case 4: // Intaking until marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 grabber.intake();
                 choreoPathFollower(depotNC1);
 
@@ -664,14 +664,14 @@ public class Auto {
 
                 break;
             case 5: // Spinning up and waiting for path to finish
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.intake();
 
                 status = choreoPathFollower(depotNC1);
 
                 break;
             case 6: // Making sure that the shooter is at the target RPM
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.stopWheel();
                 choreoPathFollower(depotNC1);
 
@@ -686,7 +686,7 @@ public class Auto {
 
                 break;
             case 7: // Shoot and jostle hopper for 3 seconds
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 // choreoPathFollower(outpostNC1);
@@ -701,7 +701,7 @@ public class Auto {
                 
                 break;
             case 8: // Pass 1 done, setup for pass 2
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 hopper.stopMotors();
                 grabber.stopWheel();
 
@@ -711,14 +711,14 @@ public class Auto {
 
                 break;
             case 9: // Waiting for marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
                 choreoPathFollower(depotNC2);
 
                 status = atMarker(depotNC2, "Intake");
 
                 break;
             case 10: // Intaking until marker
-                shooter.setTargetDistance(50, false);
+                shooter.autoAdjust(false);
 
                 // shooter.stopWheels();
                 // shooter.stopHood();
@@ -729,14 +729,14 @@ public class Auto {
 
                 break;
             case 11: // Spin up and wait for path to finish
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 grabber.stopWheel();
 
                 status = choreoPathFollower(depotNC2);
 
                 break;
             case 12: // Making sure shooter is spun up
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 choreoPathFollower(depotNC2);
 
                 if (shooter.atTargetRPM()) {
@@ -749,7 +749,7 @@ public class Auto {
 
                 break;
             case 13:
-                shooter.setTargetDistance(drive.getHubDistanceMeters(), true);
+                shooter.autoAdjust(true);
                 hopper.indexFuel();
                 grabber.intake();
                 waitTimer.restart();

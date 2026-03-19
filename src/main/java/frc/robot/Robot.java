@@ -5,8 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.MatchType;
@@ -60,7 +58,7 @@ public class Robot extends TimedRobot {
 
     double currentAdjustedHubDistance = 0;
 
-    private PowerDistribution pdh;
+    // private PowerDistribution pdh;
 
     private final Field2d field2d = new Field2d();
 
@@ -103,7 +101,7 @@ public class Robot extends TimedRobot {
         // SmartDashboard.putNumber("ShooterRPM", 0);
         // SmartDashboard.putNumber("HoodAngle", 0);
 
-        pdh = new PowerDistribution(2, ModuleType.kRev);
+        // pdh = new PowerDistribution(2, ModuleType.kRev);
 
         controls = new Controls();
         drive = new Drive();
@@ -384,7 +382,7 @@ public class Robot extends TimedRobot {
 
         // we always run the flywheel
         // System.out.println("current distance to hub: " + drive.getHubDistance());
-        shooter.setTargetDistance(currentAdjustedHubDistance, shootReady);
+        shooter.autoAdjust(shootReady);
         
         if (shootButton && shootReady) {
             hopper.indexFuel();
@@ -479,7 +477,7 @@ public class Robot extends TimedRobot {
         // we always run the flywheel but the hood should be down if we aren't ready
         if (shootReady) {
             shooter.setTargetRPMs(SmartDashboard.getNumber("TargetRightWheelRPM", 0), SmartDashboard.getNumber("TargetLeftWheelRPM", 0));
-            shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
+            shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0), SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
         } else {
             shooter.stopWheels();
         }
