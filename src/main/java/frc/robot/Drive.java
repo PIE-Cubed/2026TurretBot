@@ -174,6 +174,7 @@ public class Drive {
         backRight = new SwerveModule(10, 11, false);
 
         rotatePID = new PIDController(ROTATE_P, ROTATE_I, ROTATE_D);
+        rotatePID.enableContinuousInput(-180, 180);
 
         // Strafe PID for OTF drive
         otfStrafePID = new PIDController(OTF_S_P, OTF_S_I, OTF_S_D);
