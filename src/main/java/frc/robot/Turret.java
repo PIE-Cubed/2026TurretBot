@@ -79,7 +79,7 @@ public class Turret {
         turretEncoderConfig = new EncoderConfig().positionConversionFactor(10 * 200/21 * 360);
 
         turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
-        turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(false);
+        turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(true);
         turretMotorConfig.apply(turretCRTEncoder1Config);
         turretMotorConfig.apply(turretEncoderConfig);
         turretCRTEncoder2 = new DutyCycleEncoder(secondaryEncoderChannel);
