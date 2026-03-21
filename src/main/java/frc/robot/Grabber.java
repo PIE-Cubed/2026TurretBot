@@ -1,12 +1,15 @@
 package frc.robot;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.EncoderConfig;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -21,8 +24,8 @@ public class Grabber {
 
     // private final double PIVOT_ENCODER_CONVERSION_FACTOR = (20.0 / 64.0) * 360.0;
 
-    // private final double MAX_PIVOT_ANGLE = 90.0;
-    // private final double MIN_PIVOT_ANGLE = 7.5;
+    private final double MAX_PIVOT_ANGLE = 90;
+    private final double MIN_PIVOT_ANGLE = 6;
 
     private final double PIVOT_DOWN_VOLTAGE = -5;
     private final double PIVOT_UP_VOLTAGE = 7;
@@ -38,66 +41,67 @@ public class Grabber {
 
     private SparkBase pivotMotor;
     private SparkBase intakeMotor;
-    private SparkMaxConfig pivotMotorConfig;
-    private SparkMaxConfig intakeMotorConfig;
-    private RelativeEncoder pivotEncoder;
-    private EncoderConfig pivotEncoderConfig;
+    private SparkBaseConfig pivotMotorConfig;
+    private SparkBaseConfig intakeMotorConfig;
+    private AbsoluteEncoder pivotEncoder;
+    private AbsoluteEncoderConfig pivotEncoderConfig;
 
     public Grabber() {
         pivotMotor = new SparkMax(PIVOT_MOTOR_ID, MotorType.kBrushless);
-        pivotEncoder = pivotMotor.getEncoder();
-        pivotEncoderConfig = new EncoderConfig();
-        // pivotEncoderConfig.inverted(true);
+        pivotEncoder = pivotMotor.getAbsoluteEncoder();
+        pivotEncoderConfig = new AbsoluteEncoderConfig();
+        pivotEncoderConfig.inverted(true);
         pivotMotorConfig = new SparkMaxConfig();
         pivotMotorConfig
             .idleMode(IdleMode.kBrake)
             .inverted(true)
-            .smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT)
+            .smartCurrentLimit(Robot.NEO_CURRENT_LIMIT)
             .disableFollowerMode()
             .apply(pivotEncoderConfig);
         pivotMotor.configure(pivotMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        intakeMotor = new SparkMax(INTAKE_MOTOR_ID, MotorType.kBrushless);
-        intakeMotorConfig = new SparkMaxConfig();
+        intakeMotor = new SparkFlex(INTAKE_MOTOR_ID, MotorType.kBrushless);
+        intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig
             .idleMode(IdleMode.kBrake)
             .inverted(true)
-            .smartCurrentLimit(Robot.NEO_CURRENT_LIMIT)
+            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
             .disableFollowerMode();
         intakeMotor.configure(intakeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
-    public void raiseGrabber() {
-        // if (pivotEncoder.getPosition() < MAX_PIVOT_ANGLE) {
+    public int raiseGrabber() {
+        if (pivotEncoder.getPosition() < MAX_PIVOT_ANGLE) {
             pivotMotor.setVoltage(PIVOT_UP_VOLTAGE);
             // System.out.println("Raising grabber");
-        // } else {
-            // pivotMotor.set(0);
+        } else {
+            pivotMotor.stopMotor();
             // System.out.println("Grabber out of bounds on top side");
-            // return Robot.DONE;
-        // }
+            return Robot.DONE;
+        }
 
-        // return Robot.CONT;
+        return Robot.CONT;
     }
 
-    public void lowerGrabber() {
-        // if (pivotEncoder.getPosition() > MIN_PIVOT_ANGLE) {
+    public int lowerGrabber() {
+        if (pivotEncoder.getPosition() > MIN_PIVOT_ANGLE) {
             pivotMotor.setVoltage(PIVOT_DOWN_VOLTAGE);
             // System.out.println("Lowering grabber");
-        // } else {
-            // pivotMotor.set(0);
+        } else {
+            pivotMotor.stopMotor();
             // System.out.println("Grabber out of bounds on bottom side");
-            // return Robot.DONE;
-        // }
+            return Robot.DONE;
+        }
 
-        // return Robot.CONT;
+        return Robot.CONT;
     }
 
     public void stopGrabber() {
-        pivotMotor.set(0);
+        pivotMotor.stopMotor();
         // System.out.println("Nothing pressed");
     }
 
+    // TODO: do this better for the new bot
     public int jostleGrabber() {
         if (jostleStep == 0) {
             jostleStep = 1;
@@ -158,18 +162,18 @@ public class Grabber {
     public void resetJostle() {
         jostleStep = 0;
         currJostleTime = BASE_JOSTLE_TIME;
-        pivotEncoder.setPosition(0);
+        // pivotEncoder.setPosition(0);
     }
 
-    public int autoLowerGrabber() {
-        if (pivotEncoder.getPosition() > 0) {
-            lowerGrabber();
-            return Robot.CONT;
-        } else {
-            stopGrabber();
-            return Robot.DONE;
-        }
-    }
+    // public int autoLowerGrabber() {
+    //     if (pivotEncoder.getPosition() > 0) {
+    //         lowerGrabber();
+    //         return Robot.CONT;
+    //     } else {
+    //         stopGrabber();
+    //         return Robot.DONE;
+    //     }
+    // }
 
     public void intake() {
         intakeMotor.setVoltage(INTAKE_VOLTAGE);

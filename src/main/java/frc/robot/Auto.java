@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import choreo.Choreo;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
@@ -244,7 +243,7 @@ public class Auto {
                 break;
             case 3: // Waiting for marker
                 shooter.autoAdjust(false);
-                grabber.autoLowerGrabber();
+                grabber.lowerGrabber();
                 choreoPathFollower(outpostNC1);
 
                 status = atMarker(outpostNC1, "Intake");
@@ -252,7 +251,7 @@ public class Auto {
                 break;
             case 4: // Intaking until marker
                 shooter.autoAdjust(false);
-                grabber.autoLowerGrabber();
+                grabber.lowerGrabber();
                 grabber.intake();
                 choreoPathFollower(outpostNC1);
 
@@ -261,7 +260,7 @@ public class Auto {
                 break;
             case 5: // Spinning up and waiting for path to finish
                 shooter.autoAdjust(true);
-                grabber.autoLowerGrabber();
+                grabber.lowerGrabber();
                 grabber.intake();
 
                 status = choreoPathFollower(outpostNC1);
@@ -305,7 +304,7 @@ public class Auto {
 
                 restartTimer();
 
-                status = grabber.autoLowerGrabber();
+                status = grabber.lowerGrabber();
 
                 break;
             case 9: // Waiting for marker
@@ -321,7 +320,7 @@ public class Auto {
 
                 // shooter.stopWheels();
                 // shooter.stopHood();
-                grabber.autoLowerGrabber();
+                grabber.lowerGrabber();
                 choreoPathFollower(outpostNC2);
                 grabber.intake();
 
@@ -330,7 +329,7 @@ public class Auto {
                 break;
             case 11: // Spin up and wait for path to finish
                 shooter.autoAdjust(true);
-                grabber.autoLowerGrabber();
+                grabber.lowerGrabber();
                 grabber.stopWheel();
 
                 status = choreoPathFollower(outpostNC2);
@@ -707,7 +706,7 @@ public class Auto {
 
                 restartTimer();
 
-                status = grabber.autoLowerGrabber();
+                status = grabber.lowerGrabber();
 
                 break;
             case 9: // Waiting for marker

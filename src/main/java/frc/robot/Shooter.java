@@ -66,12 +66,12 @@ public class Shooter {
     private PIDController rightHoodPIDController;
 
     // Motor IDs
-    private final int LEFT_TURRET_MOTOR_ID = 25;
-    private final int RIGHT_TURRET_MOTOR_ID = 24;
-    private final int LEFT_HOOD_MOTOR_ID = 23;
-    private final int RIGHT_HOOD_MOTOR_ID = 22;
-    private final int LEFT_MOTOR_ID = 21;
-    private final int RIGHT_MOTOR_ID = 20;
+    private final int LEFT_TURRET_MOTOR_ID = 45;
+    private final int RIGHT_TURRET_MOTOR_ID = 44;
+    private final int LEFT_HOOD_MOTOR_ID = 43;
+    private final int RIGHT_HOOD_MOTOR_ID = 42;
+    private final int LEFT_MOTOR_ID = 41;
+    private final int RIGHT_MOTOR_ID = 40;
 
     private final int LEFT_TURRET_ENCODER_CHANNEL = 0;
     private final int RIGHT_TURRET_ENCODER_CHANNEL = 1;

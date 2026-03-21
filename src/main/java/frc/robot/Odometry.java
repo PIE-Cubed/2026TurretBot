@@ -38,6 +38,7 @@ public class Odometry {
 
     // Distances from bottom center of robot to each camera
     // When rotation is 0 for all axes the Z axis is parallel to the front of the robot.
+    // TODO: get camera offsets for new spots
     private final Transform3d ROBOT_TO_CAMERA1 = new Transform3d(
         Units.inchesToMeters(-11.75),
         Units.inchesToMeters(-11.75),
@@ -98,29 +99,29 @@ public class Odometry {
         this.drive = drive;
 
         // Instantiate the PhotonCameras
-        camera1 = new PhotonCamera("BRSwerveCamera");
-        camera2 = new PhotonCamera("BLSwerveCamera");
-        camera3 = new PhotonCamera("FRBarCamera");
-        camera4 = new PhotonCamera("FLBarCamera");
+        camera1 = new PhotonCamera("BRCamera");
+        camera2 = new PhotonCamera("BLCamera");
+        camera3 = new PhotonCamera("FRCamera");
+        camera4 = new PhotonCamera("FLCamera");
 
         // Instantiate the pose estimators for each camera
         camera1PoseEstimator = new PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField), // Field selection
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark), // Field selection
             ROBOT_TO_CAMERA1 // Camera offset from robot
         );
 
         camera2PoseEstimator = new PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
             ROBOT_TO_CAMERA2
         );
         
         camera3PoseEstimator = new PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
             ROBOT_TO_CAMERA3
         );
 
         camera4PoseEstimator = new PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField),
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltAndymark),
             ROBOT_TO_CAMERA4
         );
 
