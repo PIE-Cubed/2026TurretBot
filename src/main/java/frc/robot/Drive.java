@@ -71,7 +71,7 @@ public class Drive {
 
     // on-the-fly drive variables
     private final double ROBOT_MASS_KG = 37; // robot mass in kilograms (for pathPlanner)
-    private final double ROBOT_MOI = 6.31; // robot moment of inertia, from the cad so approximate (for pathPlanner)
+    private final double ROBOT_MOI = 3.5; // robot moment of inertia, from the cad so approximate (for pathPlanner)
     private PathPlannerPath otfPath; // OTF means on-the-fly
     private PathPlannerTrajectory otfTrajectory;
     private boolean otfFirstTime = true;

@@ -103,7 +103,6 @@ public class Turret {
     }
 
     public int pointAtWithVelocity(Pose2d targetPose, double inAirTime) {
-
         return pointAt(targetPose.plus(getCurrentVelocity().inverse().times(inAirTime)));
     }
 
