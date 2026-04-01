@@ -77,8 +77,8 @@ public class Shooter {
     private final int RIGHT_TURRET_ENCODER_CHANNEL = 1;
 
     // TODO: tune these offsets, maybe make test program or something
-    private final double LEFT_TURRET_ENCODER_OFFSET = -0.1; // 0 to 1, also negative because weird easyCRT stuff
-    private final double RIGHT_TURRET_ENCODER_OFFSET = -0.2; // 0 to 1, also negative because weird easyCRT stuff
+    private final double LEFT_TURRET_ENCODER_OFFSET = -0.1669; // 0 to -1, also negative because weird easyCRT stuff
+    private final double RIGHT_TURRET_ENCODER_OFFSET = -0.1815; // 0 to -1, also negative because weird easyCRT stuff
 
     // PID Values
     private final double LEFT_P = 0.0003; //The two PIDs need to be different.
@@ -104,6 +104,16 @@ public class Shooter {
     private final double HOOD_STOW_ANGLE_DEG = 4;
     private final double FLYWHEEL_STOW_RPM = 2900;
 
+    private final double LEFT_TURRET_P = 0.55;
+    private final double LEFT_TURRET_I = 0;
+    private final double LEFT_TURRET_D = 0.01;
+    private final double LEFT_TURRET_TOLERANCE = 0.5;
+
+    private final double RIGHT_TURRET_P = 0.55;
+    private final double RIGHT_TURRET_I = 0;
+    private final double RIGHT_TURRET_D = 0.01;
+    private final double RIGHT_TURRET_TOLERANCE = 0.5;
+
     private double prevRightVoltage = 0;
     private double prevLeftVoltage = 0;
 
@@ -118,7 +128,6 @@ public class Shooter {
      * chud shooter constructor
      */
     public Shooter() {
-        // TODO TODO TODO TODO TODO: tune these again before week 2
         // last recorded on 3/1/2026
         // key = distance to the center of the robot in meters, vector = flywheel RPM and hood angle
         distMapMeters.put(Units.inchesToMeters(0.0), VecBuilder.fill(3375, 9.5, 0)); // not an actual measurement, meant as a crutch for bad odometry
@@ -138,62 +147,69 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(196.5), VecBuilder.fill(4410, 30.0, 0)); //
         distMapMeters.put(Units.inchesToMeters(208.5), VecBuilder.fill(4610, 31.5, 0)); //
 
-        leftTurret = new Turret(LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET, leftTurretOffset);
-        rightTurret = new Turret(RIGHT_TURRET_MOTOR_ID, RIGHT_TURRET_ENCODER_CHANNEL, RIGHT_TURRET_ENCODER_OFFSET, rightTurretOffset);
+        leftTurret = new Turret(
+            LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET, leftTurretOffset,
+            LEFT_TURRET_P, LEFT_TURRET_I, LEFT_TURRET_D, LEFT_TURRET_TOLERANCE
+        );
 
-        leftMotor = new SparkFlex(LEFT_MOTOR_ID, MotorType.kBrushless);
-        leftMotorConfig = new SparkFlexConfig();
+        rightTurret = new Turret(
+            RIGHT_TURRET_MOTOR_ID, RIGHT_TURRET_ENCODER_CHANNEL, RIGHT_TURRET_ENCODER_OFFSET, rightTurretOffset,
+            RIGHT_TURRET_P, RIGHT_TURRET_I, RIGHT_TURRET_D, RIGHT_TURRET_TOLERANCE
+        );
 
-        rightMotor = new SparkFlex(RIGHT_MOTOR_ID, MotorType.kBrushless);
-        rightMotorConfig = new SparkFlexConfig();
+        // leftMotor = new SparkFlex(LEFT_MOTOR_ID, MotorType.kBrushless);
+        // leftMotorConfig = new SparkFlexConfig();
 
-        leftHoodMotor = new SparkMax(LEFT_HOOD_MOTOR_ID, MotorType.kBrushless);
-        leftHoodMotorConfig = new SparkMaxConfig();
+        // rightMotor = new SparkFlex(RIGHT_MOTOR_ID, MotorType.kBrushless);
+        // rightMotorConfig = new SparkFlexConfig();
 
-        rightHoodMotor = new SparkMax(RIGHT_HOOD_MOTOR_ID, MotorType.kBrushless);
-        rightHoodMotorConfig = new SparkMaxConfig();
+        // leftHoodMotor = new SparkMax(LEFT_HOOD_MOTOR_ID, MotorType.kBrushless);
+        // leftHoodMotorConfig = new SparkMaxConfig();
 
-        leftMotorConfig.idleMode(IdleMode.kCoast);
-        leftMotorConfig.smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT);
-        leftMotorConfig.disableFollowerMode();
-        leftMotorConfig.inverted(false);
+        // rightHoodMotor = new SparkMax(RIGHT_HOOD_MOTOR_ID, MotorType.kBrushless);
+        // rightHoodMotorConfig = new SparkMaxConfig();
 
-        rightMotorConfig.idleMode(IdleMode.kCoast);
-        rightMotorConfig.smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT);
-        rightMotorConfig.disableFollowerMode();
-        rightMotorConfig.inverted(true);
+        // leftMotorConfig.idleMode(IdleMode.kCoast);
+        // leftMotorConfig.smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT);
+        // leftMotorConfig.disableFollowerMode();
+        // leftMotorConfig.inverted(false);
 
-        leftHoodMotorConfig.idleMode(IdleMode.kBrake);
-        leftHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
-        leftHoodMotorConfig.inverted(false);
+        // rightMotorConfig.idleMode(IdleMode.kCoast);
+        // rightMotorConfig.smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT);
+        // rightMotorConfig.disableFollowerMode();
+        // rightMotorConfig.inverted(true);
 
-        rightHoodMotorConfig.idleMode(IdleMode.kBrake);
-        rightHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
-        rightHoodMotorConfig.inverted(false);
+        // leftHoodMotorConfig.idleMode(IdleMode.kBrake);
+        // leftHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
+        // leftHoodMotorConfig.inverted(false);
 
-        leftMotorEncoder = leftMotor.getEncoder();
-        leftMotorEncoderConfig = new EncoderConfig();
-        leftMotorEncoderConfig.positionConversionFactor(1.0);
-        leftMotorEncoderConfig.velocityConversionFactor(1.0);
-        leftMotorConfig.apply(leftMotorEncoderConfig);
+        // rightHoodMotorConfig.idleMode(IdleMode.kBrake);
+        // rightHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
+        // rightHoodMotorConfig.inverted(false);
 
-        rightMotorEncoder = rightMotor.getEncoder();
-        rightMotorEncoderConfig = new EncoderConfig();
-        rightMotorEncoderConfig.positionConversionFactor(1.0);
-        rightMotorEncoderConfig.velocityConversionFactor(1.0);
-        rightMotorConfig.apply(rightMotorEncoderConfig);
+        // leftMotorEncoder = leftMotor.getEncoder();
+        // leftMotorEncoderConfig = new EncoderConfig();
+        // leftMotorEncoderConfig.positionConversionFactor(1.0);
+        // leftMotorEncoderConfig.velocityConversionFactor(1.0);
+        // leftMotorConfig.apply(leftMotorEncoderConfig);
 
-        leftHoodEncoder = leftHoodMotor.getAbsoluteEncoder();
-        leftHoodEncoderConfig = new AbsoluteEncoderConfig();
-        leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
-        leftHoodEncoderConfig.inverted(false);
-        leftHoodMotorConfig.apply(leftHoodEncoderConfig);
+        // rightMotorEncoder = rightMotor.getEncoder();
+        // rightMotorEncoderConfig = new EncoderConfig();
+        // rightMotorEncoderConfig.positionConversionFactor(1.0);
+        // rightMotorEncoderConfig.velocityConversionFactor(1.0);
+        // rightMotorConfig.apply(rightMotorEncoderConfig);
 
-        rightHoodEncoder = leftHoodMotor.getAbsoluteEncoder();
-        rightHoodEncoderConfig = new AbsoluteEncoderConfig();
-        rightHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
-        rightHoodEncoderConfig.inverted(false);
-        rightHoodMotorConfig.apply(leftHoodEncoderConfig);
+        // leftHoodEncoder = leftHoodMotor.getAbsoluteEncoder();
+        // leftHoodEncoderConfig = new AbsoluteEncoderConfig();
+        // leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
+        // leftHoodEncoderConfig.inverted(false);
+        // leftHoodMotorConfig.apply(leftHoodEncoderConfig);
+
+        // rightHoodEncoder = leftHoodMotor.getAbsoluteEncoder();
+        // rightHoodEncoderConfig = new AbsoluteEncoderConfig();
+        // rightHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
+        // rightHoodEncoderConfig.inverted(false);
+        // rightHoodMotorConfig.apply(leftHoodEncoderConfig);
 
         leftPIDController = new PIDController(LEFT_P, LEFT_I, LEFT_D);
         leftPIDController.setTolerance(LEFT_TOLERANCE);
@@ -207,10 +223,10 @@ public class Shooter {
         rightHoodPIDController = new PIDController(RIGHT_HOOD_P, RIGHT_HOOD_I, RIGHT_HOOD_D);
         rightHoodPIDController.setTolerance(HOOD_TOLERANCE);
 
-        leftMotor.configure(leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        // leftMotor.configure(leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        // rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        // leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        // rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public void setMotorRPM(double rightRPM, double leftRPM) {
@@ -257,26 +273,26 @@ public class Shooter {
 
         Matrix<N3, N1> mapResult = distMapMeters.get(leftTurret.getAdjustedHubDistance());
         
-        double targetLeftRPM = mapResult.get(0, 0);
-        double targetLeftHoodAngle = mapResult.get(1, 0);
+        // double targetLeftRPM = mapResult.get(0, 0);
+        // double targetLeftHoodAngle = mapResult.get(1, 0);
         double ballAirTimeLeft = mapResult.get(2, 0);
 
         mapResult = distMapMeters.get(rightTurret.getAdjustedHubDistance());
         
-        double targetRightRPM = mapResult.get(0, 0);
-        double targetRightHoodAngle = mapResult.get(1, 0);
+        // double targetRightRPM = mapResult.get(0, 0);
+        // double targetRightHoodAngle = mapResult.get(1, 0);
         double ballAirTimeRight = mapResult.get(2, 0);
 
         leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft);
         rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight);
 
-        if (hoodUp) {
-            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-            setTargetRPMs(targetRightRPM, targetLeftRPM);
-        } else {
-            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-            setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
-        }
+        // if (hoodUp) {
+        //     setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
+        //     setTargetRPMs(targetRightRPM, targetLeftRPM);
+        // } else {
+        //     setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
+        //     setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
+        // }
     }
 
     /**
@@ -345,6 +361,17 @@ public class Shooter {
 
         prevLeftVoltage = 0;
         prevRightVoltage = 0;
+    }
+
+    public void testFunction() {
+        leftTurret.printSecondEncoderValue();
+        rightTurret.printSecondEncoderValue();
+        // leftTurret.setTargetAbsRotation(SmartDashboard.getNumber("CurrPosT", 0));
+        // rightTurret.setTargetAbsRotation(SmartDashboard.getNumber("CurrPosT", 0));
+        // leftTurret.setTargetFieldRotation(SmartDashboard.getNumber("CurrPosT", 0));
+        // rightTurret.setTargetFieldRotation(SmartDashboard.getNumber("CurrPosT", 0));
+        // leftTurret.pointAt(Drive.getPose());
+        // rightTurret.pointAt(Drive.getPose());
     }
 
     public void stopHood() {
