@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -108,8 +111,8 @@ public class Robot extends TimedRobot {
         shooter = new Shooter();
         hopper = new Hopper();
         grabber = new Grabber();
-        climber = new Climber();
-        odometry = new Odometry(drive);
+        // climber = new Climber();
+        // odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, climber, grabber);
 
         // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
@@ -129,6 +132,10 @@ public class Robot extends TimedRobot {
             .withAutomaticHeight()
             .withDisplaySeconds(5)
         );
+
+        SmartDashboard.putNumber("CurrPosX", 0);
+        SmartDashboard.putNumber("CurrPosY", 0);
+        SmartDashboard.putNumber("CurrPosT", 0);
     }
 
     /**
@@ -143,45 +150,47 @@ public class Robot extends TimedRobot {
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
 
         // Odometry and Pose
-        odometry.updateVisionEstimators();
+        // odometry.updateVisionEstimators();
 
         drive.updatePoseEstimator();
 
-        if (odometry.getCamera1Pose() != null) {
-            drive.addVisionMeasurement(odometry.getCamera1Pose(), Odometry.CAMERA1_STD_DEVS);
-            // Logger.logStruct("BRSwerveCameraPose", odometry.getCamera1Pose().estimatedPose);
-        }
+        // if (odometry.getCamera1Pose() != null) {
+        //     drive.addVisionMeasurement(odometry.getCamera1Pose(), Odometry.CAMERA1_STD_DEVS);
+        //     // Logger.logStruct("BRSwerveCameraPose", odometry.getCamera1Pose().estimatedPose);
+        // }
 
-        if (odometry.getCamera2Pose() != null) {
-            drive.addVisionMeasurement(odometry.getCamera2Pose(), Odometry.CAMERA2_STD_DEVS);
-            // Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
-        }
+        // if (odometry.getCamera2Pose() != null) {
+        //     drive.addVisionMeasurement(odometry.getCamera2Pose(), Odometry.CAMERA2_STD_DEVS);
+        //     // Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
+        // }
 
-        if (odometry.getCamera3Pose() != null) {
-            drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
-            // Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
-        }
+        // if (odometry.getCamera3Pose() != null) {
+        //     drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
+        //     // Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
+        // }
 
-        if (odometry.getCamera4Pose() != null) {
-            drive.addVisionMeasurement(odometry.getCamera4Pose(), Odometry.CAMERA4_STD_DEVS);
-            // Logger.logStruct("FLBarCameraPose", odometry.getCamera4Pose().estimatedPose);
-        }
+        // if (odometry.getCamera4Pose() != null) {
+        //     drive.addVisionMeasurement(odometry.getCamera4Pose(), Odometry.CAMERA4_STD_DEVS);
+        //     // Logger.logStruct("FLBarCameraPose", odometry.getCamera4Pose().estimatedPose);
+        // }
 
         Logger.logStruct("currentPose2d", Drive.getPose());
 
         field2d.setRobotPose(Drive.getPose());
         SmartDashboard.putData("Field", field2d);
 
-        // Match Time and Hub State
-        double matchTime = DriverStation.getMatchTime();
-        SmartDashboard.putNumber("Match Time", matchTime);
-        SmartDashboard.putNumber("Time Until Shift", AllianceUtil.timeUntilHubStateChange(matchTime));
-        SmartDashboard.putBoolean("Hub Active", AllianceUtil.isOurHubActive(matchTime));
+        // // Match Time and Hub State
+        // double matchTime = DriverStation.getMatchTime();
+        // SmartDashboard.putNumber("Match Time", matchTime);
+        // SmartDashboard.putNumber("Time Until Shift", AllianceUtil.timeUntilHubStateChange(matchTime));
+        // SmartDashboard.putBoolean("Hub Active", AllianceUtil.isOurHubActive(matchTime));
 
-        shooter.printWheelRPMs();
+        // shooter.printWheelRPMs();
 
         m_sideSelected = side_chooser.getSelected();
         m_climbSelected = climb_chooser.getSelected();
+
+        drive.printSwerveState();
     }
 
     /**
@@ -266,9 +275,9 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {
         wheelControl();
         shooterControl();
-        grabberControl();
-        climberControl();
-        elasticControl();
+        // grabberControl();
+        // climberControl();
+        // elasticControl();
     }
 
     /** This function is called once when the robot is disabled. */
@@ -299,14 +308,16 @@ public class Robot extends TimedRobot {
         // climberControl();
         // grabberControl();
 
-        climber.zeroClimberEncoder();
-        manualClimberControl();
+        shooter.testFunction();
 
-        shooter.stopHood();
-        shooter.stopWheels();
-        grabber.stopGrabber();
-        grabber.stopWheel();
-        drive.stopWheels();
+        // climber.zeroClimberEncoder();
+        // manualClimberControl();
+
+        // shooter.stopHood();
+        // shooter.stopWheels();
+        // grabber.stopGrabber();
+        // grabber.stopWheel();
+        // drive.stopWheels();
     }
 
     /** This function is called once when the robot is first started up. */
