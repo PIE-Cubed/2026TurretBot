@@ -28,6 +28,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
@@ -42,6 +44,8 @@ import java.util.List;
 import org.photonvision.EstimatedRobotPose;
 
 public class Drive {
+    private final StructArrayPublisher<SwerveModuleState> publisher = NetworkTableInstance.getDefault().getTable("logs")
+    .getStructArrayTopic("Drive/CurrentSwerveModuleStates", SwerveModuleState.struct).publish();
 
     public static final double SWERVE_DIST_FROM_CENTER = Units.feetToMeters(27.0 / 24.0);
     public static final Translation2d centerLocation = new Translation2d(0, 0);
@@ -84,13 +88,13 @@ public class Drive {
     private PIDController choreoRotatePID;
 
     // OTF PID values
-    private final double OTF_S_P = 3;
+    private final double OTF_S_P = 3.2;
     private final double OTF_S_I = 0;
     private final double OTF_S_D = 0;
     private final double OTF_S_I_RANGE = 0;
     private final double OTF_S_I_ZONE = 0;
 
-    private final double OTF_F_P = 3;
+    private final double OTF_F_P = 3.2;
     private final double OTF_F_I = 0;
     private final double OTF_F_D = 0;
     private final double OTF_F_I_RANGE = 0;
@@ -115,7 +119,7 @@ public class Drive {
     private PIDController rotatePID;
     private final double ROTATE_P = 0.02;
     private final double ROTATE_I = 0.0;
-    private final double ROTATE_D = 0.0005;
+    private final double ROTATE_D = 0.001;
 
     private final double MAX_WHEEL_POWER = 1;
 
@@ -157,6 +161,19 @@ public class Drive {
         // }
 
         navx = new Navx(NAVX_CAN_ID);
+        navx.enable9DYaw(false);
+        navx.enableOptionalMessages(
+            true, 
+            false, 
+            true, 
+            false, 
+            false, 
+            false, 
+            true, 
+            false, 
+            false, 
+            false
+        );
 
         // ahrs.zeroYaw();
         navx.resetYaw();
@@ -604,12 +621,24 @@ public class Drive {
         return Robot.CONT;
     }
 
+    public void printSwerveState() {
+        publisher.set(new SwerveModuleState[] {
+            frontLeft.getModuleState(), frontRight.getModuleState(), 
+            backLeft.getModuleState(), backRight.getModuleState()
+        });
+
+        // Logger.logStruct(
+        //     "Drive/CurrentVelocity",  
+        //     new ChassisSpeeds(getVelocity().getX(), getVelocity().getY(), getVelocity().getRotation().getRadians())
+        // );
+    }
+
     public double getGyroYawRadians() {
-        return MathUtil.angleModulus(-navx.getYaw().in(Radians));
+        return navx.getYaw().in(Radians);
     }
 
     public double getGyroYawDegrees() {
-        return MathUtil.angleModulus(-navx.getYaw().in(Degrees));
+        return navx.getYaw().in(Degrees);
     }
 
     /**
