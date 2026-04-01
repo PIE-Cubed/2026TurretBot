@@ -115,7 +115,7 @@ public class Logger {
      *     If the code fails to parse the passed object, an error message is printed to the terminal.
      *     If the type of object being logged is different than the object previously 
      *     logged under the same name, it will fail to log and print an error message.
-     * <p> You can add a new type of object to the code as long as the class has a static struct variable
+     * <p> You can add a new type of object to createPublisherForObject() as long as the class has a static struct variable
      *     expressing its type as a Struct. (ex. SwerveSample.struct, Translation2d.struct)
      * @param name A name to be assigned to the logged object.
      * @param object The object to be logged.
@@ -159,7 +159,7 @@ public class Logger {
      *     If the code fails to parse the passed object, an error message is printed to the terminal.
      *     If the type of object being logged is different than the object previously 
      *     logged under the same name, it will fail to log and print an error message.
-     * <p> You can add a new type of object to the code as long as the class has a static struct variable
+     * <p> You can add a new type of object to createPublisherForObject() as long as the class has a static struct variable
      *     expressing its type as a Struct. (ex. SwerveSample.struct, Translation2d.struct)
      * @param name A name to be assigned to the logged object.
      * @param object The object to be logged.
