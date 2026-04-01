@@ -11,7 +11,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 /** Add your docs here. */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 6;
+    private final double INDEX_POWER_VOLTS = 5;
     private final double REVERSE_POWER_VOLTS = -3;
 
     private final int LEFT_KICKER_ID = 23;
@@ -35,7 +35,7 @@ public class Hopper {
         rightSpindexerMotorConfig
             .inverted(false)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kCoast);
 
         rightSpindexerMotor.configure(
             rightSpindexerMotorConfig,
@@ -44,9 +44,9 @@ public class Hopper {
         );
 
         leftSpindexerMotorConfig
-            .follow(rightSpindexerMotor, true)
+            .inverted(true)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kCoast);
 
         leftSpindexerMotor.configure(
             leftSpindexerMotorConfig,
@@ -55,9 +55,9 @@ public class Hopper {
         );
 
         rightKickerMotorConfig
-            .follow(rightSpindexerMotor, true)
+            .inverted(true)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kCoast);
 
         rightKickerMotor.configure(
             rightKickerMotorConfig,
@@ -66,9 +66,9 @@ public class Hopper {
         );
 
         leftKickerMotorConfig
-            .follow(rightSpindexerMotor, false)
+            .inverted(false)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kCoast);
 
         leftKickerMotor.configure(
             leftKickerMotorConfig,
@@ -79,13 +79,22 @@ public class Hopper {
 
     public void indexFuel() {
         rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+        rightKickerMotor.setVoltage(INDEX_POWER_VOLTS);
+        leftKickerMotor.setVoltage(INDEX_POWER_VOLTS);
     }
 
     public void reverseIndexer() {
         rightSpindexerMotor.setVoltage(REVERSE_POWER_VOLTS);
+        leftSpindexerMotor.setVoltage(REVERSE_POWER_VOLTS);
+        rightKickerMotor.setVoltage(REVERSE_POWER_VOLTS);
+        leftKickerMotor.setVoltage(REVERSE_POWER_VOLTS);
     }
 
     public void stopMotors() {
         rightSpindexerMotor.stopMotor();
+        leftSpindexerMotor.stopMotor();
+        rightKickerMotor.stopMotor();
+        leftKickerMotor.stopMotor();
     }
 }
