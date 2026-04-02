@@ -121,7 +121,7 @@ public class Turret {
     }
 
     /**
-     * 
+     * -180 to 180
      * @param targetRotation
      * @return
      */
