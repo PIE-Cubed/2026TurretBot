@@ -4,11 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Rotations;
-
-import java.util.Optional;
-
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
@@ -27,13 +22,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
+import frc.robot.util.CRT;
 
 /** Add your docs here. */
 public class Turret {
@@ -49,15 +42,7 @@ public class Turret {
 
     private PIDController turretPID;
 
-    private final double TURRET_DRIVE_RATIO = 1;
-    private final int TURRET_SHARED_GEAR_TEETH = 200;
-    private final int TURRET_ENCODER_1_TEETH = 21;
-    private final int TURRET_ENCODER_2_TEETH = 19;
-
     private final double MAX_TURRET_ANGLE_DEGREES = 375;
-
-    private EasyCRT easyCRT;
-    private EasyCRTConfig easyCRTConfig;
 
     private Transform2d turretPosOffset;
 
@@ -84,38 +69,23 @@ public class Turret {
 
         turretMotor.configure(turretMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        Optional<Angle> inputAngle = Optional.of(Angle.ofBaseUnits(turretCRTEncoder1.getPosition(), Rotations));
-        Optional<Angle> outputAngle = Optional.of(Angle.ofBaseUnits(turretCRTEncoder2.get(), Rotations));
-
-        easyCRTConfig = new EasyCRTConfig(inputAngle::get, outputAngle::get)
-        .withAbsoluteEncoderOffsets(
-            Angle.ofBaseUnits(0, Degrees), 
-            Angle.ofBaseUnits(secondaryEncoderOffset, Degrees))
-        .withCommonDriveGear(TURRET_DRIVE_RATIO, TURRET_SHARED_GEAR_TEETH, TURRET_ENCODER_1_TEETH, TURRET_ENCODER_2_TEETH);
-        easyCRTConfig.withMatchTolerance(Angle.ofBaseUnits(0.01, Rotations));
-        easyCRT = new EasyCRT(easyCRTConfig);
-
-        try {
-            turretEncoder.setPosition(easyCRT.getAngleOptional().get().in(Degrees));
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-
-        System.out.println(easyCRT.getLastErrorRotations());
-
+        turretEncoder.setPosition(CRT.getTurretAngleDeg(turretCRTEncoder1.getPosition(), turretCRTEncoder2.get(), secondaryEncoderOffset));
+        
         turretPID = new PIDController(TURRET_P, TURRET_I, TURRET_D);
         turretPID.setTolerance(TURRET_TOLERANCE);
     }
 
     public int pointAtWithVelocity(Pose2d targetPose, double inAirTime) {
-        return pointAt(targetPose.plus(getCurrentVelocity().inverse().times(inAirTime)));
+        return pointAt(targetPose.plus(getCurrentVelocity().times(inAirTime)));
     }
 
     public int pointAt(Pose2d targetPose) {
         Pose2d currPose = Drive.getPose().plus(turretPosOffset);
 
         double dX = targetPose.getX() - currPose.getX();
+        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "dX", dX);
         double dY = targetPose.getY() - currPose.getY();
+        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "dY", dY);
 
         return setTargetFieldRotation(Math.toDegrees(Math.atan2(dY, dX)));
     }
@@ -128,13 +98,21 @@ public class Turret {
     public int setTargetFieldRotation(double targetRotation) {
         double currentRobotRotation = Drive.getPose().getRotation().getDegrees();
         Rotation2d targetAbsRotation = new Rotation2d(
-            Units.degreesToRadians(currentRobotRotation + targetRotation)
+            Units.degreesToRadians(targetRotation - currentRobotRotation)
         );
+        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "FieldRelativeTarget", targetRotation);
+        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "RobotRelativeTarget", targetAbsRotation.getDegrees());
         return setTargetAbsRotation(targetAbsRotation.getDegrees() + 180);
     }
 
     public void printSecondEncoderValue() {
+        System.out.println(turretCRTEncoder1.getPosition());
         System.out.println(turretCRTEncoder2.get());
+        System.out.println(turretMotor.getDeviceId());
+    }
+
+    public void printCRTResult() {
+        // System.out.println(CRT.getCenterGearRotation(turretCRTEncoder1.getPosition(), turretCRTEncoder2.get()));
         System.out.println(turretMotor.getDeviceId());
     }
 

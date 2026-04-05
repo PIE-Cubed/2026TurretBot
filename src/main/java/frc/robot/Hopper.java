@@ -35,6 +35,7 @@ public class Hopper {
         rightSpindexerMotorConfig
             .inverted(false)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .disableFollowerMode()
             .idleMode(IdleMode.kCoast);
 
         rightSpindexerMotor.configure(
@@ -46,6 +47,7 @@ public class Hopper {
         leftSpindexerMotorConfig
             .inverted(true)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .disableFollowerMode()
             .idleMode(IdleMode.kCoast);
 
         leftSpindexerMotor.configure(
@@ -57,6 +59,7 @@ public class Hopper {
         rightKickerMotorConfig
             .inverted(true)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .disableFollowerMode()
             .idleMode(IdleMode.kCoast);
 
         rightKickerMotor.configure(
@@ -68,6 +71,7 @@ public class Hopper {
         leftKickerMotorConfig
             .inverted(false)
             .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .disableFollowerMode()
             .idleMode(IdleMode.kCoast);
 
         leftKickerMotor.configure(

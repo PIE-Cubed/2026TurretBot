@@ -275,7 +275,7 @@ public class Robot extends TimedRobot {
     public void teleopPeriodic() {
         wheelControl();
         shooterControl();
-        // grabberControl();
+        grabberControl();
         // climberControl();
         // elasticControl();
     }
@@ -309,6 +309,19 @@ public class Robot extends TimedRobot {
         // grabberControl();
 
         shooter.testFunction();
+        // shooter.setHoodAngle(20, 0);
+        // shooter.setMotorRPM(0, 4000);
+
+        // boolean shootButton = controls.getShootButton();
+        // boolean reverseIndexer = controls.getReverseIndexer();
+
+        // if (shootButton) {
+        //     hopper.indexFuel();
+        // } else if (reverseIndexer) {
+        //     hopper.reverseIndexer();
+        // } else {
+        //     hopper.stopMotors();
+        // }
 
         // climber.zeroClimberEncoder();
         // manualClimberControl();
