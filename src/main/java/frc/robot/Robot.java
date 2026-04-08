@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
         side_chooser.setDefaultOption("No Auto", kNoAuto);
         side_chooser.addOption("Outpost (Risky)", kOutpostAuto);
         side_chooser.addOption("Outpost (Safe)", kRiskyDepotAuto);
-        side_chooser.addOption("Center", kCenterOutAuto);
+        // side_chooser.addOption("Center", kCenterOutAuto);
         // side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
         // side_chooser.addOption("Center -> Depot", kCenterDepAuto);
         side_chooser.addOption("Depot (Risky)", kDepotAuto);
@@ -112,7 +112,7 @@ public class Robot extends TimedRobot {
         hopper = new Hopper();
         grabber = new Grabber();
         // climber = new Climber();
-        // odometry = new Odometry(drive);
+        odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, climber, grabber);
 
         // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
@@ -150,28 +150,28 @@ public class Robot extends TimedRobot {
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
 
         // Odometry and Pose
-        // odometry.updateVisionEstimators();
+        odometry.updateVisionEstimators();
 
         drive.updatePoseEstimator();
 
-        // if (odometry.getCamera1Pose() != null) {
-        //     drive.addVisionMeasurement(odometry.getCamera1Pose(), Odometry.CAMERA1_STD_DEVS);
-        //     // Logger.logStruct("BRSwerveCameraPose", odometry.getCamera1Pose().estimatedPose);
-        // }
+        if (odometry.getCamera1Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera1Pose(), Odometry.CAMERA1_STD_DEVS);
+            Logger.logStruct("BRSwerveCameraPose", odometry.getCamera1Pose().estimatedPose);
+        }
 
         // if (odometry.getCamera2Pose() != null) {
         //     drive.addVisionMeasurement(odometry.getCamera2Pose(), Odometry.CAMERA2_STD_DEVS);
-        //     // Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
+        //     Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
         // }
 
         // if (odometry.getCamera3Pose() != null) {
         //     drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
-        //     // Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
+        //     Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
         // }
 
         // if (odometry.getCamera4Pose() != null) {
         //     drive.addVisionMeasurement(odometry.getCamera4Pose(), Odometry.CAMERA4_STD_DEVS);
-        //     // Logger.logStruct("FLBarCameraPose", odometry.getCamera4Pose().estimatedPose);
+        //     Logger.logStruct("FLBarCameraPose", odometry.getCamera4Pose().estimatedPose);
         // }
 
         Logger.logStruct("currentPose2d", Drive.getPose());
@@ -308,17 +308,16 @@ public class Robot extends TimedRobot {
         // climberControl();
         // grabberControl();
 
+        shooter.stopTurrets();
         shooter.testFunction();
         // shooter.setHoodAngle(20, 0);
-        // shooter.setMotorRPM(0, 4000);
+        // shooter.setTargetRPMs(0, 2500);
 
         // boolean shootButton = controls.getShootButton();
         // boolean reverseIndexer = controls.getReverseIndexer();
 
         // if (shootButton) {
-        //     hopper.indexFuel();
-        // } else if (reverseIndexer) {
-        //     hopper.reverseIndexer();
+        //     hopper.indexLeft();
         // } else {
         //     hopper.stopMotors();
         // }
@@ -363,24 +362,24 @@ public class Robot extends TimedRobot {
 
         if (lockWheels) {
             currentWheelState = WheelState.LOCK_WHEELS;
-        } else if (autoAlign && currentPositionState == PositionState.HOME) {
-            if (currentWheelState != WheelState.AUTO_DRIVE) {
-                drive.otfReset();
-            }
+        // } else if (autoAlign && currentPositionState == PositionState.HOME) {
+        //     if (currentWheelState != WheelState.AUTO_DRIVE) {
+        //         drive.otfReset();
+        //     }
 
-            currentWheelState = WheelState.AUTO_DRIVE;
-        } else if (autoAim) {
-            currentWheelState = WheelState.AUTO_AIM;
+        //     currentWheelState = WheelState.AUTO_DRIVE;
+        // } else if (autoAim) {
+        //     currentWheelState = WheelState.AUTO_AIM;
         } else {
             currentWheelState = WheelState.TELEOP;
         }
 
         if (currentWheelState == WheelState.LOCK_WHEELS) {
             drive.lockWheels();
-        } else if (currentWheelState == WheelState.AUTO_DRIVE) {
-            drive.climbLineUp();
-        } else if (currentWheelState == WheelState.AUTO_AIM) {
-            drive.shootAndDrive(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
+        // } else if (currentWheelState == WheelState.AUTO_DRIVE) {
+        //     drive.climbLineUp();
+        // } else if (currentWheelState == WheelState.AUTO_AIM) {
+        //     drive.shootAndDrive(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
         } else if (currentWheelState == WheelState.TELEOP) {
             drive.teleopDrive(
                 forwardPowerFwdPos,
@@ -395,7 +394,7 @@ public class Robot extends TimedRobot {
     public void shooterControl() {
         boolean shootReady = controls.getShooterSafety();
         boolean shootButton = controls.getShootButton();
-        boolean reverseIndexer = controls.getReverseIndexer();
+        // boolean reverseIndexer = controls.getReverseIndexer();
         // boolean atTargetRPM = shooter.atTargetRPM();
 
         PositionState currentPositionState = drive.getPositionState();
@@ -409,9 +408,10 @@ public class Robot extends TimedRobot {
         shooter.autoAdjust(shootReady);
         
         if (shootButton && shootReady) {
-            hopper.indexFuel();
-        } else if (reverseIndexer) {
-            hopper.reverseIndexer();
+            // hopper.indexFuel();
+            hopper.indexLeft();
+        // } else if (reverseIndexer) {
+        //     hopper.indexRight();
         } else {
             hopper.stopMotors();
         }
@@ -498,18 +498,20 @@ public class Robot extends TimedRobot {
         boolean reverseIndexer = controls.getReverseIndexer();
         // boolean atTargetRPM = shooter.atTargetRPM();
 
+        // shooter.autoAdjust(false);
+
         // we always run the flywheel but the hood should be down if we aren't ready
         if (shootReady) {
-            shooter.setTargetRPMs(SmartDashboard.getNumber("TargetRightWheelRPM", 0), SmartDashboard.getNumber("TargetLeftWheelRPM", 0));
-            shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0), SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
+            shooter.setTargetRPMs(0, SmartDashboard.getNumber("TargetLeftWheelRPM", 0));
+            shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0), 0);
+            // hopper.kickLeft();
         } else {
             shooter.stopWheels();
+            hopper.stopMotors();
         }
 
         if (shootButton && shootReady) {
-            hopper.indexFuel();
-        } else if (reverseIndexer) {
-            hopper.reverseIndexer();
+            hopper.indexLeft();
         } else {
             hopper.stopMotors();
         }

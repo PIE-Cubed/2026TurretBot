@@ -11,8 +11,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 /** Add your docs here. */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 5;
-    private final double REVERSE_POWER_VOLTS = -3;
+    private final double INDEX_POWER_VOLTS = 2;
+    private final double KICKER_POWER_VOLTS = 8;
 
     private final int LEFT_KICKER_ID = 23;
     private final int RIGHT_KICKER_ID = 22;
@@ -84,15 +84,33 @@ public class Hopper {
     public void indexFuel() {
         rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
         leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-        rightKickerMotor.setVoltage(INDEX_POWER_VOLTS);
-        leftKickerMotor.setVoltage(INDEX_POWER_VOLTS);
+        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
     }
 
-    public void reverseIndexer() {
-        rightSpindexerMotor.setVoltage(REVERSE_POWER_VOLTS);
-        leftSpindexerMotor.setVoltage(REVERSE_POWER_VOLTS);
-        rightKickerMotor.setVoltage(REVERSE_POWER_VOLTS);
-        leftKickerMotor.setVoltage(REVERSE_POWER_VOLTS);
+    public void indexRight() {
+        leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    }
+
+    public void indexLeft() {
+        rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    }
+
+    public void kickFuel() {
+        kickLeft();
+        kickRight();
+    }
+
+    public void kickLeft() {
+        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    }
+
+    public void kickRight() {
+        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
     }
 
     public void stopMotors() {

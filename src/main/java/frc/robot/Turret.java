@@ -4,13 +4,11 @@
 
 package frc.robot;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -22,11 +20,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
-import frc.robot.util.CRT;
+import frc.robot.util.AngleKalmanFilter;
 
 /** Add your docs here. */
 public class Turret {
@@ -34,45 +31,60 @@ public class Turret {
     private SparkMax turretMotor;
     private SparkBaseConfig turretMotorConfig;
     
-    private AbsoluteEncoder turretCRTEncoder1;
-    private AbsoluteEncoderConfig turretCRTEncoder1Config;
-    private DutyCycleEncoder turretCRTEncoder2;
+    // private AbsoluteEncoder turretCRTEncoder1;
+    // private AbsoluteEncoderConfig turretCRTEncoder1Config;
+    // private DutyCycleEncoder turretCRTEncoder2;
     private RelativeEncoder turretEncoder;
     private EncoderConfig turretEncoderConfig;
+
+    private AngleKalmanFilter angleFilter;
 
     private PIDController turretPID;
 
     private final double MAX_TURRET_ANGLE_DEGREES = 375;
 
     private Transform2d turretPosOffset;
+    // private TurretCRT crt;
 
     private int inToleranceCount = 0;
 
-    public Turret(int turretMotorID, int secondaryEncoderChannel, double secondaryEncoderOffset, Transform2d turretPosOffset,
-                  double TURRET_P, double TURRET_I, double TURRET_D, double TURRET_TOLERANCE) {
+    public Turret(int turretMotorID,// int secondaryEncoderChannel, double secondaryEncoderOffset,
+                  Transform2d turretPosOffset, double TURRET_P, double TURRET_I, double TURRET_D, double TURRET_TOLERANCE) {
         this.turretPosOffset = turretPosOffset;
 
         turretMotor = new SparkMax(turretMotorID, MotorType.kBrushless);
         turretMotorConfig = new SparkMaxConfig()
-            .idleMode(IdleMode.kBrake)
+            .idleMode(IdleMode.kCoast)
             .inverted(true)
             .smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
         
         turretEncoder = turretMotor.getEncoder();
-        turretEncoderConfig = new EncoderConfig().positionConversionFactor(3.593);
+        turretEncoderConfig = new EncoderConfig().positionConversionFactor(2.8921);
 
-        turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
-        turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(true);
-        turretMotorConfig.apply(turretCRTEncoder1Config);
+        // turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
+        // turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(true);
+        // turretMotorConfig.apply(turretCRTEncoder1Config);
         turretMotorConfig.apply(turretEncoderConfig);
-        turretCRTEncoder2 = new DutyCycleEncoder(secondaryEncoderChannel);
+        // turretCRTEncoder2 = new DutyCycleEncoder(secondaryEncoderChannel);
 
         turretMotor.configure(turretMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        turretEncoder.setPosition(CRT.getTurretAngleDeg(turretCRTEncoder1.getPosition(), turretCRTEncoder2.get(), secondaryEncoderOffset));
+        turretEncoder.setPosition(0);
+        // crt = new TurretCRT(
+        //     () -> Angle.ofBaseUnits(turretCRTEncoder1.getPosition(), Rotations), () -> Angle.ofBaseUnits(turretCRTEncoder2.get(), Rotations),
+        //     0d, secondaryEncoderOffset, false, false);
+        
+        // crt.resolveAbsoluteAngle().ifPresent(angle -> {
+        //     turretEncoder.setPosition(angle.in(Degrees));
+        // });
+
+        // SmartDashboard.putString("CRT Status", crt.getStatus());
+        // SmartDashboard.putNumber("CRT Error (rot)", crt.getLastErrorRotations());
         
         turretPID = new PIDController(TURRET_P, TURRET_I, TURRET_D);
         turretPID.setTolerance(TURRET_TOLERANCE);
+
+        angleFilter = new AngleKalmanFilter();
     }
 
     public int pointAtWithVelocity(Pose2d targetPose, double inAirTime) {
@@ -97,19 +109,20 @@ public class Turret {
      */
     public int setTargetFieldRotation(double targetRotation) {
         double currentRobotRotation = Drive.getPose().getRotation().getDegrees();
+        double filteredTargetAngle = angleFilter.update(targetRotation);
         Rotation2d targetAbsRotation = new Rotation2d(
-            Units.degreesToRadians(targetRotation - currentRobotRotation)
+            Units.degreesToRadians(filteredTargetAngle - currentRobotRotation)
         );
         // SmartDashboard.putNumber(turretMotor.getDeviceId() + "FieldRelativeTarget", targetRotation);
         // SmartDashboard.putNumber(turretMotor.getDeviceId() + "RobotRelativeTarget", targetAbsRotation.getDegrees());
         return setTargetAbsRotation(targetAbsRotation.getDegrees() + 180);
     }
 
-    public void printSecondEncoderValue() {
-        System.out.println(turretCRTEncoder1.getPosition());
-        System.out.println(turretCRTEncoder2.get());
-        System.out.println(turretMotor.getDeviceId());
-    }
+    // public void printSecondEncoderValue() {
+    //     System.out.println(turretCRTEncoder1.getPosition());
+    //     System.out.println(turretCRTEncoder2.get());
+    //     System.out.println(turretMotor.getDeviceId());
+    // }
 
     public void printCRTResult() {
         // System.out.println(CRT.getCenterGearRotation(turretCRTEncoder1.getPosition(), turretCRTEncoder2.get()));
@@ -158,6 +171,10 @@ public class Turret {
         }
 
         return Robot.CONT;
+    }
+
+    public void setTurretMotorVoltage(double voltage) {
+        turretMotor.setVoltage(voltage);
     }
 
     public Transform2d getCurrentVelocity() {

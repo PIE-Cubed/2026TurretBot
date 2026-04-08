@@ -21,7 +21,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
@@ -73,26 +73,28 @@ public class Shooter {
     private final int LEFT_MOTOR_ID = 41;
     private final int RIGHT_MOTOR_ID = 40;
 
-    private final int LEFT_TURRET_ENCODER_CHANNEL = 0;
-    private final int RIGHT_TURRET_ENCODER_CHANNEL = 1;
+    // private final int LEFT_TURRET_ENCODER_CHANNEL = 0;
+    // private final int RIGHT_TURRET_ENCODER_CHANNEL = 1;
 
-    private final double LEFT_TURRET_ENCODER_OFFSET = 0.9940; // 0 to -1, also negative because weird easyCRT stuff
-    private final double RIGHT_TURRET_ENCODER_OFFSET = 0.4838; // 0 to -1, also negative because weird easyCRT stuff
+    // private final double LEFT_TURRET_ENCODER_OFFSET = 0.9672; // 0 to 1
+    // private final double RIGHT_TURRET_ENCODER_OFFSET = 0.5193; // 0 to 1
 
     // PID Values
-    private final double LEFT_P = 0.0003; //The two PIDs need to be different.
+    private final double LEFT_F = 0.002223;
+    private final double LEFT_P = 0.00228; //The two PIDs need to be different.
     private final double LEFT_I = 0.0;
-    private final double LEFT_D = 0.000015;
+    private final double LEFT_D = 0.0000351;
     private final double LEFT_TOLERANCE = 100.0;
 
-    private final double RIGHT_P = 0.00015;
+    private final double RIGHT_F = 0.002223;
+    private final double RIGHT_P = 0.00228;
     private final double RIGHT_I = 0.0;
-    private final double RIGHT_D = 0.00006;
+    private final double RIGHT_D = 0.0000351;
     private final double RIGHT_TOLERANCE = 100.0;
 
-    private final double LEFT_HOOD_P = 1.0;
+    private final double LEFT_HOOD_P = 0.25;
     private final double LEFT_HOOD_I = 0.0;
-    private final double LEFT_HOOD_D = 0.02;
+    private final double LEFT_HOOD_D = 0.03;
     private final double RIGHT_HOOD_P = 1.0;
     private final double RIGHT_HOOD_I = 0.0;
     private final double RIGHT_HOOD_D = 0.02;
@@ -113,15 +115,11 @@ public class Shooter {
     private final double RIGHT_TURRET_D = 0.01;
     private final double RIGHT_TURRET_TOLERANCE = 0.5;
 
-    private double prevRightVoltage = 0;
-    private double prevLeftVoltage = 0;
-
     private int atTargetRPMCount = 0;
 
-    private static final double VELOCITY_TO_VOLT_RATIO = 540;
     private static final double HOOD_ENCODER_CONVERSION = 20d / 214d * 360d / 12d;
 
-    private final InterpolatingMatrixTreeMap<Double, N3, N1> distMapMeters = new InterpolatingMatrixTreeMap<>();
+    private final InterpolatingMatrixTreeMap<Double, N2, N1> distMapMeters = new InterpolatingMatrixTreeMap<>();
 
     /**
      * chud shooter constructor
@@ -129,31 +127,31 @@ public class Shooter {
     public Shooter() {
         // last recorded on 3/1/2026
         // key = distance to the center of the robot in meters, vector = flywheel RPM and hood angle
-        distMapMeters.put(Units.inchesToMeters(0.0), VecBuilder.fill(3375, 9.5, 1)); // not an actual measurement, meant as a crutch for bad odometry
-        distMapMeters.put(Units.inchesToMeters(40.5), VecBuilder.fill(3375, 9.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(52.5), VecBuilder.fill(3410, 11.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(64.5), VecBuilder.fill(3450, 13.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(76.5), VecBuilder.fill(3475, 15.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(88.5), VecBuilder.fill(3495, 16.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(100.5), VecBuilder.fill(3520, 17.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(112.5), VecBuilder.fill(3555, 19.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(124.5), VecBuilder.fill(3590, 20.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(136.5), VecBuilder.fill(3615, 22.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(148.5), VecBuilder.fill(3650, 24.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(160.5), VecBuilder.fill(3710, 26.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(172.5), VecBuilder.fill(3910, 27.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(184.5), VecBuilder.fill(4200, 29.5, 1)); //
-        distMapMeters.put(Units.inchesToMeters(196.5), VecBuilder.fill(4410, 30.0, 1)); //
-        distMapMeters.put(Units.inchesToMeters(208.5), VecBuilder.fill(4610, 31.5, 1)); //
+        distMapMeters.put(Units.inchesToMeters(0.0), VecBuilder.fill(2198, 8.0)); // not an actual measurement, meant as a crutch for bad odometry
+        distMapMeters.put(Units.inchesToMeters(40.5 - 4),  VecBuilder.fill(2158,  8.01)); // inferred
+        distMapMeters.put(Units.inchesToMeters(52.5 - 4),  VecBuilder.fill(2275,  9.50)); // measured
+        distMapMeters.put(Units.inchesToMeters(64.5 - 4),  VecBuilder.fill(2320, 11.00)); // measured
+        distMapMeters.put(Units.inchesToMeters(76.5 - 4),  VecBuilder.fill(2390, 13.00)); // measured
+        distMapMeters.put(Units.inchesToMeters(88.5 - 4),  VecBuilder.fill(2540, 15.00)); // measured
+        distMapMeters.put(Units.inchesToMeters(100.5 - 4), VecBuilder.fill(2700, 16.50)); // measured
+        distMapMeters.put(Units.inchesToMeters(112.5 - 4), VecBuilder.fill(2840, 18.00)); // measured
+        distMapMeters.put(Units.inchesToMeters(124.5 - 4), VecBuilder.fill(3012, 19.49)); // inferred
+        distMapMeters.put(Units.inchesToMeters(136.5 - 4), VecBuilder.fill(3203, 20.98)); // inferred
+        distMapMeters.put(Units.inchesToMeters(148.5 - 4), VecBuilder.fill(3405, 22.47)); // inferred
+        distMapMeters.put(Units.inchesToMeters(160.5 - 4), VecBuilder.fill(3646, 23.96)); // inferred
+        distMapMeters.put(Units.inchesToMeters(172.5 - 4), VecBuilder.fill(3897, 25.45)); // inferred
+        distMapMeters.put(Units.inchesToMeters(184.5 - 4), VecBuilder.fill(4168, 26.94)); // inferred
+        distMapMeters.put(Units.inchesToMeters(196.5 - 4), VecBuilder.fill(4459, 28.43)); // inferred
+        distMapMeters.put(Units.inchesToMeters(208.5 - 4), VecBuilder.fill(4769, 29.92)); // inferred
 
         leftTurret = new Turret(
-            LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET, leftTurretOffset,
-            LEFT_TURRET_P, LEFT_TURRET_I, LEFT_TURRET_D, LEFT_TURRET_TOLERANCE
+            LEFT_TURRET_MOTOR_ID,// LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET,
+            leftTurretOffset, LEFT_TURRET_P, LEFT_TURRET_I, LEFT_TURRET_D, LEFT_TURRET_TOLERANCE
         );
 
         rightTurret = new Turret(
-            RIGHT_TURRET_MOTOR_ID, RIGHT_TURRET_ENCODER_CHANNEL, RIGHT_TURRET_ENCODER_OFFSET, rightTurretOffset,
-            RIGHT_TURRET_P, RIGHT_TURRET_I, RIGHT_TURRET_D, RIGHT_TURRET_TOLERANCE
+            RIGHT_TURRET_MOTOR_ID,// RIGHT_TURRET_ENCODER_CHANNEL, RIGHT_TURRET_ENCODER_OFFSET,
+            rightTurretOffset, RIGHT_TURRET_P, RIGHT_TURRET_I, RIGHT_TURRET_D, RIGHT_TURRET_TOLERANCE
         );
 
         leftMotor = new SparkFlex(LEFT_MOTOR_ID, MotorType.kBrushless);
@@ -204,12 +202,14 @@ public class Shooter {
         leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         // leftHoodEncoderConfig.inverted(false);
         leftHoodMotorConfig.apply(leftHoodEncoderConfig);
+        leftHoodEncoder.setPosition(0);
 
         // rightHoodEncoder = leftHoodMotor.getAbsoluteEncoder();
         // rightHoodEncoderConfig = new AbsoluteEncoderConfig();
         // rightHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         // rightHoodEncoderConfig.inverted(false);
         // rightHoodMotorConfig.apply(leftHoodEncoderConfig);
+        // rightHoodEncoder.setPosition(0);
 
         leftPIDController = new PIDController(LEFT_P, LEFT_I, LEFT_D);
         leftPIDController.setTolerance(LEFT_TOLERANCE);
@@ -227,11 +227,6 @@ public class Shooter {
         // rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         // rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-    }
-
-    public void setMotorRPM(double rightRPM, double leftRPM) {
-        setleftMotorVoltage(rightRPM / VELOCITY_TO_VOLT_RATIO);
-        setFlywheelMotorVoltage(leftRPM / VELOCITY_TO_VOLT_RATIO);
     }
 
     /**
@@ -268,31 +263,61 @@ public class Shooter {
         leftHoodMotor.setVoltage(voltage);
     }
 
+    public void stopTurrets() {
+        leftTurret.setTurretMotorVoltage(0);
+        rightTurret.setTurretMotorVoltage(0);
+    }
+
     public void autoAdjust(boolean hoodUp) {
         Pose2d targetPose = (AllianceUtil.isRedAlliance()) ? FieldConstants.hubRedAlliance : FieldConstants.hubBlueAlliance;
 
-        Matrix<N3, N1> mapResult = distMapMeters.get(leftTurret.getAdjustedHubDistance());
+        Matrix<N2, N1> mapResult = distMapMeters.get(leftTurret.getAdjustedHubDistance());
         
-        // double targetLeftRPM = mapResult.get(0, 0);
-        // double targetLeftHoodAngle = mapResult.get(1, 0);
-        double ballAirTimeLeft = mapResult.get(2, 0);
+        double targetLeftRPM = mapResult.get(0, 0);
+        double targetLeftHoodAngle = mapResult.get(1, 0);
+        double ballAirTimeLeft = getFlightTime(leftTurret.getAdjustedHubDistance(), targetLeftHoodAngle);
 
         mapResult = distMapMeters.get(rightTurret.getAdjustedHubDistance());
         
-        // double targetRightRPM = mapResult.get(0, 0);
-        // double targetRightHoodAngle = mapResult.get(1, 0);
-        double ballAirTimeRight = mapResult.get(2, 0);
+        double targetRightRPM = mapResult.get(0, 0);
+        double targetRightHoodAngle = mapResult.get(1, 0);
+        double ballAirTimeRight = getFlightTime(rightTurret.getAdjustedHubDistance(), targetRightHoodAngle);
 
         leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft);
         rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight);
 
-        // if (hoodUp) {
-        //     setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-        //     setTargetRPMs(targetRightRPM, targetLeftRPM);
-        // } else {
-        //     setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-        //     setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
-        // }
+        if (hoodUp) {
+            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
+            setTargetRPMs(targetRightRPM, targetLeftRPM);
+        } else {
+            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
+            setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
+        }
+    }
+
+    private double getFlightTime(double distanceFt, double launchAngleDeg) {
+        final double G        = 32.174;
+        final double V0       = 22.02;
+        final double H_LAUNCH = 16.0 / 12.0;
+        final double H_TARGET = 56.5 / 12.0;
+
+        double rad = Math.toRadians(launchAngleDeg);
+        double Vy  = V0 * Math.sin(rad);
+
+        double a = -0.5 * G;
+        double b = Vy;
+        double c = H_LAUNCH - H_TARGET;
+
+        double discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) return -1;
+
+        double t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+        double t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+        if (t1 > 0 && t2 > 0) return Math.min(t1, t2);
+        if (t1 > 0) return t1;
+        if (t2 > 0) return t2;
+        return -1;
     }
 
     /**
@@ -301,32 +326,25 @@ public class Shooter {
      * @param targetleftRPM Target RPM of the left motor.
      */
     public void setTargetRPMs(double targetRightRPM, double targetLeftRPM) {
-        double currentRightRPM = rightMotorEncoder.getVelocity();
+        // double currentRightRPM = rightMotorEncoder.getVelocity();
         double currentLeftRPM = leftMotorEncoder.getVelocity();
-        // SmartDashboard.putNumber("Left RPM", currentLeftRPM);
+        SmartDashboard.putNumber("Left RPM", currentLeftRPM);
         // SmartDashboard.putNumber("Right RPM", currentRightRPM);
-        // SmartDashboard.putNumber("Left Current", leftMotor.getOutputCurrent());
-        // SmartDashboard.putNumber("Right Current", rightMotor.getOutputCurrent());
 
-        double rightVoltage = prevRightVoltage;
-        rightVoltage = rightVoltage + rightPIDController.calculate(currentRightRPM, targetRightRPM);
+        // double rightVoltage = prevRightVoltage;
+        // double leftVoltage = prevLeftVoltage;
 
-        double leftVoltage = prevLeftVoltage;
-       
-        //System.out.println("Left: " + leftVoltage + ";    PID: " + leftPIDController.calculate(currentLeftRPM, targetLeftRPM));
-        leftVoltage = leftVoltage + leftPIDController.calculate(currentLeftRPM, targetLeftRPM);
-        
-        // SmartDashboard.putNumber("Right Voltage", rightVoltage);
-        // SmartDashboard.putNumber("Left Voltage", leftVoltage);
+        double leftVoltage = LEFT_F * targetLeftRPM + leftPIDController.calculate(currentLeftRPM, targetLeftRPM);
+        double rightVoltage = 0;
+        // double rightVoltage = RIGHT_F * targetRightRPM + rightPIDController.calculate(currentRightRPM, targetRightRPM);
 
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
         leftVoltage = MathUtil.clamp(leftVoltage, -12, 12);
-        //System.out.println("right: " + rightVoltage + "   Left:" + leftVoltage);
-        rightMotor.setVoltage(rightVoltage);
+        // rightMotor.setVoltage(rightVoltage);
         leftMotor.setVoltage(leftVoltage);
 
-        prevRightVoltage = rightVoltage;
-        prevLeftVoltage = leftVoltage;
+        // prevRightVoltage = rightVoltage;
+        // prevLeftVoltage = leftVoltage;
     }
 
     /**
@@ -357,16 +375,13 @@ public class Shooter {
     }
 
     public void stopWheels() {
-        rightMotor.stopMotor();
+        // rightMotor.stopMotor();
         leftMotor.stopMotor();
-
-        prevLeftVoltage = 0;
-        prevRightVoltage = 0;
     }
 
     public void testFunction() {
-        leftTurret.printSecondEncoderValue();
-        rightTurret.printSecondEncoderValue();
+        // leftTurret.printSecondEncoderValue();
+        // rightTurret.printSecondEncoderValue();
         // leftTurret.setTargetAbsRotation(SmartDashboard.getNumber("CurrPosT", 0));
         // rightTurret.setTargetAbsRotation(SmartDashboard.getNumber("CurrPosT", 0));
         // leftTurret.setTargetFieldRotation(SmartDashboard.getNumber("CurrPosT", 0));

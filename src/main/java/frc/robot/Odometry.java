@@ -38,13 +38,14 @@ public class Odometry {
 
     // Distances from bottom center of robot to each camera
     // When rotation is 0 for all axes the Z axis is parallel to the front of the robot.
-    // TODO: get camera offsets for new spots
     private final Transform3d ROBOT_TO_CAMERA1 = new Transform3d(
-        Units.inchesToMeters(-11.75),
-        Units.inchesToMeters(-11.75),
-        Units.inchesToMeters(15.111479),
-        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-21.25), Units.degreesToRadians(-150))
+        Units.inchesToMeters(-11.600498),
+        Units.inchesToMeters(-4.663685),
+        Units.inchesToMeters(9.731509 + 1.5),
+        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-12.5), Units.degreesToRadians(-150))
     );
+
+    // TODO: put real camera offsets for below cameras
 
     private final Transform3d ROBOT_TO_CAMERA2 = new Transform3d(
         Units.inchesToMeters(-11.75),
