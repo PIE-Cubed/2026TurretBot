@@ -9,9 +9,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
-// import com.studica.frc.AHRS;
-// import com.studica.frc.AHRS.NavXComType;
-import edu.wpi.first.math.MathUtil;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -33,6 +31,8 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.Logger;
+
 import com.studica.frc.Navx;
 
 import static edu.wpi.first.units.Units.Degrees;
@@ -125,7 +125,7 @@ public class Drive {
 
     // Standard deviations (trust values) for encoders and April Tags
     // The lower the numbers the more trustworthy the prediction from that source is
-    private final Vector<N3> ENCODER_STD_DEV = VecBuilder.fill(0.01, 0.01, 0.01);
+    private final Vector<N3> ENCODER_STD_DEV = VecBuilder.fill(0.03, 0.03, 0.03);
     private final Vector<N3> APRILTAG_STD_DEV = VecBuilder.fill(0.3, 0.3, 0.5);
 
     private static SwerveDrivePoseEstimator aprilTagsEstimator;
@@ -140,6 +140,7 @@ public class Drive {
     public static enum PositionState {
         HOME,
         TRENCH,
+        MID,
         AWAY
     }
 
@@ -633,11 +634,11 @@ public class Drive {
         // );
     }
 
-    public double getGyroYawRadians() {
+    public static double getGyroYawRadians() {
         return navx.getYaw().in(Radians);
     }
 
-    public double getGyroYawDegrees() {
+    public static double getGyroYawDegrees() {
         return navx.getYaw().in(Degrees);
     }
 
@@ -788,6 +789,8 @@ public class Drive {
             visionEst.timestampSeconds,
             stdDevs
         );
+
+        currPose = getPose();
     }
 
     /**
@@ -815,9 +818,9 @@ public class Drive {
         return aprilTagsEstimator.getEstimatedPosition();
     }
 
-    public PositionState getPositionState() {
+    public static PositionState getPositionState() {
         Translation2d currentPosition = getPose().getTranslation();
-        double currentXMeters = currentPosition.getX();
+        double currentXMeters = currentPosition.getX(); 
         double currentYMeters = currentPosition.getY();
 
         if (currentYMeters <= 1 || currentYMeters >= 7) {
@@ -829,14 +832,18 @@ public class Drive {
         if (AllianceUtil.isRedAlliance()) {
             if (currentXMeters > 11.95) {
                 return PositionState.HOME;
-            } else {
+            } else if (currentXMeters < 4.6) {
                 return PositionState.AWAY;
+            } else {
+                return PositionState.MID;
             }
         } else {
             if (currentXMeters < 4.6) {
                 return PositionState.HOME;
-            } else {
+            } else if (currentXMeters > 11.95) {
                 return PositionState.AWAY;
+            } else {
+                return PositionState.MID;
             }
         }
     }
@@ -896,7 +903,12 @@ public class Drive {
      */
     public static Transform2d getVelocity() {
         // Multiplied by the ammount of loops per second to get units per second
-        Transform2d velocityMeters = currPose.minus(lastPose).times(50);
+        Transform2d velocityMeters = new Transform2d(
+            (currPose.getX() - lastPose.getX()) * 50, (currPose.getY() - lastPose.getY()) * 50, 
+            currPose.getRotation().minus(lastPose.getRotation()).times(50)
+        );
+
+        Logger.logStruct("currRobotSpeed", velocityMeters);
 
         return velocityMeters;
     }

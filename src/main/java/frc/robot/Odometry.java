@@ -17,7 +17,7 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-/** Add your docs here. */
+/** my odom is so etry */
 public class Odometry {
 
     public static List<PhotonPipelineResult> cameraResults;
@@ -31,41 +31,39 @@ public class Odometry {
     /*                Standard deviations for each camera, with X and Y in meters and rotation in radians.                 */
     /***********************************************************************************************************************/
     /*                                                                   | X |     | Y |          | ROTATION |             */
-    public static final Vector<N3> CAMERA1_STD_DEVS = VecBuilder.fill(0.125, 0.125, Units.degreesToRadians(1));
-    public static final Vector<N3> CAMERA2_STD_DEVS = VecBuilder.fill(0.125, 0.125, Units.degreesToRadians(1));
-    public static final Vector<N3> CAMERA3_STD_DEVS = VecBuilder.fill(0.125, 0.125, Units.degreesToRadians(1));
-    public static final Vector<N3> CAMERA4_STD_DEVS = VecBuilder.fill(0.125, 0.125, Units.degreesToRadians(1));
+    public static final Vector<N3> CAMERA1_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
+    public static final Vector<N3> CAMERA2_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
+    public static final Vector<N3> CAMERA3_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
+    public static final Vector<N3> CAMERA4_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
 
     // Distances from bottom center of robot to each camera
     // When rotation is 0 for all axes the Z axis is parallel to the front of the robot.
     private final Transform3d ROBOT_TO_CAMERA1 = new Transform3d(
         Units.inchesToMeters(-11.600498),
-        Units.inchesToMeters(-4.663685),
-        Units.inchesToMeters(9.731509 + 1.5),
+        Units.inchesToMeters(-4.163685),
+        Units.inchesToMeters(9.731509 + 1.75),
         new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-12.5), Units.degreesToRadians(-150))
     );
 
-    // TODO: put real camera offsets for below cameras
-
     private final Transform3d ROBOT_TO_CAMERA2 = new Transform3d(
-        Units.inchesToMeters(-11.75),
-        Units.inchesToMeters(11.75),
-        Units.inchesToMeters(15.111479),
-        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-21.25), Units.degreesToRadians(120))
+        Units.inchesToMeters(-11.600498),
+        Units.inchesToMeters(4.163685),
+        Units.inchesToMeters(9.731509 + 1.75),
+        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-12.5), Units.degreesToRadians(150))
     );
 
     private final Transform3d ROBOT_TO_CAMERA3 = new Transform3d(
-        Units.inchesToMeters(-4.0),
-        Units.inchesToMeters(-9.75), 
-        Units.inchesToMeters(20.0), 
-        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-10), Units.degreesToRadians(-20))
+        Units.inchesToMeters(-7.5),
+        Units.inchesToMeters(-12.5), 
+        Units.inchesToMeters(12.25), 
+        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-18), Units.degreesToRadians(-63.849193))
     );
 
     private final Transform3d ROBOT_TO_CAMERA4 = new Transform3d(
-        Units.inchesToMeters(-4.0),
-        Units.inchesToMeters(11.0), 
-        Units.inchesToMeters(20.0), 
-        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-30), Units.degreesToRadians(0))
+        Units.inchesToMeters(-7.5),
+        Units.inchesToMeters(12.5),
+        Units.inchesToMeters(12.25), 
+        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-18), Units.degreesToRadians(63.849193))
     );
 
     // Vision estimators

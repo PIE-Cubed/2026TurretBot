@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class Controls {
@@ -51,10 +52,6 @@ public class Controls {
         return driveController.getRightY();
     }
 
-    public boolean enablePrecisionDrive() {
-        return driveController.getCThreePosSwitch() == 1;
-    }
-
     public boolean getFieldDrive() {
         return driveController.getBThreePosSwitch() != 1;
     }
@@ -64,23 +61,21 @@ public class Controls {
     }
 
     public boolean resetGyro() {
-        return driveController.getGButton();
+        return false;
+        // return driveController.getGButton();
     }
 
     public boolean getAutoAlign() {
-        return driveController.getHButton();
+        return false;
+        // return driveController.getHButton();
     }
 
     public boolean getAutoAim() {
         return driveController.getFTwoPosSwitch();
     }
 
-    public int getClimberDirection() {
-        if (driveController.getETwoPosSwitch()) {
-            return 1;
-        } else {
-            return -1;
-        }
+    public boolean enablePrecisionDrive() {
+        return driveController.getETwoPosSwitch();
     }
 
     public boolean getClimberActuate() {
@@ -93,7 +88,7 @@ public class Controls {
     /*                                           */
     /*********************************************/
 
-    public boolean getShooterSafety() {
+    public boolean getPauseTurret() {
         return manipController.getAButton();
     }
 
@@ -127,5 +122,29 @@ public class Controls {
 
     public boolean getReverseIntake() {
         return manipController.getLeftBumperButton();
+    }
+
+    public boolean getLeftAdjustButton() {
+        return manipController.getXButton();
+    }
+
+    public boolean getRightAdjustButton() {
+        return manipController.getYButton();
+    }
+
+    public boolean getLeftAdjustReleased() {
+        return manipController.getXButtonReleased();
+    }
+
+    public boolean getRightAdjustReleased() {
+        return manipController.getYButtonReleased();
+    }
+
+    public Translation2d getLeftAdjust() {
+        return new Translation2d(manipController.getLeftX(), manipController.getLeftY());
+    }
+
+    public Translation2d getRightAdjust() {
+        return new Translation2d(manipController.getRightX(), manipController.getRightY());
     }
 }

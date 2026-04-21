@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -240,6 +241,9 @@ public class Logger {
         } 
         else if (object instanceof SwerveModuleState state) {
             return table.getStructTopic(name, SwerveModuleState.struct).publish();
+        }
+        else if (object instanceof ChassisSpeeds chassisSpeeds) {
+            return table.getStructTopic(name, ChassisSpeeds.struct).publish();
         }
         // Add other types here using the example code below.
 

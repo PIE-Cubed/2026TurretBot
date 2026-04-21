@@ -9,10 +9,10 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-/** Add your docs here. */
+/** a */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 2;
-    private final double KICKER_POWER_VOLTS = 8;
+    private final double INDEX_POWER_VOLTS = 6.5;
+    private final double KICKER_POWER_VOLTS = 8.5;
 
     private final int LEFT_KICKER_ID = 23;
     private final int RIGHT_KICKER_ID = 22;
@@ -34,9 +34,10 @@ public class Hopper {
     public Hopper() {
         rightSpindexerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .smartCurrentLimit(45)
             .disableFollowerMode()
-            .idleMode(IdleMode.kCoast);
+            .idleMode(IdleMode.kCoast)
+            .secondaryCurrentLimit(75);
 
         rightSpindexerMotor.configure(
             rightSpindexerMotorConfig,
@@ -46,9 +47,10 @@ public class Hopper {
 
         leftSpindexerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .smartCurrentLimit(45)
             .disableFollowerMode()
-            .idleMode(IdleMode.kCoast);
+            .idleMode(IdleMode.kCoast)
+            .secondaryCurrentLimit(75);
 
         leftSpindexerMotor.configure(
             leftSpindexerMotorConfig,
@@ -58,9 +60,10 @@ public class Hopper {
 
         rightKickerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .smartCurrentLimit(60)
             .disableFollowerMode()
-            .idleMode(IdleMode.kCoast);
+            .idleMode(IdleMode.kCoast)
+            .secondaryCurrentLimit(100);
 
         rightKickerMotor.configure(
             rightKickerMotorConfig,
@@ -70,9 +73,10 @@ public class Hopper {
 
         leftKickerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .smartCurrentLimit(60)
             .disableFollowerMode()
-            .idleMode(IdleMode.kCoast);
+            .idleMode(IdleMode.kCoast)
+            .secondaryCurrentLimit(100);
 
         leftKickerMotor.configure(
             leftKickerMotorConfig,
@@ -89,13 +93,13 @@ public class Hopper {
     }
 
     public void indexRight() {
-        leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        // leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
         rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
         rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
     }
 
     public void indexLeft() {
-        rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        // rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
         leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
         leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
     }

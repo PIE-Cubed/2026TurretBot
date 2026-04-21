@@ -25,7 +25,7 @@ public class Grabber {
     // private final double PIVOT_ENCODER_CONVERSION_FACTOR = (20.0 / 64.0) * 360.0;
 
     private final double MAX_PIVOT_ANGLE = 132.5;
-    private final double MIN_PIVOT_ANGLE = 5;
+    private final double MIN_PIVOT_ANGLE = 2.5;
 
     private final double PIVOT_DOWN_VOLTAGE = -4;
     private final double PIVOT_UP_VOLTAGE = 5;
@@ -53,9 +53,9 @@ public class Grabber {
         pivotEncoderConfig.inverted(true);
         pivotMotorConfig = new SparkMaxConfig();
         pivotMotorConfig
-            .idleMode(IdleMode.kCoast)
+            .idleMode(IdleMode.kBrake)
             .inverted(false)
-            .smartCurrentLimit(Robot.NEO_CURRENT_LIMIT)
+            .smartCurrentLimit(30)
             .disableFollowerMode()
             .apply(pivotEncoderConfig);
         pivotMotor.configure(pivotMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
@@ -63,9 +63,9 @@ public class Grabber {
         intakeMotor = new SparkFlex(INTAKE_MOTOR_ID, MotorType.kBrushless);
         intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig
-            .idleMode(IdleMode.kBrake)
+            .idleMode(IdleMode.kCoast)
             .inverted(false)
-            .smartCurrentLimit(Robot.VORTEX_CURRENT_LIMIT)
+            .smartCurrentLimit(60)
             .disableFollowerMode();
         intakeMotor.configure(intakeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
