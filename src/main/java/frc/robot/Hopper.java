@@ -9,10 +9,12 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
+
 /** a */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 6.5;
-    private final double KICKER_POWER_VOLTS = 8.5;
+    private final double INDEX_POWER_VOLTS = 7;
+    private final double KICKER_POWER_VOLTS = 9;
 
     private final int LEFT_KICKER_ID = 23;
     private final int RIGHT_KICKER_ID = 22;
@@ -34,7 +36,7 @@ public class Hopper {
     public Hopper() {
         rightSpindexerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(45)
+            .smartCurrentLimit(55)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(75);
@@ -47,7 +49,7 @@ public class Hopper {
 
         leftSpindexerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(45)
+            .smartCurrentLimit(55)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(75);
@@ -60,7 +62,7 @@ public class Hopper {
 
         rightKickerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(60)
+            .smartCurrentLimit(80)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(100);
@@ -73,7 +75,7 @@ public class Hopper {
 
         leftKickerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(60)
+            .smartCurrentLimit(80)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(100);
@@ -85,37 +87,44 @@ public class Hopper {
         );
     }
 
+    public void reverse() {
+        rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        rightKickerMotor.setVoltage(-KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftKickerMotor.setVoltage(-KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+    }
+
     public void indexFuel() {
-        rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+        rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
     }
 
-    public void indexRight() {
-        // leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
-        rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    }
+    // public void indexRight() {
+    //     // leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+    //     rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+    //     rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    // }
 
-    public void indexLeft() {
-        // rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
-        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    }
+    // public void indexLeft() {
+    //     // rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+    //     leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
+    //     leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    // }
 
-    public void kickFuel() {
-        kickLeft();
-        kickRight();
-    }
+    // public void kickFuel() {
+    //     kickLeft();
+    //     kickRight();
+    // }
 
-    public void kickLeft() {
-        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    }
+    // public void kickLeft() {
+    //     leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    // }
 
-    public void kickRight() {
-        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    }
+    // public void kickRight() {
+    //     rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
+    // }
 
     public void stopMotors() {
         rightSpindexerMotor.stopMotor();

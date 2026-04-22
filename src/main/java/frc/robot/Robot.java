@@ -43,12 +43,12 @@ public class Robot extends TimedRobot {
     private static final String kRiskyOutpostAuto = "Outpost Auto (Risky)";
     private static final String kDepotAuto = "Depot Auto (Safe)";
     private static final String kRiskyDepotAuto = "Depot Auto (Risky)";
-    private static final String kClimb = "Climb";
-    private static final String kNoClimb = "No Climb";
+    private static final String kMod1 = "Climb";
+    private static final String kMod2 = "No Climb";
     private String m_sideSelected;
-    private String m_climbSelected;
+    private String m_modSelected;
     private final SendableChooser<String> side_chooser = new SendableChooser<>();
-    private final SendableChooser<String> climb_chooser = new SendableChooser<>();
+    private final SendableChooser<String> mod_chooser = new SendableChooser<>();
 
     private enum WheelState {
         TELEOP,
@@ -91,16 +91,16 @@ public class Robot extends TimedRobot {
         side_chooser.addOption("Depot (Safe)", kRiskyDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
 
-        climb_chooser.setDefaultOption("No Climb", kNoClimb);
-        climb_chooser.addOption("Climb", kClimb);
+        mod_chooser.setDefaultOption("Mod 1", kMod2);
+        mod_chooser.addOption("Mod 2", kMod1);
 
         SmartDashboard.putData("Auto | Side Chooser", side_chooser);
-        SmartDashboard.putData("Auto | Climb Chooser", climb_chooser);
+        SmartDashboard.putData("Auto | Mod Chooser", mod_chooser);
 
-        SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
-        SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetRightWheelRPM", 0);
+        // SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
+        // SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetRightWheelRPM", 0);
 
         // SmartDashboard.putNumber("ShooterRPM", 0);
         // SmartDashboard.putNumber("HoodAngle", 0);
@@ -189,7 +189,7 @@ public class Robot extends TimedRobot {
         shooter.printWheelRPMs();
 
         m_sideSelected = side_chooser.getSelected();
-        m_climbSelected = climb_chooser.getSelected();
+        m_modSelected = mod_chooser.getSelected();
 
         drive.printSwerveState();
     }
@@ -207,7 +207,7 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         m_sideSelected = side_chooser.getSelected();
-        m_climbSelected = climb_chooser.getSelected();
+        m_modSelected = mod_chooser.getSelected();
 
         Elastic.selectTab("Autonomous");
         Elastic.sendNotification(
@@ -224,14 +224,14 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        // boolean climb = m_climbSelected == kClimb;
+        // boolean modifier = m_modSelected == kMod2;
 
         // switch (m_sideSelected) {
         //     case kCenterDepAuto:
         //         // Put custom auto code here
         //         break;
         //     case kCenterOutAuto:
-        //         auto.centerOut(climb);
+        //         auto.centerOut(modifier);
         //         break;
         //     case kRiskyOutpostAuto:
         //         auto.outpostAutoTwoPass();
@@ -344,7 +344,7 @@ public class Robot extends TimedRobot {
         boolean resetGyro = controls.resetGyro();
         boolean fieldDrive = controls.getFieldDrive();
         boolean lockWheels = controls.getWheelLock();
-        boolean autoAim = controls.getAutoAim();
+        // boolean autoAim = controls.getAutoAim();
 
         double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
         double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
@@ -382,6 +382,7 @@ public class Robot extends TimedRobot {
 
     public void shooterControl() {
         boolean shootButton = controls.getShootButton();
+        boolean reverseIndexer = controls.getReverseIndexer();
 
         PositionState currentPositionState = Drive.getPositionState();
 
@@ -399,21 +400,17 @@ public class Robot extends TimedRobot {
 
         Transform2d robotVel = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
 
-        Translation2d aimAdjust = Translation2d.kZero;
-
-        if (!(controls.getLeftAdjustButton() || controls.getRightAdjustButton() || controls.getLeftAdjustReleased() || controls.getRightAdjustReleased())) {
-            aimAdjust = controls.getLeftAdjust();
-        }
-
         if (controls.getLeftAdjustReleased()) {
-            shooter.nudgeAim(controls.getLeftAdjust(), Translation2d.kZero);
+            shooter.nudgeAim(controls.getRightAdjust(), Translation2d.kZero);
         } else if (controls.getRightAdjustReleased()) {
-            shooter.nudgeAim(Translation2d.kZero, controls.getLeftAdjust());
+            shooter.nudgeAim(Translation2d.kZero, controls.getRightAdjust());
         }
 
-        shooter.autoAdjust(shootReady, robotVel, aimAdjust, controls.getFieldDrive());
-        
-        if (shootButton) {
+        shooter.autoAdjust(shootReady, robotVel, controls.getLeftAdjust(), controls.getFieldDrive());
+
+        if (reverseIndexer) {
+            hopper.reverse();
+        } else if (shootButton) {
             hopper.indexFuel();
         } else {
             hopper.stopMotors();

@@ -24,8 +24,8 @@ public class Grabber {
 
     // private final double PIVOT_ENCODER_CONVERSION_FACTOR = (20.0 / 64.0) * 360.0;
 
-    private final double MAX_PIVOT_ANGLE = 132.5;
-    private final double MIN_PIVOT_ANGLE = 2.5;
+    private final double MAX_PIVOT_ANGLE = 140.0;
+    private final double MIN_PIVOT_ANGLE = 17.5;
 
     private final double PIVOT_DOWN_VOLTAGE = -4;
     private final double PIVOT_UP_VOLTAGE = 5;
