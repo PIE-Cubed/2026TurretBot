@@ -4,11 +4,19 @@
 
 package frc.robot;
 
+import choreo.Choreo;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
@@ -37,9 +45,7 @@ public class Auto {
     private Optional<Trajectory<SwerveSample>> depotNCOld;
     private Optional<Trajectory<SwerveSample>> depotNC1;
     private Optional<Trajectory<SwerveSample>> depotNC2;
-    private Optional<Trajectory<SwerveSample>> outpostNCOld;
-    private Optional<Trajectory<SwerveSample>> outpostNC1;
-    private Optional<Trajectory<SwerveSample>> outpostNC2;
+    private Optional<Trajectory<SwerveSample>> outpostNC;
     private Optional<Trajectory<SwerveSample>> testAuto;
     // private Optional<Trajectory<SwerveSample>> currentSplit;
     // private int currentSplitIndex = 1;
@@ -76,7 +82,7 @@ public class Auto {
         // depotNCOld = Choreo.loadTrajectory("depotNC");
         // depotNC1 = Choreo.loadTrajectory("depotV2NC1");
         // depotNC2 = Choreo.loadTrajectory("depotV2NC2");
-        // outpostNCOld = Choreo.loadTrajectory("outpostNC");
+        outpostNC = Choreo.loadTrajectory("holyFemale");
         // outpostNC1 = Choreo.loadTrajectory("outpostV2NC1");
         // outpostNC2 = Choreo.loadTrajectory("outpostV2NC2");
         // testAuto = Choreo.loadTrajectory("testAuto");
@@ -90,11 +96,7 @@ public class Auto {
     /* OUTPOST AUTOS */
     ///////////////////
 
-    public int outpostClimbOut() {
-        return Robot.CONT;
-    }
-
-    public int outpostAuto() {
+    public int crazyOutpostAuto() {
         if (firstTime) {
             firstTime = false;
             step = 1;
@@ -103,266 +105,73 @@ public class Auto {
         }
 
         int status = Robot.CONT;
-        int pathStatus = choreoPathFollower(outpostNCOld);
+        int pathStatus = choreoPathFollower(outpostNC);
 
-        // System.out.println("Auto Step: " + step);
         // SmartDashboard.putNumber("Auto Step", step);
+
+        boolean hoodUp = false;
 
         switch (step) {
             case 1:
-                shooter.autoAdjust(false);
+                hoodUp = false;
 
-                waitTimer.restart();
-
-                status = atMarker(outpostNCOld, "Lower Grabber");
-                break;
-            case 2:
-                shooter.autoAdjust(false);
                 grabber.lowerGrabber();
 
-                if (waitTimer.hasElapsed(0.8)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+                status = atMarker(outpostNC, "start intake");
+                break;
+            case 2:
+                hoodUp = true;
 
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                status = atMarker(outpostNC, "start pass");
                 break;
             case 3:
-                shooter.autoAdjust(false);
+                hoodUp = true;
+
                 grabber.stopGrabber();
                 grabber.intake();
+                hopper.indexFuel();
 
-                status = atMarker(outpostNCOld, "Intake");
+                status = atMarker(outpostNC, "stop pass");
                 break;
             case 4:
-                shooter.autoAdjust(false);
-                grabber.intake();
+                hoodUp = true;
 
-                status = atMarker(outpostNCOld, "Stop Intake");
+                grabber.intake();
+                hopper.reverse();
+
+                status = atMarker(outpostNC, "start shoot");
                 break;
             case 5:
-                shooter.autoAdjust(false);
+                hoodUp = true;
+
                 grabber.intake();
+                hopper.indexFuel();
+
+                status = atMarker(outpostNC, "stop shoot");
+                break;
+            case 6:
+                hoodUp = false;
+
+                grabber.intake();
+                hopper.stopMotors();
 
                 status = pathStatus;
                 break;
-            case 6:
-                shooter.autoAdjust(true);
-
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
-
-                waitTimer.restart();
-
-                break;
-            case 7:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-
-                if (waitTimer.hasElapsed(0)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
-
-                waitTimer2.restart();
-                grabber.resetJostle();
-
-                break;
-            case 8:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                waitTimer.restart();
-
-                // if (waitTimer2.hasElapsed()) {
-                //     status = Robot.DONE;
-                // } else {
-                //     status = Robot.CONT;
-                // }
-                
-                grabber.jostleGrabber();
-
-                break;
-            // case 9:
-            //     shooter.autoAdjust(true);
-            //     hopper.indexFuel();
-            //     grabber.stopGrabber();
-            //     grabber.stopWheel();
-
-            //     break;
             default:
                 drive.stopWheels();
                 return Robot.DONE;
         }
 
-        if (status == Robot.DONE) {
-            step++;
-        }
+        SwerveSample currSample = (SwerveSample) Logger.getStruct("choreoSample", SwerveSample.struct).get();
 
-        return Robot.CONT;
-    }
-
-    public int outpostAutoTwoPass() {
-        if (firstTime) {
-            firstTime = false;
-            step = 1;
-            restartTimer();
-            waitTimer.restart();
-        }
-
-        int status = Robot.CONT;
-
-        // SmartDashboard.putNumber("Auto Step", step);
-
-        switch (step) {
-            case 1: // Waiting for marker
-                shooter.autoAdjust(false);
-                waitTimer.restart();
-                choreoPathFollower(outpostNC1);
-
-                status = atMarker(outpostNC1, "Lower Grabber");
-
-                break;
-            case 2: // Lower grabber for 1 second
-                shooter.autoAdjust(false);
-                grabber.lowerGrabber();
-                choreoPathFollower(outpostNC1);
-
-                if (waitTimer.hasElapsed(0.8)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
-
-                grabber.resetJostle();
-
-                break;
-            case 3: // Waiting for marker
-                shooter.autoAdjust(false);
-                grabber.lowerGrabber();
-                choreoPathFollower(outpostNC1);
-
-                status = atMarker(outpostNC1, "Intake");
-
-                break;
-            case 4: // Intaking until marker
-                shooter.autoAdjust(false);
-                grabber.lowerGrabber();
-                grabber.intake();
-                choreoPathFollower(outpostNC1);
-
-                status = atMarker(outpostNC1, "Spin Up");
-
-                break;
-            case 5: // Spinning up and waiting for path to finish
-                shooter.autoAdjust(true);
-                grabber.lowerGrabber();
-                grabber.intake();
-
-                status = choreoPathFollower(outpostNC1);
-
-                break;
-            case 6: // Making sure that the shooter is at the target RPM
-                shooter.autoAdjust(true);
-                grabber.stopGrabber();
-                grabber.stopWheel();
-                choreoPathFollower(outpostNC1);
-
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
-
-                waitTimer.restart();
-                grabber.resetJostle();
-
-                break;
-            case 7: // Shoot and jostle hopper for 3 seconds
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                // choreoPathFollower(outpostNC1);
-                drive.shootAndDrive(0, 0, false);
-                int jostleStatus = grabber.jostleGrabber();
-
-                if (waitTimer.hasElapsed(4.1)) {
-                    status = jostleStatus;
-                } else {
-                    status = Robot.CONT;
-                }
-                
-                break;
-            case 8: // Pass 1 done, setup for pass 2
-                shooter.autoAdjust(false);
-                hopper.stopMotors();
-                grabber.stopWheel();
-
-                restartTimer();
-
-                status = grabber.lowerGrabber();
-
-                break;
-            case 9: // Waiting for marker
-                shooter.autoAdjust(false);
-                grabber.resetJostle();
-                choreoPathFollower(outpostNC2);
-
-                status = atMarker(outpostNC2, "Intake");
-
-                break;
-            case 10: // Intaking until marker
-                shooter.autoAdjust(false);
-
-                // shooter.stopWheels();
-                // shooter.stopHood();
-                grabber.lowerGrabber();
-                choreoPathFollower(outpostNC2);
-                grabber.intake();
-
-                status = atMarker(outpostNC2, "Spin Up");
-
-                break;
-            case 11: // Spin up and wait for path to finish
-                shooter.autoAdjust(true);
-                grabber.lowerGrabber();
-                grabber.stopWheel();
-
-                status = choreoPathFollower(outpostNC2);
-
-                break;
-            case 12: // Making sure shooter is spun up
-                shooter.autoAdjust(true);
-                grabber.stopGrabber();
-                choreoPathFollower(outpostNC2);
-
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
-                
-                grabber.resetJostle();
-
-                break;
-            case 13:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                waitTimer.restart();
-                // choreoPathFollower(outpostNC2);
-                drive.shootAndDrive(0, 0, false);
-                grabber.jostleGrabber();
-                
-                break;
-            default:
-                drive.stopWheels();
-                return Robot.DONE;
-        }
+        shooter.autoAdjust(hoodUp, 
+            new Transform2d(currSample.vx, currSample.vy, Rotation2d.fromRadians(currSample.omega)), 
+            Translation2d.kZero,
+            true
+        );
 
         if (status == Robot.DONE) {
             step++;
@@ -800,7 +609,7 @@ public class Auto {
                     return Robot.DONE;
                 }
                 // choreoPose2d = sample.get().getPose();
-                Logger.logStruct("choreoPose2d", sample.get().getPose());
+                Logger.logStruct("choreoSample", sample.get());
             }
         } else { // there isn't a trajectory
             System.err.println("ERROR 404: Trajectory not found");

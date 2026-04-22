@@ -2,6 +2,7 @@ package frc.robot.util;
 
 import java.util.HashMap;
 
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,7 +13,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
+import edu.wpi.first.networktables.StructEntry;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.util.struct.Struct;
 
 /**
  * A homebrew logging class designed to be as barebones as possible.
@@ -245,6 +249,9 @@ public class Logger {
         else if (object instanceof ChassisSpeeds chassisSpeeds) {
             return table.getStructTopic(name, ChassisSpeeds.struct).publish();
         }
+        else if (object instanceof SwerveSample swerveSample) {
+            return table.getStructTopic(name, SwerveSample.struct).publish();
+        }
         // Add other types here using the example code below.
 
         // else if (object instanceof StructableObjectType structableObjectType) {
@@ -264,5 +271,9 @@ public class Logger {
 
     public static Boolean getEnabled() {
         return enabled;
+    }
+
+    public static StructEntry<?> getStruct(String key, Struct<?> struct) {
+        return table.getStructTopic(key, struct).getEntry(null, (PubSubOption[]) null);
     }
 }

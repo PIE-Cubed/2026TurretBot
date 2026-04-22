@@ -165,10 +165,10 @@ public class Robot extends TimedRobot {
             Logger.logStruct("BLSwerveCameraPose", odometry.getCamera2Pose().estimatedPose);
         }
 
-        // if (odometry.getCamera3Pose() != null) {
-        //     drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
-        //     Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
-        // }
+        if (odometry.getCamera3Pose() != null) {
+            drive.addVisionMeasurement(odometry.getCamera3Pose(), Odometry.CAMERA3_STD_DEVS);
+            Logger.logStruct("FRBarCameraPose", odometry.getCamera3Pose().estimatedPose);
+        }
 
         if (odometry.getCamera4Pose() != null) {
             drive.addVisionMeasurement(odometry.getCamera4Pose(), Odometry.CAMERA4_STD_DEVS);

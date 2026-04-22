@@ -49,7 +49,7 @@ public class Turret {
 
     private PIDController turretPID;
 
-    private final double MAX_TURRET_ANGLE_DEGREES = 375;
+    private final double MAX_TURRET_ANGLE_DEGREES = 365;
 
     private Transform2d turretPosOffset;
 

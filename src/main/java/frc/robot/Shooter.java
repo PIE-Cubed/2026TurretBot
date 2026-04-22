@@ -430,13 +430,12 @@ public class Shooter {
 
         leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, robotVel);
         rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, robotVel);
+        setTargetRPMs(targetRightRPM, targetLeftRPM);
 
         if (hoodUp) {
             setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-            setTargetRPMs(targetRightRPM, targetLeftRPM);
         } else {
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-            setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
         }
 
         leftTurret.printEncoderValues();
@@ -445,7 +444,7 @@ public class Shooter {
 
     private double getFlightTime(double distanceMeters) {
         final double G        = 32.174;
-        final double V0       = 29.79; // measured at 3000 rpm
+        final double V0       = 20; // measured at 3000 rpm
         final double H_LAUNCH = 16.0 / 12.0;
         final double H_TARGET = 56.5 / 12.0;
 
