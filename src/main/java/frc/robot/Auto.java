@@ -12,12 +12,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
 
@@ -41,11 +37,17 @@ public class Auto {
     private final Timer waitTimer = new Timer();
     private final Timer waitTimer2 = new Timer();
 
-    private Optional<Trajectory<SwerveSample>> centerOCO1;
-    private Optional<Trajectory<SwerveSample>> depotNCOld;
-    private Optional<Trajectory<SwerveSample>> depotNC1;
-    private Optional<Trajectory<SwerveSample>> depotNC2;
+    private Optional<Trajectory<SwerveSample>> centerOP1;
+    private Optional<Trajectory<SwerveSample>> centerOP2;
+    private Optional<Trajectory<SwerveSample>> centerDP1;
+    private Optional<Trajectory<SwerveSample>> centerDP2;
+    private Optional<Trajectory<SwerveSample>> depotPass2;
+    private Optional<Trajectory<SwerveSample>> depotV1;
+    private Optional<Trajectory<SwerveSample>> depotV2;
     private Optional<Trajectory<SwerveSample>> outpostNC;
+    private Optional<Trajectory<SwerveSample>> outpostV1;
+    private Optional<Trajectory<SwerveSample>> outpostV2;
+    private Optional<Trajectory<SwerveSample>> outpostPass2;
     private Optional<Trajectory<SwerveSample>> testAuto;
     // private Optional<Trajectory<SwerveSample>> currentSplit;
     // private int currentSplitIndex = 1;
@@ -71,6 +73,7 @@ public class Auto {
     // private int depotClimbDepStep = 1;
     // private int depotNoClimbStep = 1;
 
+    @SuppressWarnings("unchecked")
     public Auto(Drive drive, Shooter shooter, Hopper hopper, Climber climber, Grabber grabber) {
         this.drive = drive;
         this.shooter = shooter;
@@ -78,14 +81,17 @@ public class Auto {
         this.climber = climber;
         this.grabber = grabber;
 
-        // centerOCO1 = Choreo.loadTrajectory("centerOCO1");
-        // depotNCOld = Choreo.loadTrajectory("depotNC");
-        // depotNC1 = Choreo.loadTrajectory("depotV2NC1");
-        // depotNC2 = Choreo.loadTrajectory("depotV2NC2");
-        outpostNC = Choreo.loadTrajectory("holyFemale");
-        // outpostNC1 = Choreo.loadTrajectory("outpostV2NC1");
-        // outpostNC2 = Choreo.loadTrajectory("outpostV2NC2");
-        // testAuto = Choreo.loadTrajectory("testAuto");
+        centerOP1 = Choreo.loadTrajectory("centerOV1P1");
+        centerOP2 = Choreo.loadTrajectory("centerOV1P2");
+        centerDP1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
+        centerDP2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
+        // outpostNC = Choreo.loadTrajectory("holyFemale");
+        outpostV1 = Choreo.loadTrajectory("outpostV1");
+        outpostV2 = Choreo.loadTrajectory("outpostV2");
+        depotV1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1").get()).mirrorY());
+        depotV2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV2").get()).mirrorY());
+        outpostPass2 = Choreo.loadTrajectory("outpostV1P2");
+        depotPass2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P2").get()).mirrorY());
     }
 
     public void resetAuto() {
@@ -167,11 +173,106 @@ public class Auto {
 
         SwerveSample currSample = (SwerveSample) Logger.getStruct("choreoSample", SwerveSample.struct).get();
 
+        if (currSample == null) {
+            currSample = new SwerveSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new double[] {0, 0, 0, 0}, new double[] {0, 0, 0, 0});
+        }
+
         shooter.autoAdjust(hoodUp, 
             new Transform2d(currSample.vx, currSample.vy, Rotation2d.fromRadians(currSample.omega)), 
             Translation2d.kZero,
             true
         );
+
+        if (status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    public int outpostAuto(boolean mod2) {
+        if (firstTime) {
+            firstTime = false;
+            step = 1;
+            restartTimer();
+            waitTimer.restart();
+        }
+
+        int status = Robot.CONT;
+
+        // SmartDashboard.putNumber("Auto Step", step);
+
+        boolean hoodUp = false;
+
+        switch (step) {
+            case 1:
+                choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = false;
+
+                grabber.lowerGrabber();
+
+                status = atMarker((mod2) ? outpostV2 : outpostV1, "start intake");
+                break;
+            case 2:
+                choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = false;
+
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                status = atMarker((mod2) ? outpostV2 : outpostV1, "start shoot");
+                break;
+            case 3:
+                choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = true;
+
+                grabber.stopGrabber();
+                grabber.intake();
+                hopper.indexFuel();
+
+                status = atMarker((mod2) ? outpostV2 : outpostV1, "stop shoot");
+                break;
+            case 4:
+                timer.restart();
+
+                status = Robot.CONT;
+                break;
+            case 5:
+                choreoPathFollower(outpostPass2);
+                hoodUp = true;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.reverse();
+
+                status = atMarker(outpostPass2, "start shoot");
+                break;
+            case 6:
+                choreoPathFollower(outpostPass2);
+                hoodUp = true;
+
+                grabber.intake();
+                grabber.stopGrabber();
+                hopper.indexFuel();
+
+                if (DriverStation.isFMSAttached()) {
+                    status = Robot.CONT;
+                } else {
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                }
+                break;
+            default:
+                drive.stopWheels();
+                hopper.stopMotors();
+                grabber.stopGrabber();
+                grabber.stopWheel();
+                shooter.stopHood();
+                shooter.stopTurrets();
+                shooter.stopWheels();
+                return Robot.DONE;
+        }
+
+        shooter.autoAdjust(hoodUp);
 
         if (status == Robot.DONE) {
             step++;
@@ -198,67 +299,79 @@ public class Auto {
 
         int status = Robot.CONT;
 
+        // SmartDashboard.putNumber("Auto Step", step);
+
+        boolean hoodUp = false;
+
         switch (step) {
             case 1:
-                shooter.autoAdjust(true);
+                choreoPathFollower(centerOP1);
+                hoodUp = false;
 
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+                grabber.lowerGrabber();
 
-                climber.moveClimberUp();
-
-                waitTimer.restart();
-                
+                status = atMarker(centerOP1, "start intake");
                 break;
             case 2:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                // status = atMarker(centerOCO1, "Stop Shooting");
-                if (waitTimer.hasElapsed(3)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+                choreoPathFollower(centerOP1);
+                hoodUp = false;
 
-                restartTimer();
+                grabber.lowerGrabber();
+                grabber.intake();
 
+                status = atMarker(centerOP1, "start shoot");
                 break;
             case 3:
-                if (!climb) {
-                    drive.stopWheels();
-                    return Robot.DONE;
-                }
+                choreoPathFollower(centerOP1);
+                hoodUp = true;
 
-                shooter.autoAdjust(false);
-                hopper.stopMotors();
-                status = choreoPathFollower(centerOCO1);
+                grabber.stopGrabber();
+                grabber.intake();
+                hopper.indexFuel();
 
-                waitTimer.restart();
-
+                status = atMarker(centerOP1, "stop shoot");
                 break;
             case 4:
-                shooter.autoAdjust(false);
+                timer.restart();
 
-                status = climber.autoClimberDown();
-
-                drive.stopWheels();
-                
+                status = Robot.CONT;
                 break;
             case 5:
-                shooter.autoAdjust(false);
+                choreoPathFollower(centerOP1);
+                hoodUp = true;
 
-                climber.stopClimberMotor();
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.reverse();
 
-                status = Robot.DONE;
+                status = atMarker(centerOP1, "start shoot");
+                break;
+            case 6:
+                choreoPathFollower(centerOP1);
+                hoodUp = true;
 
+                grabber.intake();
+                grabber.stopGrabber();
+                hopper.indexFuel();
+
+                if (DriverStation.isFMSAttached()) {
+                    status = Robot.CONT;
+                } else {
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                }
                 break;
             default:
                 drive.stopWheels();
+                hopper.stopMotors();
+                grabber.stopGrabber();
+                grabber.stopWheel();
+                shooter.stopHood();
+                shooter.stopTurrets();
+                shooter.stopWheels();
                 return Robot.DONE;
         }
+
+        shooter.autoAdjust(hoodUp);
 
         if (status == Robot.DONE) {
             step++;
@@ -310,273 +423,273 @@ public class Auto {
     /* DEPOT AUTOS */
     /////////////////
 
-    public int depotAuto() {
-        if (firstTime) {
-            firstTime = false;
-            step = 1;
-            restartTimer();
-            waitTimer.restart();
-        }
+    // public int depotAuto() {
+    //     if (firstTime) {
+    //         firstTime = false;
+    //         step = 1;
+    //         restartTimer();
+    //         waitTimer.restart();
+    //     }
 
-        int status = Robot.CONT;
-        int pathStatus = choreoPathFollower(depotNCOld);
+    //     int status = Robot.CONT;
+    //     int pathStatus = choreoPathFollower(depotNCOld);
 
-        // System.out.println("Auto Step: " + step);
-        // SmartDashboard.putNumber("Auto Step", step);
+    //     // System.out.println("Auto Step: " + step);
+    //     // SmartDashboard.putNumber("Auto Step", step);
 
-        switch (step) {
-            case 1:
-                shooter.autoAdjust(false);
+    //     switch (step) {
+    //         case 1:
+    //             shooter.autoAdjust(false);
 
-                waitTimer.restart();
+    //             waitTimer.restart();
 
-                status = atMarker(depotNCOld, "Lower Grabber");
-                break;
-            case 2:
-                shooter.autoAdjust(false);
-                grabber.lowerGrabber();
+    //             status = atMarker(depotNCOld, "Lower Grabber");
+    //             break;
+    //         case 2:
+    //             shooter.autoAdjust(false);
+    //             grabber.lowerGrabber();
 
-                if (waitTimer.hasElapsed(0.8)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (waitTimer.hasElapsed(0.8)) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
 
-                break;
-            case 3:
-                shooter.autoAdjust(false);
-                grabber.stopGrabber();
-                grabber.intake();
+    //             break;
+    //         case 3:
+    //             shooter.autoAdjust(false);
+    //             grabber.stopGrabber();
+    //             grabber.intake();
 
-                status = atMarker(depotNCOld, "Intake");
-                break;
-            case 4:
-                shooter.autoAdjust(false);
-                grabber.intake();
+    //             status = atMarker(depotNCOld, "Intake");
+    //             break;
+    //         case 4:
+    //             shooter.autoAdjust(false);
+    //             grabber.intake();
 
-                status = atMarker(depotNCOld, "Stop Intake");
-                break;
-            case 5:
-                shooter.autoAdjust(false);
-                grabber.intake();
+    //             status = atMarker(depotNCOld, "Stop Intake");
+    //             break;
+    //         case 5:
+    //             shooter.autoAdjust(false);
+    //             grabber.intake();
 
-                status = pathStatus;
-                break;
-            case 6:
-                shooter.autoAdjust(true);
+    //             status = pathStatus;
+    //             break;
+    //         case 6:
+    //             shooter.autoAdjust(true);
 
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (shooter.atTargetRPM()) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
 
-                waitTimer.restart();
+    //             waitTimer.restart();
 
-                break;
-            case 7:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
+    //             break;
+    //         case 7:
+    //             shooter.autoAdjust(true);
+    //             hopper.indexFuel();
 
-                if (waitTimer.hasElapsed(0)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (waitTimer.hasElapsed(0)) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
 
-                waitTimer2.restart();
-                grabber.resetJostle();
+    //             waitTimer2.restart();
+    //             grabber.resetJostle();
 
-                break;
-            case 8:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                waitTimer.restart();
+    //             break;
+    //         case 8:
+    //             shooter.autoAdjust(true);
+    //             hopper.indexFuel();
+    //             grabber.intake();
+    //             waitTimer.restart();
 
-                // if (waitTimer2.hasElapsed()) {
-                //     status = Robot.DONE;
-                // } else {
-                //     status = Robot.CONT;
-                // }
+    //             // if (waitTimer2.hasElapsed()) {
+    //             //     status = Robot.DONE;
+    //             // } else {
+    //             //     status = Robot.CONT;
+    //             // }
                 
-                grabber.jostleGrabber();
+    //             grabber.jostleGrabber();
 
-                break;
-            // case 9:
-            //     shooter.autoAdjust(true);
-            //     hopper.indexFuel();
-            //     grabber.stopGrabber();
-            //     grabber.stopWheel();
+    //             break;
+    //         // case 9:
+    //         //     shooter.autoAdjust(true);
+    //         //     hopper.indexFuel();
+    //         //     grabber.stopGrabber();
+    //         //     grabber.stopWheel();
 
-            //     break;
-            default:
-                drive.stopWheels();
-                return Robot.DONE;
-        }
+    //         //     break;
+    //         default:
+    //             drive.stopWheels();
+    //             return Robot.DONE;
+    //     }
 
-        if (status == Robot.DONE) {
-            step++;
-        }
+    //     if (status == Robot.DONE) {
+    //         step++;
+    //     }
 
-        return Robot.CONT;
-    }
+    //     return Robot.CONT;
+    // }
 
-    public int depotAutoTwoPass() {
-        if (firstTime) {
-            firstTime = false;
-            step = 1;
-            restartTimer();
-            waitTimer.restart();
-        }
+    // public int depotAutoTwoPass() {
+    //     if (firstTime) {
+    //         firstTime = false;
+    //         step = 1;
+    //         restartTimer();
+    //         waitTimer.restart();
+    //     }
 
-        int status = Robot.CONT;
+    //     int status = Robot.CONT;
 
-        // SmartDashboard.putNumber("Auto Step", step);
+    //     // SmartDashboard.putNumber("Auto Step", step);
 
-        switch (step) {
-            case 1: // Waiting for marker
-                shooter.autoAdjust(false);
-                waitTimer.restart();
-                choreoPathFollower(depotNC1);
+    //     switch (step) {
+    //         case 1: // Waiting for marker
+    //             shooter.autoAdjust(false);
+    //             waitTimer.restart();
+    //             choreoPathFollower(depotNC1);
 
-                status = atMarker(depotNC1, "Lower Grabber");
+    //             status = atMarker(depotNC1, "Lower Grabber");
 
-                break;
-            case 2: // Lower grabber for 1 second
-                shooter.autoAdjust(false);
-                grabber.lowerGrabber();
-                choreoPathFollower(depotNC1);
+    //             break;
+    //         case 2: // Lower grabber for 1 second
+    //             shooter.autoAdjust(false);
+    //             grabber.lowerGrabber();
+    //             choreoPathFollower(depotNC1);
 
-                if (waitTimer.hasElapsed(0.8)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (waitTimer.hasElapsed(0.8)) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
 
-                break;
-            case 3: // Waiting for marker
-                shooter.autoAdjust(false);
-                grabber.stopGrabber();
-                choreoPathFollower(depotNC1);
+    //             break;
+    //         case 3: // Waiting for marker
+    //             shooter.autoAdjust(false);
+    //             grabber.stopGrabber();
+    //             choreoPathFollower(depotNC1);
 
-                status = atMarker(depotNC1, "Intake");
+    //             status = atMarker(depotNC1, "Intake");
 
-                break;
-            case 4: // Intaking until marker
-                shooter.autoAdjust(false);
-                grabber.intake();
-                choreoPathFollower(depotNC1);
+    //             break;
+    //         case 4: // Intaking until marker
+    //             shooter.autoAdjust(false);
+    //             grabber.intake();
+    //             choreoPathFollower(depotNC1);
 
-                status = atMarker(depotNC1, "Spin Up");
+    //             status = atMarker(depotNC1, "Spin Up");
 
-                break;
-            case 5: // Spinning up and waiting for path to finish
-                shooter.autoAdjust(true);
-                grabber.intake();
+    //             break;
+    //         case 5: // Spinning up and waiting for path to finish
+    //             shooter.autoAdjust(true);
+    //             grabber.intake();
 
-                status = choreoPathFollower(depotNC1);
+    //             status = choreoPathFollower(depotNC1);
 
-                break;
-            case 6: // Making sure that the shooter is at the target RPM
-                shooter.autoAdjust(true);
-                grabber.stopWheel();
-                choreoPathFollower(depotNC1);
+    //             break;
+    //         case 6: // Making sure that the shooter is at the target RPM
+    //             shooter.autoAdjust(true);
+    //             grabber.stopWheel();
+    //             choreoPathFollower(depotNC1);
 
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (shooter.atTargetRPM()) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
 
-                waitTimer.restart();
-                grabber.resetJostle();
+    //             waitTimer.restart();
+    //             grabber.resetJostle();
 
-                break;
-            case 7: // Shoot and jostle hopper for 3 seconds
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                // choreoPathFollower(outpostNC1);
-                drive.shootAndDrive(0, 0, false);
-                int jostleStatus = grabber.jostleGrabber();
+    //             break;
+    //         case 7: // Shoot and jostle hopper for 3 seconds
+    //             shooter.autoAdjust(true);
+    //             hopper.indexFuel();
+    //             grabber.intake();
+    //             // choreoPathFollower(outpostNC1);
+    //             drive.shootAndDrive(0, 0, false);
+    //             int jostleStatus = grabber.jostleGrabber();
 
-                if (waitTimer.hasElapsed(4.1)) {
-                    status = jostleStatus;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (waitTimer.hasElapsed(4.1)) {
+    //                 status = jostleStatus;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
                 
-                break;
-            case 8: // Pass 1 done, setup for pass 2
-                shooter.autoAdjust(false);
-                hopper.stopMotors();
-                grabber.stopWheel();
+    //             break;
+    //         case 8: // Pass 1 done, setup for pass 2
+    //             shooter.autoAdjust(false);
+    //             hopper.stopMotors();
+    //             grabber.stopWheel();
 
-                restartTimer();
+    //             restartTimer();
 
-                status = grabber.lowerGrabber();
+    //             status = grabber.lowerGrabber();
 
-                break;
-            case 9: // Waiting for marker
-                shooter.autoAdjust(false);
-                choreoPathFollower(depotNC2);
+    //             break;
+    //         case 9: // Waiting for marker
+    //             shooter.autoAdjust(false);
+    //             choreoPathFollower(depotNC2);
 
-                status = atMarker(depotNC2, "Intake");
+    //             status = atMarker(depotNC2, "Intake");
 
-                break;
-            case 10: // Intaking until marker
-                shooter.autoAdjust(false);
+    //             break;
+    //         case 10: // Intaking until marker
+    //             shooter.autoAdjust(false);
 
-                // shooter.stopWheels();
-                // shooter.stopHood();
-                choreoPathFollower(depotNC2);
-                grabber.intake();
+    //             // shooter.stopWheels();
+    //             // shooter.stopHood();
+    //             choreoPathFollower(depotNC2);
+    //             grabber.intake();
 
-                status = atMarker(depotNC2, "Spin Up");
+    //             status = atMarker(depotNC2, "Spin Up");
 
-                break;
-            case 11: // Spin up and wait for path to finish
-                shooter.autoAdjust(true);
-                grabber.stopWheel();
+    //             break;
+    //         case 11: // Spin up and wait for path to finish
+    //             shooter.autoAdjust(true);
+    //             grabber.stopWheel();
 
-                status = choreoPathFollower(depotNC2);
+    //             status = choreoPathFollower(depotNC2);
 
-                break;
-            case 12: // Making sure shooter is spun up
-                shooter.autoAdjust(true);
-                choreoPathFollower(depotNC2);
+    //             break;
+    //         case 12: // Making sure shooter is spun up
+    //             shooter.autoAdjust(true);
+    //             choreoPathFollower(depotNC2);
 
-                if (shooter.atTargetRPM()) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+    //             if (shooter.atTargetRPM()) {
+    //                 status = Robot.DONE;
+    //             } else {
+    //                 status = Robot.CONT;
+    //             }
                 
-                grabber.resetJostle();
+    //             grabber.resetJostle();
 
-                break;
-            case 13:
-                shooter.autoAdjust(true);
-                hopper.indexFuel();
-                grabber.intake();
-                waitTimer.restart();
-                // choreoPathFollower(outpostNC2);
-                drive.shootAndDrive(0, 0, false);
-                grabber.jostleGrabber();
+    //             break;
+    //         case 13:
+    //             shooter.autoAdjust(true);
+    //             hopper.indexFuel();
+    //             grabber.intake();
+    //             waitTimer.restart();
+    //             // choreoPathFollower(outpostNC2);
+    //             drive.shootAndDrive(0, 0, false);
+    //             grabber.jostleGrabber();
                 
-                break;
-            default:
-                drive.stopWheels();
-                return Robot.DONE;
-        }
+    //             break;
+    //         default:
+    //             drive.stopWheels();
+    //             return Robot.DONE;
+    //     }
 
-        if (status == Robot.DONE) {
-            step++;
-        }
+    //     if (status == Robot.DONE) {
+    //         step++;
+    //     }
 
-        return Robot.CONT;
-    }
+    //     return Robot.CONT;
+    // }
 
     /////////////
     /* HELPERS */
@@ -593,7 +706,7 @@ public class Auto {
         // }
 
         if (trajectory.isPresent()) {
-            Optional<SwerveSample> sample = trajectory.get().sampleAt(timer.get(), AllianceUtil.isRedAlliance());
+            Optional<SwerveSample> sample = trajectory.get().mirrorY().sampleAt(timer.get(), AllianceUtil.isRedAlliance());
 
             if (sample.isPresent()) {
                 //System.out.println("Sample time: " + sample.get().getTimestamp());
