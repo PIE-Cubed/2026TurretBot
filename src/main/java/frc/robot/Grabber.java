@@ -33,7 +33,7 @@ public class Grabber {
 
     private final double JOSTLE_MAX_DELAY_SECONDS = 0.1;
     private final double JOSTLE_DOWN_TIME_MULT = 2.25;
-    private final double BASE_JOSTLE_TIME = 0.05;
+    private final double BASE_JOSTLE_TIME = 0.1;
     private final Timer jostleTimer = new Timer();
     private int jostleStep = 0;
     private double currentJostleDelay = 0;
@@ -142,7 +142,7 @@ public class Grabber {
                 break;
             default:
                 jostleStep = 0;
-                currJostleTime += 0.01;
+                currJostleTime += 0.1;
                 pivotMotor.stopMotor();
                 break;
         }

@@ -105,10 +105,9 @@ public class Shooter {
     private final double RIGHT_HOOD_S = 0.06;
     private final double HOOD_TOLERANCE = 0.25;
 
-    private final double HOOD_MIN_ANGLE_DEG = 2;
+    private final double HOOD_MIN_ANGLE_DEG = 0;
     private final double HOOD_MAX_ANGLE_DEG = 20;
-    private final double HOOD_STOW_ANGLE_DEG = 4;
-    private final double FLYWHEEL_STOW_RPM = 2900;
+    private final double HOOD_STOW_ANGLE_DEG = 0;
 
     private final double LEFT_TURRET_P = 0.55;
     private final double LEFT_TURRET_I = 0;
@@ -300,75 +299,7 @@ public class Shooter {
     }
 
     public void autoAdjust(boolean hoodUp) {
-        Pose2d targetPose = null;
-        double y = Drive.getPose().getY();
-        PositionState currPositionState = Drive.getPositionState();
-
-        double leftDist = leftTurret.getAdjustedHubDistance(Transform2d.kZero);
-        double rightDist = rightTurret.getAdjustedHubDistance(Transform2d.kZero);
-
-        if (currPositionState == PositionState.AWAY) {
-            leftDist = -2;
-            rightDist = -2;
-            if (y > 4.04) {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(11.8, 7.3, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(4.8, 7.3, Rotation2d.kZero);
-                }
-            } else {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(11.8, 0.75, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(4.8, 0.75, Rotation2d.kZero);
-                }
-            }
-        } else if (currPositionState == PositionState.MID) {
-            leftDist = -1;
-            rightDist = -1;
-            if (y > 4.04) {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(16.0, 6.2, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(1.0, 6.2, Rotation2d.kZero);
-                }
-            } else {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(16.0, 1.9, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(1.0, 1.9, Rotation2d.kZero);
-                }
-            }
-        } else {
-            targetPose = 
-                ((AllianceUtil.isRedAlliance()) ? FieldConstants.hubRedAlliance : FieldConstants.hubBlueAlliance);
-        }
-        
-        Matrix<N4, N1> mapResult = distMapMeters.get(leftDist);
-        
-        double targetLeftRPM = mapResult.get(0, 0);
-        double targetLeftHoodAngle = mapResult.get(1, 0);
-        double ballAirTimeLeft = getFlightTime(leftDist);
-
-        mapResult = distMapMeters.get(rightDist);
-        
-        double targetRightRPM = mapResult.get(0, 0);
-        double targetRightHoodAngle = mapResult.get(1, 0);
-        double ballAirTimeRight = getFlightTime(rightDist);
-
-        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, Transform2d.kZero);
-        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, Transform2d.kZero);
-
-        if (hoodUp) {
-            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-            setTargetRPMs(targetRightRPM, targetLeftRPM);
-        } else {
-            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-            setTargetRPMs(FLYWHEEL_STOW_RPM, FLYWHEEL_STOW_RPM);
-        }
-
-        leftTurret.printEncoderValues();
-        rightTurret.printEncoderValues();
+        autoAdjust(hoodUp, Transform2d.kZero, Translation2d.kZero, true);
     }
 
     public void autoAdjust(boolean hoodUp, Transform2d robotVel, Translation2d aimAdjust, boolean fieldDrive) {
@@ -448,7 +379,7 @@ public class Shooter {
 
     private double getFlightTime(double distanceMeters) {
         final double G        = 32.174;
-        final double V0       = 22; // measured at 3000 rpm
+        final double V0       = 23.5; // measured at 3000 rpm
         final double H_LAUNCH = 16.0 / 12.0;
         final double H_TARGET = 56.5 / 12.0;
 

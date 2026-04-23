@@ -35,7 +35,7 @@ public class Auto {
     // Class-wide variables
     private final Timer timer = new Timer();
     private final Timer waitTimer = new Timer();
-    // private final Timer waitTimer2 = new Timer();
+    private final Timer waitTimer2 = new Timer();
 
     private Optional<Trajectory<SwerveSample>> centerOP1;
     private Optional<Trajectory<SwerveSample>> centerOP2;
@@ -86,10 +86,10 @@ public class Auto {
         centerDP1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
         centerDP2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
         // outpostNC = Choreo.loadTrajectory("holyFemale");
-        outpostV1 = Choreo.loadTrajectory("outpostV1");
-        outpostV2 = Choreo.loadTrajectory("outpostV2");
-        depotV1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1").get()).mirrorY());
-        depotV2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV2").get()).mirrorY());
+        outpostV1 = Choreo.loadTrajectory("outpostV1P1");
+        outpostV2 = Choreo.loadTrajectory("outpostV2P1");
+        depotV1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P1").get()).mirrorY());
+        depotV2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV2P1").get()).mirrorY());
         outpostPass2 = Choreo.loadTrajectory("outpostV1P2");
         depotPass2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P2").get()).mirrorY());
     }
@@ -209,50 +209,80 @@ public class Auto {
                 choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = false;
 
-                grabber.lowerGrabber();
-
-                status = atMarker((mod2) ? outpostV2 : outpostV1, "start intake");
+                status = atMarker((mod2) ? outpostV2 : outpostV1, "lower intake");
                 break;
             case 2:
                 choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = false;
 
                 grabber.lowerGrabber();
-                grabber.intake();
 
-                status = atMarker((mod2) ? outpostV2 : outpostV1, "start shoot");
+                status = atMarker((mod2) ? outpostV2 : outpostV1, "start intake");
                 break;
             case 3:
+                hoodUp = false;
+
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                break;
+            case 4:
                 choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = false;
+                
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                waitTimer.restart();
+
+                grabber.resetJostle();
+
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 5:
+                // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = true;
 
-                grabber.stopGrabber();
+                grabber.jostleGrabber();
                 grabber.intake();
                 hopper.indexFuel();
 
-                status = atMarker((mod2) ? outpostV2 : outpostV1, "stop shoot");
+                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
                 break;
-            case 4:
+            case 6:
                 timer.restart();
 
-                status = Robot.CONT;
+                status = Robot.DONE;
                 break;
-            case 5:
+            case 7:
+                hoodUp = false;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.stopMotors();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower(outpostPass2);
+                break;
+            case 8:
                 choreoPathFollower(outpostPass2);
                 hoodUp = false;
 
                 grabber.intake();
                 grabber.lowerGrabber();
-                hopper.reverse();
+                grabber.resetJostle();
+                hopper.stopMotors();
 
-                status = atMarker(outpostPass2, "start shoot");
-                break;
-            case 6:
-                choreoPathFollower(outpostPass2);
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 9:
+                // choreoPathFollower(outpostPass2);
                 hoodUp = true;
 
                 grabber.intake();
-                grabber.stopGrabber();
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
                 if (DriverStation.isFMSAttached()) {
@@ -529,7 +559,7 @@ public class Auto {
         // }
 
         if (trajectory.isPresent()) {
-            Optional<SwerveSample> sample = trajectory.get().mirrorY().sampleAt(timer.get(), AllianceUtil.isRedAlliance());
+            Optional<SwerveSample> sample = trajectory.get().sampleAt(timer.get(), AllianceUtil.isRedAlliance());
 
             if (sample.isPresent()) {
                 //System.out.println("Sample time: " + sample.get().getTimestamp());

@@ -88,15 +88,15 @@ public class Drive {
     private PIDController choreoRotatePID;
 
     // OTF PID values
-    private final double OTF_S_P = 3.2;
+    private final double OTF_S_P = 8;
     private final double OTF_S_I = 0;
-    private final double OTF_S_D = 0;
+    private final double OTF_S_D = 2;
     private final double OTF_S_I_RANGE = 0;
     private final double OTF_S_I_ZONE = 0;
 
-    private final double OTF_F_P = 3.2;
+    private final double OTF_F_P = 8;
     private final double OTF_F_I = 0;
-    private final double OTF_F_D = 0;
+    private final double OTF_F_D = 2;
     private final double OTF_F_I_RANGE = 0;
     private final double OTF_F_I_ZONE = 0;
 
@@ -106,9 +106,9 @@ public class Drive {
     private final double OTF_R_I_RANGE = 0;
     private final double OTF_R_I_ZONE = 0;
 
-    private final double CHOREO_R_P = 1;
+    private final double CHOREO_R_P = 7; // 1
     private final double CHOREO_R_I = 0;
-    private final double CHOREO_R_D = 0.00025;
+    private final double CHOREO_R_D = 0.125; // 0.00125
     private final double CHOREO_R_I_RANGE = 0;
     private final double CHOREO_R_I_ZONE = 0;
 

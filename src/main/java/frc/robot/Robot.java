@@ -4,6 +4,11 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
+import choreo.Choreo;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -75,6 +80,8 @@ public class Robot extends TimedRobot {
 
     private Timer dsConnectTimer = new Timer();
 
+    private Optional<Trajectory<SwerveSample>> testAuto;
+
     /**
      * This function is run when the robot is first started up and should be used for any
      * initialization code.
@@ -90,8 +97,8 @@ public class Robot extends TimedRobot {
         side_chooser.addOption("Depot", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
 
-        mod_chooser.setDefaultOption("Mod 1", kMod2);
-        mod_chooser.addOption("Mod 2", kMod1);
+        mod_chooser.setDefaultOption("Mod 1", kMod1);
+        mod_chooser.addOption("Mod 2", kMod2);
 
         SmartDashboard.putData("Auto | Side Chooser", side_chooser);
         SmartDashboard.putData("Auto | Mod Chooser", mod_chooser);
@@ -135,6 +142,8 @@ public class Robot extends TimedRobot {
         // SmartDashboard.putNumber("CurrPosX", 0);
         // SmartDashboard.putNumber("CurrPosY", 0);
         // SmartDashboard.putNumber("CurrPosT", 0);
+
+        testAuto = Choreo.loadTrajectory("testAuto");
     }
 
     /**
@@ -280,6 +289,7 @@ public class Robot extends TimedRobot {
     @Override
     public void testInit() {
         // climber.zeroClimberEncoder();
+        auto.restartTimer();
     }
 
     /** This function is called periodically during test mode. */
@@ -296,7 +306,9 @@ public class Robot extends TimedRobot {
         // climberControl();
         // grabberControl();
 
-        testShooterControl();
+        auto.choreoPathFollower(testAuto);
+
+        // testShooterControl();
 
         // shooter.stopTurrets();
         // // shooter.testFunction();
