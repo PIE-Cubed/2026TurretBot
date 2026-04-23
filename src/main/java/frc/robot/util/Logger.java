@@ -274,6 +274,6 @@ public class Logger {
     }
 
     public static StructEntry<?> getStruct(String key, Struct<?> struct) {
-        return table.getStructTopic(key, struct).getEntry(null, (PubSubOption[]) null);
+        return table.getStructTopic(key, struct).getEntry(null, new PubSubOption[] {PubSubOption.sendAll(false)});
     }
 }

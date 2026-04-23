@@ -82,13 +82,13 @@ public class Robot extends TimedRobot {
      */
     public Robot() {
         side_chooser.setDefaultOption("No Auto", kNoAuto);
-        side_chooser.addOption("Outpost (Risky)", kOutpostAuto);
-        side_chooser.addOption("Outpost (Safe)", kRiskyDepotAuto);
+        side_chooser.addOption("Outpost (Risky)", kRiskyOutpostAuto);
+        side_chooser.addOption("Outpost (Safe)", kOutpostAuto);
         // side_chooser.addOption("Center", kCenterOutAuto);
         // side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
         // side_chooser.addOption("Center -> Depot", kCenterDepAuto);
-        side_chooser.addOption("Depot (Risky)", kDepotAuto);
-        side_chooser.addOption("Depot (Safe)", kRiskyDepotAuto);
+        side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
+        side_chooser.addOption("Depot (Safe)", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
 
         mod_chooser.setDefaultOption("Mod 1", kMod2);
@@ -97,10 +97,10 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("Auto | Side Chooser", side_chooser);
         SmartDashboard.putData("Auto | Mod Chooser", mod_chooser);
 
-        // SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
-        // SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
-        // SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
-        // SmartDashboard.putNumber("TargetRightWheelRPM", 0);
+        SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
+        SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
+        SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
+        SmartDashboard.putNumber("TargetRightWheelRPM", 0);
 
         // SmartDashboard.putNumber("ShooterRPM", 0);
         // SmartDashboard.putNumber("HoodAngle", 0);
@@ -224,36 +224,37 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {
-        // boolean modifier = m_modSelected == kMod2;
+        boolean modifier = m_modSelected == kMod2;
 
-        // switch (m_sideSelected) {
-        //     case kCenterDepAuto:
-        //         // Put custom auto code here
-        //         break;
-        //     case kCenterOutAuto:
-        //         auto.centerOut(modifier);
-        //         break;
-        //     case kRiskyOutpostAuto:
-        //         auto.outpostAutoTwoPass();
-        //         break;
-        //     case kOutpostAuto:
-        //         auto.outpostAuto();
-        //         break;
-        //     case kRiskyDepotAuto:
-        //         auto.depotAuto();
-        //         break;
-        //     case kDepotAuto:
-        //         auto.depotAutoTwoPass();
-        //         break;
-        //     case kNoAuto:
-        //         break;
-        //     case kTestAuto:
-        //         auto.testAuto();
-        //         break;
-        //     default:
-        //         // Put default auto code here
-        //         break;
-        // }
+        switch (m_sideSelected) {
+            case kCenterDepAuto:
+                // Put custom auto code here
+                break;
+            case kCenterOutAuto:
+                // auto.centerOut(modifier);
+                break;
+            case kRiskyOutpostAuto:
+                auto.crazyOutpostAuto();
+                // auto.outpostAutoTwoPass();
+                break;
+            case kOutpostAuto:
+                auto.outpostAuto(modifier);
+                break;
+            case kRiskyDepotAuto:
+                // auto.depotAuto();
+                break;
+            case kDepotAuto:
+                // auto.depotAutoTwoPass();
+                break;
+            case kNoAuto:
+                break;
+            case kTestAuto:
+                // auto.testAuto();
+                break;
+            default:
+                // Put default auto code here
+                break;
+        }
     }
 
     /** This function is called once when teleop is enabled. */
@@ -309,18 +310,20 @@ public class Robot extends TimedRobot {
         // climberControl();
         // grabberControl();
 
-        shooter.stopTurrets();
-        // shooter.testFunction();
-        shooter.setHoodAngle(20, 20);
-        shooter.setTargetRPMs(2500, 2500);
+        testShooterControl();
 
-        boolean shootButton = controls.getShootButton();
+        // shooter.stopTurrets();
+        // // shooter.testFunction();
+        // shooter.setHoodAngle(20, 20);
+        // shooter.setTargetRPMs(2500, 2500);
 
-        if (shootButton) {
-            hopper.indexFuel();
-        } else {
-            hopper.stopMotors();
-        }
+        // boolean shootButton = controls.getShootButton();
+
+        // if (shootButton) {
+        //     hopper.indexFuel();
+        // } else {
+        //     hopper.stopMotors();
+        // }
 
         // climber.zeroClimberEncoder();
         // manualClimberControl();

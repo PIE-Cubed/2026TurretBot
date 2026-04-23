@@ -153,7 +153,7 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
         distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
         distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
-        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(0.0, 0.0, 0.0, 0.0));
+        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 23.0));
         distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(0.0, 0.0, 0.0, 0.0));
 
         leftTurret = new Turret(
@@ -308,6 +308,8 @@ public class Shooter {
         double rightDist = rightTurret.getAdjustedHubDistance(Transform2d.kZero);
 
         if (currPositionState == PositionState.AWAY) {
+            leftDist = -2;
+            rightDist = -2;
             if (y > 4.04) {
                 if (AllianceUtil.isRedAlliance()) {
                     targetPose = new Pose2d(11.8, 7.3, Rotation2d.kZero);
@@ -322,6 +324,8 @@ public class Shooter {
                 }
             }
         } else if (currPositionState == PositionState.MID) {
+            leftDist = -1;
+            rightDist = -1;
             if (y > 4.04) {
                 if (AllianceUtil.isRedAlliance()) {
                     targetPose = new Pose2d(16.0, 6.2, Rotation2d.kZero);
@@ -444,7 +448,7 @@ public class Shooter {
 
     private double getFlightTime(double distanceMeters) {
         final double G        = 32.174;
-        final double V0       = 20; // measured at 3000 rpm
+        final double V0       = 22; // measured at 3000 rpm
         final double H_LAUNCH = 16.0 / 12.0;
         final double H_TARGET = 56.5 / 12.0;
 
@@ -470,7 +474,7 @@ public class Shooter {
         if (t1 > 0 && t2 > 0) return Math.max(t1, t2);
         if (t1 > 0) return t1;
         if (t2 > 0) return t2;
-        return -1;
+        return 0.8;
     }
 
     /**
