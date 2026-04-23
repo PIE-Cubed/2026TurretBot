@@ -70,7 +70,6 @@ public class Robot extends TimedRobot {
     private Shooter shooter;
     private Hopper hopper;
     private Grabber grabber;
-    private Climber climber;
     private Odometry odometry;
     private Auto auto;
 
@@ -112,9 +111,8 @@ public class Robot extends TimedRobot {
         shooter = new Shooter();
         hopper = new Hopper();
         grabber = new Grabber();
-        // climber = new Climber();
         odometry = new Odometry(drive);
-        auto = new Auto(drive, shooter, hopper, climber, grabber);
+        auto = new Auto(drive, shooter, hopper, grabber);
 
         // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
 
