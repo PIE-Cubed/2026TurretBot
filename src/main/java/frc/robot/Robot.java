@@ -81,13 +81,13 @@ public class Robot extends TimedRobot {
      */
     public Robot() {
         side_chooser.setDefaultOption("No Auto", kNoAuto);
-        side_chooser.addOption("Outpost (Risky)", kRiskyOutpostAuto);
-        side_chooser.addOption("Outpost (Safe)", kOutpostAuto);
+        // side_chooser.addOption("Outpost (Risky)", kRiskyOutpostAuto);
+        side_chooser.addOption("Outpost", kOutpostAuto);
         // side_chooser.addOption("Center", kCenterOutAuto);
         // side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
         // side_chooser.addOption("Center -> Depot", kCenterDepAuto);
-        side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
-        side_chooser.addOption("Depot (Safe)", kDepotAuto);
+        // side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
+        side_chooser.addOption("Depot", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
 
         mod_chooser.setDefaultOption("Mod 1", kMod2);
@@ -226,28 +226,16 @@ public class Robot extends TimedRobot {
 
         switch (m_sideSelected) {
             case kCenterDepAuto:
-                // Put custom auto code here
                 break;
             case kCenterOutAuto:
-                // auto.centerOut(modifier);
-                break;
-            case kRiskyOutpostAuto:
-                auto.crazyOutpostAuto();
-                // auto.outpostAutoTwoPass();
                 break;
             case kOutpostAuto:
                 auto.outpostAuto(modifier);
                 break;
-            case kRiskyDepotAuto:
-                // auto.depotAuto();
-                break;
             case kDepotAuto:
-                // auto.depotAutoTwoPass();
+                auto.depotAuto(modifier);
                 break;
             case kNoAuto:
-                break;
-            case kTestAuto:
-                // auto.testAuto();
                 break;
             default:
                 // Put default auto code here
