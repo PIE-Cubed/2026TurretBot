@@ -297,7 +297,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        // wheelControl();
+        wheelControl();
         // testShooterControl();
         // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
         // grabberControl();
@@ -308,22 +308,22 @@ public class Robot extends TimedRobot {
         // climberControl();
         // grabberControl();
 
-        auto.choreoPathFollower(testAuto);
+        // auto.choreoPathFollower(testAuto);
 
-        // testShooterControl();
+        testShooterControl();
 
-        // shooter.stopTurrets();
+        shooter.stopTurrets();
         // // shooter.testFunction();
         // shooter.setHoodAngle(20, 20);
         // shooter.setTargetRPMs(2500, 2500);
 
-        // boolean shootButton = controls.getShootButton();
+        boolean shootButton = controls.getShootButton();
 
-        // if (shootButton) {
-        //     hopper.indexFuel();
-        // } else {
-        //     hopper.stopMotors();
-        // }
+        if (shootButton) {
+            hopper.indexFuel();
+        } else {
+            hopper.stopMotors();
+        }
 
         // climber.zeroClimberEncoder();
         // manualClimberControl();

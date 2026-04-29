@@ -132,28 +132,28 @@ public class Shooter {
      * I love my chud son Terry the Turret bot :D
      */
     public Shooter() {
-        // last recorded on 4/17/2026
+        // last recorded on 4/29/2026
         // key = distance to the center of the robot in meters, vector = RPM (left), angle (left), RPM (right), angle (right)
         distMapMeters.put(Units.inchesToMeters(0.0), VecBuilder.fill(2640, 6.25, 2640, 6.25)); 
         //                   ^^ not an actual measurement, meant as a crutch for bad odometry ^^
 
-        distMapMeters.put(Units.inchesToMeters(0.0 + 45.25 /* 45.25 */),  VecBuilder.fill(  2640, 6.25,    2640,  6.25));
-        distMapMeters.put(Units.inchesToMeters(12.0 + 45.25 /* 57.25 */),  VecBuilder.fill( 2650, 8.25,    2650,  8.25));
-        distMapMeters.put(Units.inchesToMeters(24.0 + 45.25 /* 69.25 */),  VecBuilder.fill( 2665, 10.25,   2665,  10.25));
-        distMapMeters.put(Units.inchesToMeters(36.0 + 45.25 /* 81.25 */),  VecBuilder.fill( 2685, 12.0,    2685,  12.0));
-        distMapMeters.put(Units.inchesToMeters(48.0 + 45.25 /* 93.25 */),  VecBuilder.fill( 2715, 13.75,   2715,  13.75));
-        distMapMeters.put(Units.inchesToMeters(60.0 + 45.25 /* 105.25 */), VecBuilder.fill( 2750, 15.25,   2750,  15.25));
-        distMapMeters.put(Units.inchesToMeters(72.0 + 45.25 /* 117.25 */), VecBuilder.fill( 2840, 16.5,    2840,  16.5));
-        distMapMeters.put(Units.inchesToMeters(84.0 + 45.25 /* 129.25 */), VecBuilder.fill( 2970, 18.0,    2970,  18.0));
-        distMapMeters.put(Units.inchesToMeters(96.0 + 45.25 /* 141.25 */), VecBuilder.fill( 3100, 20.25,   3100,  20.25));
-        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3240, 22.5,    3240,  22.5));
-        distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
-        distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
-        distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
-        distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
-        distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(0.0,  0.0,     0.0,   0.0));
+        distMapMeters.put(Units.inchesToMeters(0.0 + 45.25 /* 45.25 */),  VecBuilder.fill(  2640, 6.25,    2640, 6.25));
+        distMapMeters.put(Units.inchesToMeters(12.0 + 45.25 /* 57.25 */),  VecBuilder.fill( 2650, 8.25,    2650, 8.25));
+        distMapMeters.put(Units.inchesToMeters(24.0 + 45.25 /* 69.25 */),  VecBuilder.fill( 2665, 10.25,   2665, 10.25));
+        distMapMeters.put(Units.inchesToMeters(36.0 + 45.25 /* 81.25 */),  VecBuilder.fill( 2680, 12.0,    2680, 12.0));
+        distMapMeters.put(Units.inchesToMeters(48.0 + 45.25 /* 93.25 */),  VecBuilder.fill( 2705, 13.5,    2705, 13.5));
+        distMapMeters.put(Units.inchesToMeters(60.0 + 45.25 /* 105.25 */), VecBuilder.fill( 2745, 15.0,    2745, 15.0));
+        distMapMeters.put(Units.inchesToMeters(72.0 + 45.25 /* 117.25 */), VecBuilder.fill( 2840, 16.5,    2840, 16.5));
+        distMapMeters.put(Units.inchesToMeters(84.0 + 45.25 /* 129.25 */), VecBuilder.fill( 2960, 18.0,    2960, 18.0));
+        distMapMeters.put(Units.inchesToMeters(96.0 + 45.25 /* 141.25 */), VecBuilder.fill( 3090, 20.25,   3090, 20.25));
+        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 22.5,    3235, 22.5));
+        distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(3403, 24.86,   3403, 24.86)); // extrapolated
+        distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(3601, 27.34,   3601, 27.34)); // extrapolated
+        distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(3835, 29.94,   3835, 29.94)); // extrapolated
+        distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(4109, 32.66,   4109, 32.66)); // extrapolated
+        distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(4428, 35.50,   4428, 35.50)); // extrapolated
         distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 23.0));
-        distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(0.0, 0.0, 0.0, 0.0));
+        distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 24.0)); // guess
 
         leftTurret = new Turret(
             LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET,
