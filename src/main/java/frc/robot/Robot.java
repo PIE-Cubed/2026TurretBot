@@ -91,8 +91,8 @@ public class Robot extends TimedRobot {
         // side_chooser.addOption("Outpost (Risky)", kRiskyOutpostAuto);
         side_chooser.addOption("Outpost", kOutpostAuto);
         // side_chooser.addOption("Center", kCenterOutAuto);
-        // side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
-        // side_chooser.addOption("Center -> Depot", kCenterDepAuto);
+        side_chooser.addOption("Center -> Outpost", kCenterOutAuto);
+        side_chooser.addOption("Center -> Depot", kCenterDepAuto);
         // side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
         side_chooser.addOption("Depot", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
@@ -235,8 +235,10 @@ public class Robot extends TimedRobot {
 
         switch (m_sideSelected) {
             case kCenterDepAuto:
+                auto.centerDepAuto();
                 break;
             case kCenterOutAuto:
+                auto.centerOutAuto();
                 break;
             case kOutpostAuto:
                 auto.outpostAuto(modifier);
@@ -255,16 +257,16 @@ public class Robot extends TimedRobot {
     /** This function is called once when teleop is enabled. */
     @Override
     public void teleopInit() {
-        // Elastic.selectTab("Teleop");
-        // Elastic.sendNotification(
-        //     new Notification(
-        //         NotificationLevel.INFO, 
-        //         "Teleop Start", 
-        //         "GO! GO! GO!"
-        //     )
-        //     .withAutomaticHeight()
-        //     .withDisplaySeconds(3)
-        // );
+        Elastic.selectTab("Teleop");
+        Elastic.sendNotification(
+            new Notification(
+                NotificationLevel.INFO, 
+                "Teleop Start", 
+                "GO! GO! GO!"
+            )
+            .withAutomaticHeight()
+            .withDisplaySeconds(3)
+        );
     }
 
     /** This function is called periodically during operator control. */
@@ -274,7 +276,7 @@ public class Robot extends TimedRobot {
         // testShooterControl();
         shooterControl();
         grabberControl();
-        // elasticControl();
+        elasticControl();
     }
 
     /** This function is called once when the robot is disabled. */
@@ -407,7 +409,7 @@ public class Robot extends TimedRobot {
             shooter.nudgeAim(Translation2d.kZero, controls.getRightAdjust());
         }
 
-        shooter.autoAdjust(shootReady, robotVel, controls.getLeftAdjust(), controls.getFieldDrive());
+        shooter.autoAdjust(shootReady, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
 
         if (reverseIndexer) {
             hopper.reverse();

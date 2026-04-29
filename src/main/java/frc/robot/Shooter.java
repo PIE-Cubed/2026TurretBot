@@ -299,10 +299,10 @@ public class Shooter {
     }
 
     public void autoAdjust(boolean hoodUp) {
-        autoAdjust(hoodUp, Transform2d.kZero, Translation2d.kZero, true);
+        autoAdjust(hoodUp, Transform2d.kZero, Translation2d.kZero, true, false);
     }
 
-    public void autoAdjust(boolean hoodUp, Transform2d robotVel, Translation2d aimAdjust, boolean fieldDrive) {
+    public void autoAdjust(boolean hoodUp, Transform2d robotVel, Translation2d aimAdjust, boolean fieldDrive, boolean pass) {
         Pose2d targetPose = null;
         double y = Drive.getPose().getY();
         PositionState currPositionState = Drive.getPositionState();
@@ -310,33 +310,42 @@ public class Shooter {
         double leftDist = leftTurret.getAdjustedHubDistance(robotVel) + leftDistAdjust;
         double rightDist = rightTurret.getAdjustedHubDistance(robotVel) + rightDistAdjust;
 
-        if (currPositionState == PositionState.AWAY) {
-            if (y > 4.04) {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(11.8, 7.3, Rotation2d.kZero);
+        if (pass) {
+            if (currPositionState == PositionState.AWAY) {
+                leftDist = -2;
+                rightDist = -2;
+                if (y > 4.04) {
+                    if (AllianceUtil.isRedAlliance()) {
+                        targetPose = new Pose2d(11.8, 7.3, Rotation2d.kZero);
+                    } else {
+                        targetPose = new Pose2d(4.8, 7.3, Rotation2d.kZero);
+                    }
                 } else {
-                    targetPose = new Pose2d(4.8, 7.3, Rotation2d.kZero);
+                    if (AllianceUtil.isRedAlliance()) {
+                        targetPose = new Pose2d(11.8, 0.75, Rotation2d.kZero);
+                    } else {
+                        targetPose = new Pose2d(4.8, 0.75, Rotation2d.kZero);
+                    }
+                }
+            } else if (currPositionState == PositionState.MID) {
+                leftDist = -1;
+                rightDist = -1;
+                if (y > 4.04) {
+                    if (AllianceUtil.isRedAlliance()) {
+                        targetPose = new Pose2d(16.0, 6.2, Rotation2d.kZero);
+                    } else {
+                        targetPose = new Pose2d(1.0, 6.2, Rotation2d.kZero);
+                    }
+                } else {
+                    if (AllianceUtil.isRedAlliance()) {
+                        targetPose = new Pose2d(16.0, 1.9, Rotation2d.kZero);
+                    } else {
+                        targetPose = new Pose2d(1.0, 1.9, Rotation2d.kZero);
+                    }
                 }
             } else {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(11.8, 0.75, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(4.8, 0.75, Rotation2d.kZero);
-                }
-            }
-        } else if (currPositionState == PositionState.MID) {
-            if (y > 4.04) {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(16.0, 6.2, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(1.0, 6.2, Rotation2d.kZero);
-                }
-            } else {
-                if (AllianceUtil.isRedAlliance()) {
-                    targetPose = new Pose2d(16.0, 1.9, Rotation2d.kZero);
-                } else {
-                    targetPose = new Pose2d(1.0, 1.9, Rotation2d.kZero);
-                }
+                targetPose = 
+                    ((AllianceUtil.isRedAlliance()) ? FieldConstants.hubRedAlliance : FieldConstants.hubBlueAlliance);
             }
         } else {
             targetPose = 
@@ -378,6 +387,10 @@ public class Shooter {
     }
 
     private double getFlightTime(double distanceMeters) {
+        if (distanceMeters < 0) {
+            return 0;
+        }
+
         final double G        = 32.174;
         final double V0       = 23.5; // measured at 3000 rpm
         final double H_LAUNCH = 16.0 / 12.0;
@@ -396,7 +409,7 @@ public class Shooter {
 
         // b^2 - 4ac
         double discriminant = (b * b) - (4 * a * c);
-        if (discriminant < 0) return -1;
+        if (discriminant < 0) return 0.8;
 
         // (-b +/- discriminant) / 2a
         double t1 = (-b + Math.sqrt(discriminant)) / (2 * a);

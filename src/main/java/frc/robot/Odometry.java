@@ -31,10 +31,10 @@ public class Odometry {
     /*                Standard deviations for each camera, with X and Y in meters and rotation in radians.                 */
     /***********************************************************************************************************************/
     /*                                                                   | X |     | Y |          | ROTATION |             */
-    public static final Vector<N3> CAMERA1_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
-    public static final Vector<N3> CAMERA2_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
-    public static final Vector<N3> CAMERA3_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
-    public static final Vector<N3> CAMERA4_STD_DEVS = VecBuilder.fill(2, 2, Units.degreesToRadians(10));
+    public static final Vector<N3> CAMERA1_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
+    public static final Vector<N3> CAMERA2_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
+    public static final Vector<N3> CAMERA3_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
+    public static final Vector<N3> CAMERA4_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
 
     // Distances from bottom center of robot to each camera
     // When rotation is 0 for all axes the Z axis is parallel to the front of the robot.

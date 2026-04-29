@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
 
@@ -44,7 +45,7 @@ public class Auto {
     private Optional<Trajectory<SwerveSample>> depotPass2;
     private Optional<Trajectory<SwerveSample>> depotV1;
     private Optional<Trajectory<SwerveSample>> depotV2;
-    private Optional<Trajectory<SwerveSample>> outpostNC;
+    // private Optional<Trajectory<SwerveSample>> outpostNC;
     private Optional<Trajectory<SwerveSample>> outpostV1;
     private Optional<Trajectory<SwerveSample>> outpostV2;
     private Optional<Trajectory<SwerveSample>> outpostPass2;
@@ -53,25 +54,6 @@ public class Auto {
     // private int currentSplitIndex = 1;
     private boolean firstTime = true;
     private int step = 1;
-
-    // Auto-specific variables
-    // Outpost
-    // private int outpostClimbOutStep = 1;
-    // private int outpostClimbDepStep = 1;
-    // private int outpostNoClimbStep = 1;
-
-    // Center
-    // private int centerOutClimbOutStep = 1;
-    // private int centerDepClimbOutStep = 1;
-    // private int centerOutClimbDepStep = 1;
-    // private int centerDepClimbDepStep = 1;
-    // private int centerOutNoClimbStep = 1;
-    // private int centerDepNoClimbStep = 1;
-
-    // Depot
-    // private int depotClimbOutStep = 1;
-    // private int depotClimbDepStep = 1;
-    // private int depotNoClimbStep = 1;
 
     @SuppressWarnings("unchecked")
     public Auto(Drive drive, Shooter shooter, Hopper hopper, Grabber grabber) {
@@ -102,93 +84,93 @@ public class Auto {
     /* OUTPOST AUTOS */
     ///////////////////
 
-    public int crazyOutpostAuto() {
-        if (firstTime) {
-            firstTime = false;
-            step = 1;
-            restartTimer();
-            waitTimer.restart();
-        }
+    // public int crazyOutpostAuto() {
+    //     if (firstTime) {
+    //         firstTime = false;
+    //         step = 1;
+    //         restartTimer();
+    //         waitTimer.restart();
+    //     }
 
-        int status = Robot.CONT;
-        int pathStatus = choreoPathFollower(outpostNC);
+    //     int status = Robot.CONT;
+    //     int pathStatus = choreoPathFollower(outpostNC);
 
-        // SmartDashboard.putNumber("Auto Step", step);
+    //     // SmartDashboard.putNumber("Auto Step", step);
 
-        boolean hoodUp = false;
+    //     boolean hoodUp = false;
 
-        switch (step) {
-            case 1:
-                hoodUp = false;
+    //     switch (step) {
+    //         case 1:
+    //             hoodUp = false;
 
-                grabber.lowerGrabber();
+    //             grabber.lowerGrabber();
 
-                status = atMarker(outpostNC, "start intake");
-                break;
-            case 2:
-                hoodUp = true;
+    //             status = atMarker(outpostNC, "start intake");
+    //             break;
+    //         case 2:
+    //             hoodUp = true;
 
-                grabber.lowerGrabber();
-                grabber.intake();
+    //             grabber.lowerGrabber();
+    //             grabber.intake();
 
-                status = atMarker(outpostNC, "start pass");
-                break;
-            case 3:
-                hoodUp = true;
+    //             status = atMarker(outpostNC, "start pass");
+    //             break;
+    //         case 3:
+    //             hoodUp = true;
 
-                grabber.stopGrabber();
-                grabber.intake();
-                hopper.indexFuel();
+    //             grabber.stopGrabber();
+    //             grabber.intake();
+    //             hopper.indexFuel();
 
-                status = atMarker(outpostNC, "stop pass");
-                break;
-            case 4:
-                hoodUp = true;
+    //             status = atMarker(outpostNC, "stop pass");
+    //             break;
+    //         case 4:
+    //             hoodUp = true;
 
-                grabber.intake();
-                hopper.reverse();
+    //             grabber.intake();
+    //             hopper.reverse();
 
-                status = atMarker(outpostNC, "start shoot");
-                break;
-            case 5:
-                hoodUp = true;
+    //             status = atMarker(outpostNC, "start shoot");
+    //             break;
+    //         case 5:
+    //             hoodUp = true;
 
-                grabber.intake();
-                hopper.indexFuel();
+    //             grabber.intake();
+    //             hopper.indexFuel();
 
-                status = atMarker(outpostNC, "stop shoot");
-                break;
-            case 6:
-                hoodUp = false;
+    //             status = atMarker(outpostNC, "stop shoot");
+    //             break;
+    //         case 6:
+    //             hoodUp = false;
 
-                grabber.intake();
-                hopper.stopMotors();
+    //             grabber.intake();
+    //             hopper.stopMotors();
 
-                status = pathStatus;
-                break;
-            default:
-                drive.stopWheels();
-                return Robot.DONE;
-        }
+    //             status = pathStatus;
+    //             break;
+    //         default:
+    //             drive.stopWheels();
+    //             return Robot.DONE;
+    //     }
 
-        SwerveSample currSample = (SwerveSample) Logger.getStruct("choreoSample", SwerveSample.struct).get();
+    //     SwerveSample currSample = (SwerveSample) Logger.getStruct("choreoSample", SwerveSample.struct).get();
 
-        if (currSample == null) {
-            currSample = new SwerveSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new double[] {0, 0, 0, 0}, new double[] {0, 0, 0, 0});
-        }
+    //     if (currSample == null) {
+    //         currSample = new SwerveSample(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, new double[] {0, 0, 0, 0}, new double[] {0, 0, 0, 0});
+    //     }
 
-        shooter.autoAdjust(hoodUp, 
-            new Transform2d(currSample.vx, currSample.vy, Rotation2d.fromRadians(currSample.omega)), 
-            Translation2d.kZero,
-            true
-        );
+    //     shooter.autoAdjust(hoodUp, 
+    //         new Transform2d(currSample.vx, currSample.vy, Rotation2d.fromRadians(currSample.omega)), 
+    //         Translation2d.kZero,
+    //         true, true
+    //     );
 
-        if (status == Robot.DONE) {
-            step++;
-        }
+    //     if (status == Robot.DONE) {
+    //         step++;
+    //     }
 
-        return Robot.CONT;
-    }
+    //     return Robot.CONT;
+    // }
 
     public int outpostAuto(boolean mod2) {
         if (firstTime) {
@@ -315,11 +297,7 @@ public class Auto {
     /* CENTER AUTOS */
     //////////////////
 
-    public int centerDepClimbDep() {
-        return Robot.CONT;
-    }
-
-    public int centerOut(boolean climb) {
+    public int centerOutAuto() {
         if (firstTime) {
             firstTime = false;
             step = 1;
@@ -329,7 +307,7 @@ public class Auto {
 
         int status = Robot.CONT;
 
-        // SmartDashboard.putNumber("Auto Step", step);
+        SmartDashboard.putNumber("Auto Step", step);
 
         boolean hoodUp = false;
 
@@ -338,50 +316,183 @@ public class Auto {
                 choreoPathFollower(centerOP1);
                 hoodUp = false;
 
-                grabber.lowerGrabber();
+                grabber.intake();
 
-                status = atMarker(centerOP1, "start intake");
+                status = atMarker(centerOP1, "lower intake");
                 break;
             case 2:
-                choreoPathFollower(centerOP1);
                 hoodUp = false;
 
                 grabber.lowerGrabber();
                 grabber.intake();
 
-                status = atMarker(centerOP1, "start shoot");
+                waitTimer2.restart();
+
+                status = choreoPathFollower(centerOP1);
                 break;
             case 3:
                 choreoPathFollower(centerOP1);
                 hoodUp = true;
+                
+                grabber.lowerGrabber();
+                grabber.intake();
 
-                grabber.stopGrabber();
+                grabber.resetJostle();
+
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 4:
+                // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = true;
+
+                grabber.jostleGrabber();
                 grabber.intake();
                 hopper.indexFuel();
 
-                status = atMarker(centerOP1, "stop shoot");
-                break;
-            case 4:
-                timer.restart();
-
-                status = Robot.CONT;
+                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
                 break;
             case 5:
-                choreoPathFollower(centerOP1);
+                timer.restart();
+
+                status = Robot.DONE;
+                break;
+            case 6:
+                hoodUp = false;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.stopMotors();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower(centerOP2);
+                break;
+            case 7:
+                choreoPathFollower(centerOP2);
                 hoodUp = true;
 
                 grabber.intake();
                 grabber.lowerGrabber();
-                hopper.reverse();
+                grabber.resetJostle();
+                hopper.stopMotors();
 
-                status = atMarker(centerOP1, "start shoot");
-                break;
-            case 6:
-                choreoPathFollower(centerOP1);
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 8:
                 hoodUp = true;
 
                 grabber.intake();
+                grabber.jostleGrabber();
+                hopper.indexFuel();
+
+                if (DriverStation.isFMSAttached()) {
+                    status = Robot.CONT;
+                } else {
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                }
+                break;
+            default:
+                drive.stopWheels();
+                hopper.stopMotors();
                 grabber.stopGrabber();
+                grabber.stopWheel();
+                shooter.stopHood();
+                shooter.stopTurrets();
+                shooter.stopWheels();
+                return Robot.DONE;
+        }
+
+        shooter.autoAdjust(hoodUp);
+
+        if (status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    public int centerDepAuto() {
+        if (firstTime) {
+            firstTime = false;
+            step = 1;
+            restartTimer();
+            waitTimer.restart();
+        }
+
+        int status = Robot.CONT;
+
+        SmartDashboard.putNumber("Auto Step", step);
+
+        boolean hoodUp = false;
+
+        switch (step) {
+            case 1:
+                choreoPathFollower(centerDP1);
+                hoodUp = false;
+
+                grabber.intake();
+
+                status = atMarker(centerDP1, "lower intake");
+                break;
+            case 2:
+                hoodUp = false;
+
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower(centerDP1);
+                break;
+            case 3:
+                choreoPathFollower(centerDP1);
+                hoodUp = true;
+                
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                grabber.resetJostle();
+
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 4:
+                // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                hoodUp = true;
+
+                grabber.jostleGrabber();
+                grabber.intake();
+                hopper.indexFuel();
+
+                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
+                break;
+            case 5:
+                timer.restart();
+
+                status = Robot.DONE;
+                break;
+            case 6:
+                hoodUp = false;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.stopMotors();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower(centerDP2);
+                break;
+            case 7:
+                choreoPathFollower(centerDP2);
+                hoodUp = true;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                grabber.resetJostle();
+                hopper.stopMotors();
+
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 8:
+                hoodUp = true;
+
+                grabber.intake();
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
                 if (DriverStation.isFMSAttached()) {
@@ -441,14 +552,6 @@ public class Auto {
         return Robot.CONT;
     }
 
-    public int centerDepNoClimb() {
-        return Robot.CONT;
-    }
-
-    public int centerOutNoClimb() {
-        return Robot.CONT;
-    }
-
     /////////////////
     /* DEPOT AUTOS */
     /////////////////
@@ -462,8 +565,7 @@ public class Auto {
         }
 
         int status = Robot.CONT;
-
-        // SmartDashboard.putNumber("Auto Step", step);
+        SmartDashboard.putNumber("Auto Step", step);
 
         boolean hoodUp = false;
 
@@ -472,50 +574,80 @@ public class Auto {
                 choreoPathFollower((mod2) ? depotV2 : depotV1);
                 hoodUp = false;
 
-                grabber.lowerGrabber();
-
-                status = atMarker((mod2) ? depotV2 : depotV1, "start intake");
+                status = atMarker((mod2) ? depotV2 : depotV1, "lower intake");
                 break;
             case 2:
                 choreoPathFollower((mod2) ? depotV2 : depotV1);
                 hoodUp = false;
 
                 grabber.lowerGrabber();
-                grabber.intake();
 
-                status = atMarker((mod2) ? depotV2 : depotV1, "start shoot");
+                status = atMarker((mod2) ? depotV2 : depotV1, "start intake");
                 break;
             case 3:
+                hoodUp = false;
+
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower((mod2) ? depotV2 : depotV1);
+                break;
+            case 4:
                 choreoPathFollower((mod2) ? depotV2 : depotV1);
+                hoodUp = false;
+                
+                grabber.lowerGrabber();
+                grabber.intake();
+
+                waitTimer.restart();
+
+                grabber.resetJostle();
+
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 5:
+                // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = true;
 
-                grabber.stopGrabber();
+                grabber.jostleGrabber();
                 grabber.intake();
                 hopper.indexFuel();
 
-                status = atMarker((mod2) ? depotV2 : depotV1, "stop shoot");
+                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
                 break;
-            case 4:
+            case 6:
                 timer.restart();
 
-                status = Robot.CONT;
+                status = Robot.DONE;
                 break;
-            case 5:
+            case 7:
+                hoodUp = false;
+
+                grabber.intake();
+                grabber.lowerGrabber();
+                hopper.stopMotors();
+
+                waitTimer2.restart();
+
+                status = choreoPathFollower(depotPass2);
+                break;
+            case 8:
                 choreoPathFollower(depotPass2);
                 hoodUp = false;
 
                 grabber.intake();
                 grabber.lowerGrabber();
-                hopper.reverse();
+                grabber.resetJostle();
+                hopper.stopMotors();
 
-                status = atMarker(depotPass2, "start shoot");
-                break;
-            case 6:
-                choreoPathFollower(depotPass2);
+                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+            case 9:
+                // choreoPathFollower(outpostPass2);
                 hoodUp = true;
 
                 grabber.intake();
-                grabber.stopGrabber();
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
                 if (DriverStation.isFMSAttached()) {
