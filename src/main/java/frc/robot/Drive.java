@@ -125,8 +125,8 @@ public class Drive {
 
     // Standard deviations (trust values) for encoders and April Tags
     // The lower the numbers the more trustworthy the prediction from that source is
-    private final Vector<N3> ENCODER_STD_DEV = VecBuilder.fill(0.03, 0.03, 0.03);
-    private final Vector<N3> APRILTAG_STD_DEV = VecBuilder.fill(0.3, 0.3, 0.5);
+    private final Vector<N3> ENCODER_STD_DEV = VecBuilder.fill(0.03, 0.03, 0.025);
+    private final Vector<N3> BUMP_STD_DEV = VecBuilder.fill(0.05, 0.05, 0.045);
 
     private static SwerveDrivePoseEstimator aprilTagsEstimator;
 
@@ -237,7 +237,7 @@ public class Drive {
             initialPosition,
             new Pose2d(0, 0, new Rotation2d(0)),
             ENCODER_STD_DEV,
-            APRILTAG_STD_DEV
+            BUMP_STD_DEV
         );
 
         otfTimer.restart();
@@ -786,8 +786,8 @@ public class Drive {
     public void addVisionMeasurement(EstimatedRobotPose visionEst, Matrix<N3, N1> stdDevs) {
         aprilTagsEstimator.addVisionMeasurement(
             visionEst.estimatedPose.toPose2d(),
-            visionEst.timestampSeconds,
-            stdDevs
+            Timer.getFPGATimestamp(),
+            (isOnBump()) ? BUMP_STD_DEV : stdDevs
         );
 
         currPose = getPose();
@@ -816,6 +816,16 @@ public class Drive {
      */
     public static Pose2d getPose() {
         return aprilTagsEstimator.getEstimatedPosition();
+    }
+
+    public boolean isOnBump() {
+        double x = getPose().getX();
+        double y = getPose().getY();
+
+        return 
+            ((x > 3.7683098316192627 && x < 5.4444499015808105) || (x > 11.077059745788574 && x < 12.733709335327148))
+                                                             &&
+            (y > 1.9345558881759644 && y < 6.120029926300049);
     }
 
     public static PositionState getPositionState() {
