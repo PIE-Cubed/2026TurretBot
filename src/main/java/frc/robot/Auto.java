@@ -314,14 +314,14 @@ public class Auto {
         switch (step) {
             case 1:
                 choreoPathFollower(centerOP1);
-                hoodUp = false;
+                hoodUp = true;
 
                 grabber.intake();
 
                 status = atMarker(centerOP1, "lower intake");
                 break;
             case 2:
-                hoodUp = false;
+                hoodUp = true;
 
                 grabber.lowerGrabber();
                 grabber.intake();
@@ -356,7 +356,7 @@ public class Auto {
                 status = Robot.DONE;
                 break;
             case 6:
-                hoodUp = false;
+                hoodUp = true;
 
                 grabber.intake();
                 grabber.lowerGrabber();
