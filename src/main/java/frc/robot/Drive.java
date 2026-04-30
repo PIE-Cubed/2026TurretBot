@@ -29,6 +29,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
@@ -921,5 +922,16 @@ public class Drive {
         Logger.logStruct("currRobotSpeed", velocityMeters);
 
         return velocityMeters;
+    }
+
+    public void log() {
+        SmartDashboard.putNumber("currents/fl drive current",  frontLeft.getInputCurrents()[0]);
+        SmartDashboard.putNumber("currents/fl rotate current",  frontLeft.getInputCurrents()[1]);
+        SmartDashboard.putNumber("currents/fr drive current",  frontLeft.getInputCurrents()[0]);
+        SmartDashboard.putNumber("currents/fr rotate current",  frontLeft.getInputCurrents()[1]);
+        SmartDashboard.putNumber("currents/bl drive current",  frontLeft.getInputCurrents()[0]);
+        SmartDashboard.putNumber("currents/bl rotate current",  frontLeft.getInputCurrents()[1]);
+        SmartDashboard.putNumber("currents/br drive current",  frontLeft.getInputCurrents()[0]);
+        SmartDashboard.putNumber("currents/br rotate current",  frontLeft.getInputCurrents()[1]);
     }
 }

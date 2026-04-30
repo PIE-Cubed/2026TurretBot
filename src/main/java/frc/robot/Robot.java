@@ -199,6 +199,10 @@ public class Robot extends TimedRobot {
         m_modSelected = mod_chooser.getSelected();
 
         drive.printSwerveState();
+
+        shooter.log();
+        hopper.log();
+        grabber.log();
     }
 
     /**
@@ -226,6 +230,8 @@ public class Robot extends TimedRobot {
             .withAutomaticHeight()
             .withDisplaySeconds(3)
         );
+
+        shooter.zeroTurrets();
     }
 
     /** This function is called periodically during autonomous. */

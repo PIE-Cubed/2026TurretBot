@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** a */
 public class Hopper {
@@ -36,10 +37,10 @@ public class Hopper {
     public Hopper() {
         rightSpindexerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(55)
+            .smartCurrentLimit(35)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(75);
+            .secondaryCurrentLimit(65);
 
         rightSpindexerMotor.configure(
             rightSpindexerMotorConfig,
@@ -49,10 +50,10 @@ public class Hopper {
 
         leftSpindexerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(55)
+            .smartCurrentLimit(35)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(75);
+            .secondaryCurrentLimit(65);
 
         leftSpindexerMotor.configure(
             leftSpindexerMotorConfig,
@@ -62,10 +63,10 @@ public class Hopper {
 
         rightKickerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(80)
+            .smartCurrentLimit(50)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(100);
+            .secondaryCurrentLimit(75);
 
         rightKickerMotor.configure(
             rightKickerMotorConfig,
@@ -75,16 +76,27 @@ public class Hopper {
 
         leftKickerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(80)
+            .smartCurrentLimit(50)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(100);
+            .secondaryCurrentLimit(75);
 
         leftKickerMotor.configure(
             leftKickerMotorConfig,
             ResetMode.kNoResetSafeParameters,
             PersistMode.kPersistParameters
         );
+    }
+
+    public void log() {
+        SmartDashboard.putNumber("currents/left spin current",  getInputCurrent(leftSpindexerMotor));
+        SmartDashboard.putNumber("currents/left kick current",  getInputCurrent(leftKickerMotor));
+        SmartDashboard.putNumber("currents/right spin current", getInputCurrent(rightSpindexerMotor));
+        SmartDashboard.putNumber("currents/right kick current", getInputCurrent(rightKickerMotor));
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
     }
 
     public void reverse() {

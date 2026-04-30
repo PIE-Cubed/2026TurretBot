@@ -3,6 +3,7 @@ package frc.robot;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -239,6 +240,26 @@ public class Shooter {
         rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    public void log() {
+        SmartDashboard.putNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
+        SmartDashboard.putNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
+        SmartDashboard.putNumber("currents/right hood current", getInputCurrent(rightHoodMotor));
+        SmartDashboard.putNumber("currents/right flywheel current", getInputCurrent(rightMotor));
+        SmartDashboard.putNumber("currents/left turret current", leftTurret.getMotorCurrent());
+        SmartDashboard.putNumber("currents/right turret current", rightTurret.getMotorCurrent());
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
+    }
+
+    public void zeroTurrets() {
+        leftHoodEncoder.setPosition(0);
+        rightHoodEncoder.setPosition(0);
+        leftTurret.zeroEncoder();
+        rightTurret.zeroEncoder();
     }
 
     public void turretAdjust(double leftTurretAdjust, double rightTurretAdjust) {
