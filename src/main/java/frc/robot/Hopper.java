@@ -93,6 +93,11 @@ public class Hopper {
         SmartDashboard.putNumber("currents/left kick current",  getInputCurrent(leftKickerMotor));
         SmartDashboard.putNumber("currents/right spin current", getInputCurrent(rightSpindexerMotor));
         SmartDashboard.putNumber("currents/right kick current", getInputCurrent(rightKickerMotor));
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left spin current",  getInputCurrent(leftSpindexerMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left kick current",  getInputCurrent(leftKickerMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right spin current", getInputCurrent(rightSpindexerMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right kick current", getInputCurrent(rightKickerMotor));
     }
 
     private double getInputCurrent(SparkBase motor) {

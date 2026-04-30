@@ -249,6 +249,13 @@ public class Shooter {
         SmartDashboard.putNumber("currents/right flywheel current", getInputCurrent(rightMotor));
         SmartDashboard.putNumber("currents/left turret current", leftTurret.getMotorCurrent());
         SmartDashboard.putNumber("currents/right turret current", rightTurret.getMotorCurrent());
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right hood current", getInputCurrent(rightHoodMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right flywheel current", getInputCurrent(rightMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left turret current", leftTurret.getMotorCurrent());
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right turret current", rightTurret.getMotorCurrent());
     }
 
     private double getInputCurrent(SparkBase motor) {

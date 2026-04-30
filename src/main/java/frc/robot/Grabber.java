@@ -74,6 +74,9 @@ public class Grabber {
     public void log() {
         SmartDashboard.putNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
         SmartDashboard.putNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
     }
 
     private double getInputCurrent(SparkBase motor) {

@@ -933,5 +933,14 @@ public class Drive {
         SmartDashboard.putNumber("currents/bl rotate current",  frontLeft.getInputCurrents()[1]);
         SmartDashboard.putNumber("currents/br drive current",  frontLeft.getInputCurrents()[0]);
         SmartDashboard.putNumber("currents/br rotate current",  frontLeft.getInputCurrents()[1]);
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/fl drive current",  frontLeft.getInputCurrents()[0]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/fl rotate current",  frontLeft.getInputCurrents()[1]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/fr drive current",  frontLeft.getInputCurrents()[0]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/fr rotate current",  frontLeft.getInputCurrents()[1]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/bl drive current",  frontLeft.getInputCurrents()[0]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/bl rotate current",  frontLeft.getInputCurrents()[1]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/br drive current",  frontLeft.getInputCurrents()[0]);
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/br rotate current",  frontLeft.getInputCurrents()[1]);
     }
 }

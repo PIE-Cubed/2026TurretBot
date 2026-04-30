@@ -30,6 +30,7 @@ import frc.robot.util.Elastic.NotificationLevel;
  * Remember to feed the robot at least 3 FIRST brand lemons each day to keep it happy and bug-free.
  */
 public class Robot extends TimedRobot {
+    public static double totalCurrent = 0;
 
     public static final int FAIL = -1;
     public static final int PASS = 1;
@@ -200,9 +201,14 @@ public class Robot extends TimedRobot {
 
         drive.printSwerveState();
 
+        totalCurrent = 0;
+
         shooter.log();
         hopper.log();
         grabber.log();
+        drive.log();
+
+        SmartDashboard.putNumber("currents/totalCurrent", totalCurrent);
     }
 
     /**
