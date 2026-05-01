@@ -30,6 +30,7 @@ import frc.robot.util.Elastic.NotificationLevel;
  * Remember to feed the robot at least 3 FIRST brand lemons each day to keep it happy and bug-free.
  */
 public class Robot extends TimedRobot {
+    public static double totalCurrent = 0;
 
     public static final int FAIL = -1;
     public static final int PASS = 1;
@@ -199,6 +200,15 @@ public class Robot extends TimedRobot {
         m_modSelected = mod_chooser.getSelected();
 
         drive.printSwerveState();
+
+        totalCurrent = 0;
+
+        shooter.log();
+        hopper.log();
+        grabber.log();
+        drive.log();
+
+        SmartDashboard.putNumber("currents/totalCurrent", totalCurrent);
     }
 
     /**
@@ -226,6 +236,8 @@ public class Robot extends TimedRobot {
             .withAutomaticHeight()
             .withDisplaySeconds(3)
         );
+
+        shooter.zeroTurrets();
     }
 
     /** This function is called periodically during autonomous. */
@@ -297,7 +309,7 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        wheelControl();
+        // wheelControl();
         // testShooterControl();
         // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
         // grabberControl();
@@ -310,20 +322,20 @@ public class Robot extends TimedRobot {
 
         // auto.choreoPathFollower(testAuto);
 
-        testShooterControl();
+        // testShooterControl();
 
-        shooter.stopTurrets();
+        // shooter.stopTurrets();
         // // shooter.testFunction();
-        // shooter.setHoodAngle(20, 20);
+        shooter.setHoodAngle(20, 20);
         // shooter.setTargetRPMs(2500, 2500);
 
-        boolean shootButton = controls.getShootButton();
+        // boolean shootButton = controls.getShootButton();
 
-        if (shootButton) {
-            hopper.indexFuel();
-        } else {
-            hopper.stopMotors();
-        }
+        // if (shootButton) {
+        //     hopper.indexFuel();
+        // } else {
+        //     hopper.stopMotors();
+        // }
 
         // climber.zeroClimberEncoder();
         // manualClimberControl();

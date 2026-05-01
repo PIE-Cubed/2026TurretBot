@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -68,6 +69,18 @@ public class Grabber {
             .smartCurrentLimit(60)
             .disableFollowerMode();
         intakeMotor.configure(intakeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    public void log() {
+        SmartDashboard.putNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
+        SmartDashboard.putNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
     }
 
     public int raiseGrabber() {

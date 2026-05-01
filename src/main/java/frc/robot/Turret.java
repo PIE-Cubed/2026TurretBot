@@ -9,6 +9,7 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.EncoderConfig;
@@ -116,6 +117,18 @@ public class Turret {
         this.secondaryEncoderOffset = secondaryEncoderOffset;
     }
 
+    public double getMotorCurrent() {
+        return getInputCurrent(turretMotor);
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
+    }
+
+    public void zeroEncoder() {
+        turretEncoder.setPosition(0);
+    }
+
     public void nudgeEncoder(double nudgeAmount) {
         turretEncoder.setPosition(turretEncoder.getPosition() + nudgeAmount);
     }
@@ -158,7 +171,7 @@ public class Turret {
         );
         // SmartDashboard.putNumber(turretMotor.getDeviceId() + "FieldRelativeTarget", targetRotation);
         // SmartDashboard.putNumber(turretMotor.getDeviceId() + "RobotRelativeTarget", targetAbsRotation.getDegrees());
-        return setTargetAbsRotation(targetAbsRotation.getDegrees() + 180);
+        return setTargetFullRotation(targetAbsRotation.getDegrees() + 180);
     }
 
     // public void printSecondEncoderValue() {

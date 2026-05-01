@@ -3,6 +3,7 @@ package frc.robot;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -95,13 +96,13 @@ public class Shooter {
     private final double RIGHT_D = 0.00006;
     private final double RIGHT_TOLERANCE = 100.0;
 
-    private final double LEFT_HOOD_P = 0.65;
+    private final double LEFT_HOOD_P = 0.5;
     private final double LEFT_HOOD_I = 0.0;
-    private final double LEFT_HOOD_D = 0.02;
+    private final double LEFT_HOOD_D = 0.01;
     private final double LEFT_HOOD_S = 0.06;
-    private final double RIGHT_HOOD_P = 0.65;
+    private final double RIGHT_HOOD_P = 0.5;
     private final double RIGHT_HOOD_I = 0.0;
-    private final double RIGHT_HOOD_D = 0.02;
+    private final double RIGHT_HOOD_D = 0.01;
     private final double RIGHT_HOOD_S = 0.06;
     private final double HOOD_TOLERANCE = 0.25;
 
@@ -239,6 +240,33 @@ public class Shooter {
         rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+    }
+
+    public void log() {
+        SmartDashboard.putNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
+        SmartDashboard.putNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
+        SmartDashboard.putNumber("currents/right hood current", getInputCurrent(rightHoodMotor));
+        SmartDashboard.putNumber("currents/right flywheel current", getInputCurrent(rightMotor));
+        SmartDashboard.putNumber("currents/left turret current", leftTurret.getMotorCurrent());
+        SmartDashboard.putNumber("currents/right turret current", rightTurret.getMotorCurrent());
+
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right hood current", getInputCurrent(rightHoodMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right flywheel current", getInputCurrent(rightMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/left turret current", leftTurret.getMotorCurrent());
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/right turret current", rightTurret.getMotorCurrent());
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
+    }
+
+    public void zeroTurrets() {
+        leftHoodEncoder.setPosition(0);
+        rightHoodEncoder.setPosition(0);
+        leftTurret.zeroEncoder();
+        rightTurret.zeroEncoder();
     }
 
     public void turretAdjust(double leftTurretAdjust, double rightTurretAdjust) {

@@ -10,6 +10,7 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -246,5 +247,16 @@ public class SwerveModule {
      */
     public boolean rotateControllerAtSetpoint() {
         return rotatePIDController.atSetpoint();
+    }
+
+    public double[] getInputCurrents() {
+        return new double[] {
+            getInputCurrent(driveMotor),
+            getInputCurrent(rotateMotor)
+        };
+    }
+
+    private double getInputCurrent(SparkBase motor) {
+        return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
     }
 }
