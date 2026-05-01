@@ -37,8 +37,8 @@ public class SwerveModule {
     private SparkMax rotateMotor;
     private SparkBaseConfig rotateMotorConfig;
     // Setting constant variables
-    private final int DRIVE_MOTOR_CURRENT_LIMIT = 80;
-    private final int ROTATE_MOTOR_CURRENT_LIMIT = 40;
+    private final int DRIVE_MOTOR_CURRENT_LIMIT = 50;
+    private final int ROTATE_MOTOR_CURRENT_LIMIT = 25;
 
     // Encoder creation
     private RelativeEncoder driveEncoder;

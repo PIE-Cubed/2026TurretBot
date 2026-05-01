@@ -437,8 +437,9 @@ public class Robot extends TimedRobot {
         boolean intakeDown = controls.getIntakeDown();
         boolean runIntake = controls.getRunIntake();
         boolean reverseIntake = controls.getReverseIntake();
+        boolean shootButton = controls.getShootButton();
 
-        if (runIntake) {
+        if (runIntake || shootButton) {
             grabber.intake();
         } else if (reverseIntake) {
             grabber.outtake();

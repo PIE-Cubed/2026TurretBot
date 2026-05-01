@@ -37,7 +37,7 @@ public class Hopper {
     public Hopper() {
         rightSpindexerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(35)
+            .smartCurrentLimit(40)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(80);
@@ -50,7 +50,7 @@ public class Hopper {
 
         leftSpindexerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(35)
+            .smartCurrentLimit(40)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
             .secondaryCurrentLimit(80);
@@ -63,10 +63,10 @@ public class Hopper {
 
         rightKickerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(55)
+            .smartCurrentLimit(80)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(80);
+            .secondaryCurrentLimit(110);
 
         rightKickerMotor.configure(
             rightKickerMotorConfig,
@@ -76,10 +76,10 @@ public class Hopper {
 
         leftKickerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(55)
+            .smartCurrentLimit(80)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(80);
+            .secondaryCurrentLimit(110);
 
         leftKickerMotor.configure(
             leftKickerMotorConfig,

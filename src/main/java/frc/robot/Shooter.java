@@ -107,7 +107,7 @@ public class Shooter {
     private final double HOOD_TOLERANCE = 0.25;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
-    private final double HOOD_MAX_ANGLE_DEG = 22.5;
+    private final double HOOD_MAX_ANGLE_DEG = 21.75;
     private final double HOOD_STOW_ANGLE_DEG = 0;
 
     private final double LEFT_TURRET_P = 0.55;
@@ -147,14 +147,14 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(72.0 + 45.25 /* 117.25 */), VecBuilder.fill( 2840, 16.5,    2840, 16.5));
         distMapMeters.put(Units.inchesToMeters(84.0 + 45.25 /* 129.25 */), VecBuilder.fill( 2960, 18.0,    2960, 18.0));
         distMapMeters.put(Units.inchesToMeters(96.0 + 45.25 /* 141.25 */), VecBuilder.fill( 3090, 20.25,   3090, 20.25));
-        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 22.5,    3235, 22.5));
-        distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(3403, 24.86,   3403, 24.86)); // extrapolated
+        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 22.5,    3235, 21.5)); // max angle
+        // distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(3403, 24.86,   3403, 24.86)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(3601, 27.34,   3601, 27.34)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(3835, 29.94,   3835, 29.94)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(4109, 32.66,   4109, 32.66)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(4428, 35.50,   4428, 35.50)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 23.0));
-        distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 24.0)); // guess
+        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 21.5));
+        distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 21.5)); // guess
 
         leftTurret = new Turret(
             LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET,
@@ -182,13 +182,13 @@ public class Shooter {
         leftMotorConfig.smartCurrentLimit(80);
         leftMotorConfig.disableFollowerMode();
         leftMotorConfig.inverted(false);
-        leftMotorConfig.secondaryCurrentLimit(90);
+        leftMotorConfig.secondaryCurrentLimit(100);
 
         rightMotorConfig.idleMode(IdleMode.kCoast);
         rightMotorConfig.smartCurrentLimit(80);
         rightMotorConfig.disableFollowerMode();
         rightMotorConfig.inverted(false);
-        rightMotorConfig.secondaryCurrentLimit(90);
+        rightMotorConfig.secondaryCurrentLimit(100);
 
         leftHoodMotorConfig.idleMode(IdleMode.kBrake);
         leftHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
@@ -497,7 +497,7 @@ public class Shooter {
         rightHoodMotor.setVoltage(rightVoltage);
     }
 
-    private static final double SOFT_STOP_ZONE_DEG = 1.0; // tune this
+    private static final double SOFT_STOP_ZONE_DEG = 1.5; // tune this
 
     private double applySoftStop(double voltage, double currentAngleDeg) {
         // Distance from each hard limit
