@@ -167,10 +167,10 @@ public class Turret {
 
         double filteredTargetAngle = filter.getXhat(0);
         Rotation2d targetAbsRotation = new Rotation2d(
-            Units.degreesToRadians(filteredTargetAngle - currentRobotRotation)
+            MathUtil.angleModulus(Units.degreesToRadians(filteredTargetAngle - currentRobotRotation))
         );
-        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "FieldRelativeTarget", targetRotation);
-        // SmartDashboard.putNumber(turretMotor.getDeviceId() + "RobotRelativeTarget", targetAbsRotation.getDegrees());
+        SmartDashboard.putNumber(turretMotor.getDeviceId() + "FieldRelativeTarget", targetRotation);
+        SmartDashboard.putNumber(turretMotor.getDeviceId() + "RobotRelativeTarget", targetAbsRotation.getDegrees());
         return setTargetFullRotation(targetAbsRotation.getDegrees() + 180);
     }
 
