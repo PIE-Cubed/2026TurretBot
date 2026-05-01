@@ -10,6 +10,9 @@ public class Controls {
 
     public static final double DRIVE_CONTROLLER_DEADZONE = 0.01;
 
+    private boolean leftAdjusted = false;
+    private boolean rightAdjusted = true;
+
     public Controls() {
         manipController = new XboxController(1);
         driveController = new ZorroController(0);
@@ -133,11 +136,21 @@ public class Controls {
     }
 
     public boolean getLeftAdjustReleased() {
-        return manipController.getXButtonReleased();
+        if (!leftAdjusted && manipController.getXButtonReleased()) {
+            leftAdjusted = true;
+            return true;
+        }
+
+        return false;
     }
 
     public boolean getRightAdjustReleased() {
-        return manipController.getYButtonReleased();
+        if (!rightAdjusted && manipController.getYButtonReleased()) {
+            rightAdjusted = true;
+            return true;
+        }
+
+        return false;
     }
 
     public Translation2d getLeftAdjust() {

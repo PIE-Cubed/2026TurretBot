@@ -269,7 +269,7 @@ public class Shooter {
         rightTurret.zeroEncoder();
     }
 
-    public void turretAdjust(double leftTurretAdjust, double rightTurretAdjust) {
+    public void nudgeTurret(double leftTurretAdjust, double rightTurretAdjust) {
         leftTurret.nudgeEncoder(leftTurretAdjust);
         rightTurret.nudgeEncoder(rightTurretAdjust);
     }
@@ -280,7 +280,7 @@ public class Shooter {
     }
 
     public void nudgeAim(Translation2d leftAdjust, Translation2d rightAdjust) {
-        turretAdjust(leftAdjust.getX(), rightAdjust.getX());
+        nudgeTurret(leftAdjust.getX(), rightAdjust.getX());
         distAdjust(leftAdjust.getY(), rightAdjust.getY());
 
         Logger.logStruct("leftAdjust", leftAdjust);

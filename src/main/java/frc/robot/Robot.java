@@ -416,9 +416,11 @@ public class Robot extends TimedRobot {
         Transform2d robotVel = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
 
         if (controls.getLeftAdjustReleased()) {
-            shooter.nudgeAim(controls.getRightAdjust(), Translation2d.kZero);
-        } else if (controls.getRightAdjustReleased()) {
-            shooter.nudgeAim(Translation2d.kZero, controls.getRightAdjust());
+            shooter.nudgeTurret(360, 0);
+        }
+        
+        if (controls.getRightAdjustReleased()) {
+            shooter.nudgeTurret(0, 360);
         }
 
         shooter.autoAdjust(shootReady, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
