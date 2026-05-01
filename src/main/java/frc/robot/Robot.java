@@ -97,6 +97,7 @@ public class Robot extends TimedRobot {
         // side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
         side_chooser.addOption("Depot", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
+        side_chooser.addOption("Magic 8 Ball", "Magic 8 Ball");
 
         mod_chooser.setDefaultOption("Mod 1", kMod1);
         mod_chooser.addOption("Mod 2", kMod2);
@@ -260,6 +261,8 @@ public class Robot extends TimedRobot {
                 break;
             case kNoAuto:
                 break;
+            case "Magic 8 Ball":
+                auto.eightBallAuto();
             default:
                 // Put default auto code here
                 break;

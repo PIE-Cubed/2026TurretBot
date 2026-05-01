@@ -18,6 +18,8 @@ import frc.robot.util.Logger;
 import java.util.List;
 import java.util.Optional;
 
+import org.opencv.objdetect.HOGDescriptor;
+
 /**
  * This class has all the autonomous programs.
  */
@@ -490,6 +492,59 @@ public class Auto {
 
                 grabber.intake();
                 grabber.jostleGrabber();
+                hopper.indexFuel();
+
+                if (DriverStation.isFMSAttached()) {
+                    status = Robot.CONT;
+                } else {
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                }
+                break;
+            default:
+                drive.stopWheels();
+                hopper.stopMotors();
+                grabber.stopGrabber();
+                grabber.stopWheel();
+                shooter.stopHood();
+                shooter.stopTurrets();
+                shooter.stopWheels();
+                return Robot.DONE;
+        }
+
+        shooter.autoAdjust(hoodUp);
+
+        if (status == Robot.DONE) {
+            step++;
+        }
+
+        return Robot.CONT;
+    }
+
+    public int eightBallAuto() {
+        if (firstTime) {
+            firstTime = false;
+            step = 1;
+            restartTimer();
+            waitTimer.restart();
+        }
+
+        int status = Robot.CONT;
+
+        SmartDashboard.putNumber("Auto Step", step);
+
+        boolean hoodUp = false;
+
+        switch (step) {
+            case 1:
+                hoodUp = true;
+                
+                status = waitTimer2.hasElapsed(5) ? Robot.DONE : Robot.CONT;
+
+                break;
+            case 2:
+                hoodUp = true;
+
+                grabber.intake();
                 hopper.indexFuel();
 
                 if (DriverStation.isFMSAttached()) {
