@@ -106,7 +106,7 @@ public class Shooter {
     private final double HOOD_TOLERANCE = 0.25;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
-    private final double HOOD_MAX_ANGLE_DEG = 20;
+    private final double HOOD_MAX_ANGLE_DEG = 22.5;
     private final double HOOD_STOW_ANGLE_DEG = 0;
 
     private final double LEFT_TURRET_P = 0.55;
@@ -148,10 +148,10 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(96.0 + 45.25 /* 141.25 */), VecBuilder.fill( 3090, 20.25,   3090, 20.25));
         distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 22.5,    3235, 22.5));
         distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(3403, 24.86,   3403, 24.86)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(3601, 27.34,   3601, 27.34)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(3835, 29.94,   3835, 29.94)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(4109, 32.66,   4109, 32.66)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(4428, 35.50,   4428, 35.50)); // extrapolated
+        // distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(3601, 27.34,   3601, 27.34)); // extrapolated
+        // distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(3835, 29.94,   3835, 29.94)); // extrapolated
+        // distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(4109, 32.66,   4109, 32.66)); // extrapolated
+        // distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(4428, 35.50,   4428, 35.50)); // extrapolated
         distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 23.0));
         distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 24.0)); // guess
 
@@ -264,34 +264,34 @@ public class Shooter {
      * @param rightVoltage
      * @param leftVoltage
      */
-    public void setWheelVoltages(double rightVoltage, double leftVoltage) {
-        setFlywheelMotorVoltage(rightVoltage);
-        setleftMotorVoltage(leftVoltage);
-    }
+    // public void setWheelVoltages(double rightVoltage, double leftVoltage) {
+    //     setFlywheelMotorVoltage(rightVoltage);
+    //     setleftMotorVoltage(leftVoltage);
+    // }
 
     /**
      * voltage should be -12 to 12
      * @param voltage
      */
-    public void setleftMotorVoltage(double voltage) {
-        leftMotor.setVoltage(voltage);
-    }
+    // public void setleftMotorVoltage(double voltage) {
+    //     leftMotor.setVoltage(voltage);
+    // }
 
     /**
      * voltage should be -12 to 12
      * @param voltage
      */
-    public void setFlywheelMotorVoltage(double voltage) {
-        rightMotor.setVoltage(voltage);
-    }
+    // public void setFlywheelMotorVoltage(double voltage) {
+    //     rightMotor.setVoltage(voltage);
+    // }
 
     /**
      * voltage should be -12 to 12
      * @param voltage
      */
-    public void setHoodMotorVoltage(double voltage) {
-        leftHoodMotor.setVoltage(voltage);
-    }
+    // public void setHoodMotorVoltage(double voltage) {
+    //     leftHoodMotor.setVoltage(voltage);
+    // }
 
     public void stopTurrets() {
         leftTurret.setTurretMotorVoltage(0);
@@ -458,12 +458,39 @@ public class Shooter {
         double currRightPositionDeg = rightHoodEncoder.getPosition();
 
         double leftVoltage = leftHoodPIDController.calculate(currLeftPositionDeg, targetLeftAngleDeg);
-        leftVoltage = MathUtil.clamp(leftVoltage + LEFT_HOOD_S, -12, 12);
+        leftVoltage = MathUtil.clamp(leftVoltage, -12, 12);
+        leftVoltage = applySoftStop(leftVoltage, currLeftPositionDeg);
+
         double rightVoltage = rightHoodPIDController.calculate(currRightPositionDeg, targetRightAngleDeg);
-        rightVoltage = MathUtil.clamp(rightVoltage + RIGHT_HOOD_S, -12, 12);
+        rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
+        rightVoltage = applySoftStop(rightVoltage, currRightPositionDeg);
 
         leftHoodMotor.setVoltage(leftVoltage);
         rightHoodMotor.setVoltage(rightVoltage);
+    }
+
+    private static final double SOFT_STOP_ZONE_DEG = 1.0; // tune this
+
+    private double applySoftStop(double voltage, double currentAngleDeg) {
+        // Distance from each hard limit
+        double distFromMin = currentAngleDeg - HOOD_MIN_ANGLE_DEG;
+        double distFromMax = HOOD_MAX_ANGLE_DEG - currentAngleDeg;
+
+        // Hard stop: zero voltage if already past limits
+        if (distFromMin <= 0 && voltage < 0) return 0;
+        if (distFromMax <= 0 && voltage > 0) return 0;
+
+        // Soft stop: scale down voltage approaching min
+        if (distFromMin < SOFT_STOP_ZONE_DEG && voltage < 0) {
+            voltage *= (distFromMin / SOFT_STOP_ZONE_DEG);
+        }
+
+        // Soft stop: scale down voltage approaching max
+        if (distFromMax < SOFT_STOP_ZONE_DEG && voltage > 0) {
+            voltage *= (distFromMax / SOFT_STOP_ZONE_DEG);
+        }
+
+        return voltage;
     }
 
     public void printWheelRPMs() {
@@ -476,9 +503,9 @@ public class Shooter {
         leftMotor.stopMotor();
     }
 
-    public void testFunction() {
+    // public void testFunction() {
         
-    }
+    // }
 
     public void stopHood() {
         leftHoodMotor.stopMotor();
