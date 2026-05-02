@@ -56,7 +56,7 @@ public class Grabber {
         pivotMotorConfig
             .idleMode(IdleMode.kBrake)
             .inverted(false)
-            .smartCurrentLimit(50)
+            .smartCurrentLimit(60)
             .disableFollowerMode()
             .apply(pivotEncoderConfig);
         pivotMotor.configure(pivotMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
