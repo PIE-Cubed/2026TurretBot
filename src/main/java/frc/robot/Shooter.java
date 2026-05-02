@@ -335,8 +335,9 @@ public class Shooter {
         double y = Drive.getPose().getY();
         PositionState currPositionState = Drive.getPositionState();
 
-        double leftDist = leftTurret.getAdjustedHubDistance(robotVel) + leftDistAdjust;
-        double rightDist = rightTurret.getAdjustedHubDistance(robotVel) + rightDistAdjust;
+        // TODO figure out how to get the adjusted hub distance better
+        double leftDist = leftTurret.getAdjustedHubDistanceMeters(robotVel, 1);
+        double rightDist = rightTurret.getAdjustedHubDistanceMeters(robotVel, 1);
 
         if (pass) {
             if (currPositionState == PositionState.AWAY) {
