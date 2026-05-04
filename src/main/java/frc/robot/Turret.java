@@ -38,6 +38,7 @@ import frc.robot.util.Logger;
 /** Add your docs here. */
 public class Turret {
 
+    // Motors and encoders
     private SparkMax turretMotor;
     private SparkBaseConfig turretMotorConfig;
     
@@ -47,12 +48,15 @@ public class Turret {
     private RelativeEncoder turretEncoder;
     private EncoderConfig turretEncoderConfig;
 
+    // Turret PID
     private PIDController turretPID;
+
+    // Pose offset of the turret from the center of the robot.
+    private Transform2d turretPosOffset;
 
     // private final double MAX_TURRET_ANGLE_DEGREES = 365;
 
-    private Transform2d turretPosOffset;
-
+    // Kalman filter variables
     private final double MODEL_STD_DEV       = 3.0;  // Q: model uncertainty
     private final double MEASUREMENT_STD_DEV = 0.35; // R: sensor noise
   
@@ -72,9 +76,11 @@ public class Turret {
         0.20
     );
 
+    // PID tolerance count to account for overshoot
     private int inToleranceCount = 0;
 
-    private double secondaryEncoderOffset = 0;
+    // Used for CRT
+    // private double secondaryEncoderOffset = 0;
 
     public Turret(int turretMotorID, int secondaryEncoderChannel, double secondaryEncoderOffset,
                   Transform2d turretPosOffset, double TURRET_P, double TURRET_I, double TURRET_D, double TURRET_TOLERANCE) {
@@ -114,21 +120,38 @@ public class Turret {
         turretPID = new PIDController(TURRET_P, TURRET_I, TURRET_D);
         turretPID.setTolerance(TURRET_TOLERANCE);
 
-        this.secondaryEncoderOffset = secondaryEncoderOffset;
+        // this.secondaryEncoderOffset = secondaryEncoderOffset;
     }
 
+    /**
+     * Gets the input current of the turret motor.
+     * @return The input current of the turret motor.
+     */
     public double getMotorCurrent() {
         return getInputCurrent(turretMotor);
     }
 
+    /**
+     * Helper function for getMotorCurrent() in order to get the input current from the Spark MAX
+     * @param motor The motor to get the input current from.
+     * @return The input current of the motor.
+     */
     private double getInputCurrent(SparkBase motor) {
         return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
     }
 
+    /**
+     * Zeros the turret encoder. For use at the beginning of auton.
+     */
     public void zeroEncoder() {
         turretEncoder.setPosition(0);
     }
 
+    /**
+     * Adds the passed double to the current position of the turret encoder.
+     * Example use: The turret was zeroed 360 degrees too far, so you call this to nudge the encoder 360 degrees and fix the encoder.
+     * @param nudgeAmount The amount to nudge the encoder by.
+     */
     public void nudgeEncoder(double nudgeAmount) {
         turretEncoder.setPosition(turretEncoder.getPosition() + nudgeAmount);
     }
@@ -331,9 +354,9 @@ public class Turret {
     /**
      * debug
      */
-    public void printEncoderValues() {
-        SmartDashboard.putNumber("encoder1 " + turretMotor.getDeviceId(), turretCRTEncoder1.getPosition());
-        SmartDashboard.putNumber("encoder2 " + turretMotor.getDeviceId(), turretCRTEncoder2.get() - secondaryEncoderOffset);
-        SmartDashboard.putNumber("actualPos " + turretMotor.getDeviceId(), turretEncoder.getPosition());
-    }
+    // public void printEncoderValues() {
+    //     SmartDashboard.putNumber("encoder1 " + turretMotor.getDeviceId(), turretCRTEncoder1.getPosition());
+    //     SmartDashboard.putNumber("encoder2 " + turretMotor.getDeviceId(), turretCRTEncoder2.get() - secondaryEncoderOffset);
+    //     SmartDashboard.putNumber("actualPos " + turretMotor.getDeviceId(), turretEncoder.getPosition());
+    // }
 }

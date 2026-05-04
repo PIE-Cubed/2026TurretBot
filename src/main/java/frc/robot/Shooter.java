@@ -99,11 +99,11 @@ public class Shooter {
     private final double LEFT_HOOD_P = 0.5;
     private final double LEFT_HOOD_I = 0.0;
     private final double LEFT_HOOD_D = 0.01;
-    private final double LEFT_HOOD_S = 0.06;
+    // private final double LEFT_HOOD_S = 0.06;
     private final double RIGHT_HOOD_P = 0.5;
     private final double RIGHT_HOOD_I = 0.0;
     private final double RIGHT_HOOD_D = 0.01;
-    private final double RIGHT_HOOD_S = 0.06;
+    // private final double RIGHT_HOOD_S = 0.06;
     private final double HOOD_TOLERANCE = 0.25;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
@@ -411,8 +411,8 @@ public class Shooter {
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
         }
 
-        leftTurret.printEncoderValues();
-        rightTurret.printEncoderValues();
+        // leftTurret.printEncoderValues();
+        // rightTurret.printEncoderValues();
     }
 
     private double getFlightTime(double distanceMeters) {
