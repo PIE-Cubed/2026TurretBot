@@ -4,14 +4,12 @@
 
 package frc.robot;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -29,7 +27,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.AllianceUtil;
@@ -42,9 +39,9 @@ public class Turret {
     private SparkMax turretMotor;
     private SparkBaseConfig turretMotorConfig;
     
-    private AbsoluteEncoder turretCRTEncoder1;
-    private AbsoluteEncoderConfig turretCRTEncoder1Config;
-    private DutyCycleEncoder turretCRTEncoder2;
+    // private AbsoluteEncoder turretCRTEncoder1;
+    // private AbsoluteEncoderConfig turretCRTEncoder1Config;
+    // private DutyCycleEncoder turretCRTEncoder2;
     private RelativeEncoder turretEncoder;
     private EncoderConfig turretEncoderConfig;
 
@@ -94,12 +91,12 @@ public class Turret {
         
         turretEncoder = turretMotor.getEncoder();
         turretEncoderConfig = new EncoderConfig().positionConversionFactor(2.8921);
-
-        turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
-        turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(true);
-        turretMotorConfig.apply(turretCRTEncoder1Config);
         turretMotorConfig.apply(turretEncoderConfig);
-        turretCRTEncoder2 = new DutyCycleEncoder(secondaryEncoderChannel);
+
+        // turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
+        // turretCRTEncoder1Config = new AbsoluteEncoderConfig().inverted(true);
+        // turretMotorConfig.apply(turretCRTEncoder1Config);
+        // turretCRTEncoder2 = new DutyCycleEncoder(secondaryEncoderChannel);
 
         turretMotor.configure(turretMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
