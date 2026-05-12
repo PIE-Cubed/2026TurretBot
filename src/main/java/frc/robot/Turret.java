@@ -90,7 +90,9 @@ public class Turret {
             .smartCurrentLimit(25);
         
         turretEncoder = turretMotor.getEncoder();
-        turretEncoderConfig = new EncoderConfig().positionConversionFactor(2.8921);
+        turretEncoderConfig = new EncoderConfig()
+            .positionConversionFactor(2.8921) // rotations -> degrees
+            .velocityConversionFactor(2.8921 / 60); // rotations per minute -> degrees per second
         turretMotorConfig.apply(turretEncoderConfig);
 
         // turretCRTEncoder1 = turretMotor.getAbsoluteEncoder();
@@ -209,7 +211,7 @@ public class Turret {
         Rotation2d filteredTargetAngle = Rotation2d.fromDegrees(filter.getXhat(0));
 
         // adjust to robot relative
-        // TODO: fix this math
+        // TODO: test this math
         Rotation2d targetAbsRotation = filteredTargetAngle.minus(currentRobotAngle);
 
         // logging
@@ -226,7 +228,7 @@ public class Turret {
      * @return Status of PID.
      */
     public int setTargetFullRotation(double targetRotation) {
-        // modulus the rotation in case it is out of bounds.
+        // modulus the rotation in case it is out of bounds
         targetRotation = Math.toDegrees(MathUtil.angleModulus(Math.toRadians(targetRotation)));
 
         // logging
@@ -236,8 +238,8 @@ public class Turret {
         // calculate PID voltage
         double voltage = turretPID.calculate(turretEncoder.getPosition(), targetRotation);
 
-        // apply voltage
-        turretMotor.setVoltage(voltage);
+        // apply voltage w/ soft stop for failsafe
+        turretMotor.setVoltage(softStop(voltage));
 
         // if at setpoint, increase the within tolerance count by 1
         if (turretPID.atSetpoint()) {
@@ -283,6 +285,15 @@ public class Turret {
      */
     public void setTurretMotorVoltage(double voltage) {
         turretMotor.setVoltage(voltage);
+        SmartDashboard.putNumber("turretVoltage"+turretMotor.getDeviceId(), voltage);
+    }
+
+    public void logMotorVelocity() {
+        SmartDashboard.putNumber("turretVelocity"+turretMotor.getDeviceId(), turretEncoder.getVelocity());
+    }
+
+    public void logMotorPosition() {
+        SmartDashboard.putNumber("turretPosition"+turretMotor.getDeviceId(), turretEncoder.getPosition());
     }
 
     /**
@@ -319,6 +330,14 @@ public class Turret {
         );
 
         return robotRelativeVelocity;
+    }
+
+    private double softStop(double input) {
+        if (turretEncoder.getPosition() > 181 && input > 0 || turretEncoder.getPosition() < -181 && input < 0) {
+            return 0;
+        }
+
+        return input;
     }
 
     /**

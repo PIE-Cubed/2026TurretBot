@@ -631,4 +631,14 @@ public class Shooter {
     //     velocity = rightMotorEncoder.getVelocity();
     //     System.out.println("velocity = " + velocity + "    " + voltage);
     // }
+
+    public void testLeftTurret() {
+        leftTurret.setTurretMotorVoltage(12);
+        leftTurret.logMotorPosition();
+        leftTurret.logMotorVelocity();
+    }
+
+    public void setTargetLeftTurretPos(double targetPosDegrees) {
+        leftTurret.setTargetFullRotation(targetPosDegrees);
+    }
 }

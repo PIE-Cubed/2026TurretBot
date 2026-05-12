@@ -326,9 +326,16 @@ public class Robot extends TimedRobot {
 
         // testShooterControl();
 
+        // shooter.testLeftTurret();
+        // shooter.testLeftTurretKS();
+        shooter.setTargetLeftTurretPos(10);
+
+        // shooter.sysIDLeftTurret();
+        // shooter.sysIDRightTurret();
+
         // shooter.stopTurrets();
         // // shooter.testFunction();
-        shooter.setHoodAngle(20, 20);
+        // shooter.setHoodAngle(20, 20);
         // shooter.setTargetRPMs(2500, 2500);
 
         // boolean shootButton = controls.getShootButton();
