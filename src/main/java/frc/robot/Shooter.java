@@ -460,7 +460,7 @@ public class Shooter {
         // acceleration from gravity (FPS)
         final double G        = 32.174;
         // velocity of ball coming out of the shooter
-        final double V0       = 23.5; // measured at 3000 rpm
+        final double V0       = 20.5; // measured at 3000 rpm
         // launch height (feet)
         final double H_LAUNCH = 16.0 / 12.0;
         // target height (feet)
@@ -640,5 +640,9 @@ public class Shooter {
 
     public void setTargetLeftTurretPos(double targetPosDegrees) {
         leftTurret.setTargetFullRotation(targetPosDegrees);
+    }
+
+    public void setTargetRightTurretPos(double targetPosDegrees) {
+        rightTurret.setTargetFullRotation(targetPosDegrees);
     }
 }

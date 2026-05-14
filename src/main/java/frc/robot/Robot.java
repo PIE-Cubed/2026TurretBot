@@ -58,8 +58,7 @@ public class Robot extends TimedRobot {
     private enum WheelState {
         TELEOP,
         LOCK_WHEELS,
-        AUTO_DRIVE,
-        AUTO_AIM,
+        AUTO_DRIVE
     }
 
     WheelState currentWheelState = WheelState.TELEOP;
@@ -104,15 +103,10 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("Auto | Side Chooser", side_chooser);
         SmartDashboard.putData("Auto | Mod Chooser", mod_chooser);
 
-        SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
-        SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetRightWheelRPM", 0);
-
-        // SmartDashboard.putNumber("ShooterRPM", 0);
-        // SmartDashboard.putNumber("HoodAngle", 0);
-
-        // pdh = new PowerDistribution(2, ModuleType.kRev);
+        // SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
+        // SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetRightWheelRPM", 0);
 
         controls = new Controls();
         drive = new Drive();
@@ -121,8 +115,6 @@ public class Robot extends TimedRobot {
         grabber = new Grabber();
         odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, grabber);
-
-        // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
 
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
@@ -140,11 +132,11 @@ public class Robot extends TimedRobot {
             .withDisplaySeconds(5)
         );
 
-        // SmartDashboard.putNumber("CurrPosX", 0);
-        // SmartDashboard.putNumber("CurrPosY", 0);
-        // SmartDashboard.putNumber("CurrPosT", 0);
-
         testAuto = Choreo.loadTrajectory("testAuto");
+
+        SmartDashboard.putNumber("targetTurretPos", 0);
+        SmartDashboard.putNumber("demoHoodPos", 0);
+        SmartDashboard.putNumber("demoWheelRPM", 0);
     }
 
     /**
@@ -304,39 +296,26 @@ public class Robot extends TimedRobot {
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
-        // climber.zeroClimberEncoder();
-        auto.restartTimer();
+        // auto.restartTimer();
     }
 
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        // wheelControl();
+        wheelControl();
         // testShooterControl();
         // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
-        // grabberControl();
-        //hopper.indexFuel();
-        //shooterControl();
-        //shooter.setTargetRPMs(3800,3800);
-        // shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
-        // climberControl();
-        // grabberControl();
+        grabberControl();
+        shooterControl();
 
         // auto.choreoPathFollower(testAuto);
 
-        // testShooterControl();
-
-        // shooter.testLeftTurret();
-        // shooter.testLeftTurretKS();
-        shooter.setTargetLeftTurretPos(10);
-
-        // shooter.sysIDLeftTurret();
-        // shooter.sysIDRightTurret();
+        shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
+        shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
 
         // shooter.stopTurrets();
-        // // shooter.testFunction();
-        // shooter.setHoodAngle(20, 20);
-        // shooter.setTargetRPMs(2500, 2500);
+        shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
+        shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
         // boolean shootButton = controls.getShootButton();
 
@@ -345,9 +324,6 @@ public class Robot extends TimedRobot {
         // } else {
         //     hopper.stopMotors();
         // }
-
-        // climber.zeroClimberEncoder();
-        // manualClimberControl();
 
         // shooter.stopHood();
         // shooter.stopWheels();
@@ -383,16 +359,12 @@ public class Robot extends TimedRobot {
 
         if (lockWheels) {
             currentWheelState = WheelState.LOCK_WHEELS;
-        // } else if (autoAim) {
-        //     currentWheelState = WheelState.AUTO_AIM;
         } else {
             currentWheelState = WheelState.TELEOP;
         }
 
         if (currentWheelState == WheelState.LOCK_WHEELS) {
             drive.lockWheels();
-        // } else if (currentWheelState == WheelState.AUTO_AIM) {
-        //     drive.shootAndDrive(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
         } else if (currentWheelState == WheelState.TELEOP) {
             drive.teleopDrive(
                 forwardPowerFwdPos,

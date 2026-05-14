@@ -143,7 +143,7 @@ public class Turret {
      * Zeros the turret encoder. For use at the beginning of auton.
      */
     public void zeroEncoder() {
-        turretEncoder.setPosition(0);
+        turretEncoder.setPosition(-180);
     }
 
     /**
