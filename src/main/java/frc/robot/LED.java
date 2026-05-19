@@ -27,4 +27,25 @@ public class LED {
         LED.setLength(LEDBuffer.getLength());
         disabledPattern.applyTo(LEDBuffer);
     }
+
+    /*
+     * TODO: Add other fancy LED functions
+     * try to do these things with the LEDs
+     * 
+     *  - make seperate buffers of lights for seperate sections of the light strip, 
+     *    so for example frontHopperLEDBuffer, leftHopperLEDBuffer, rightTurretLEDBuffer, etc
+     * 
+     *  - during the off shift, make the LEDs pulse faster leading up to the on shift
+     *    current shift data can be accessed from AllianceUtil
+     * 
+     *  - make a pattern that flashes orange along with the RSL
+     * 
+     *  - make a pattern that does a rotating green UFO-like thing
+     *    the function to set this should have an input variable for how fast it should spin
+     * 
+     *  - add some way to set the pattern
+     *    however you do it make the functions public (NOT static or private)
+     * 
+     *  - do whatever else you can think of
+     */
 }
