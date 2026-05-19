@@ -22,7 +22,7 @@ public class LED {
     private final LEDPattern disabledPattern = LEDPattern.solid(Color.kBlue);
 
     // the other code you had was outside of a constructor or other function so it didn't like that
-    // Taco bell maxxing
+    // Taco belly
     public LED() {
         LED.setLength(LEDBuffer.getLength());
         disabledPattern.applyTo(LEDBuffer);
