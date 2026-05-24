@@ -11,6 +11,8 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -20,8 +22,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Drive.PositionState;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.DriveAssist;
 import frc.robot.util.Elastic;
 import frc.robot.util.Logger;
+import frc.robot.util.DriveAssist.FieldBounds;
+import frc.robot.util.DriveAssist.RobotOutline;
 import frc.robot.util.Elastic.Notification;
 import frc.robot.util.Elastic.NotificationLevel;
 
@@ -76,6 +81,7 @@ public class Robot extends TimedRobot {
     private Grabber grabber;
     private Odometry odometry;
     private Auto auto;
+    private DriveAssist driveAssist;
 
     private Timer dsConnectTimer = new Timer();
 
@@ -115,6 +121,18 @@ public class Robot extends TimedRobot {
         grabber = new Grabber();
         odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, grabber);
+        driveAssist = new DriveAssist(
+            new RobotOutline(
+                new Translation2d[] {
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0))
+                }
+            ), 
+            new FieldBounds("rebuilt_2026_FieldBounds.json"), 
+            Drive::getPose, 
+            new double[] {SwerveModule.MAX_DRIVE_VEL_MPS, Math.toRadians(SwerveModule.MAX_ROTATE_VEL_DPS)});
 
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
@@ -344,7 +362,7 @@ public class Robot extends TimedRobot {
         boolean resetGyro = controls.resetGyro();
         boolean fieldDrive = controls.getFieldDrive();
         boolean lockWheels = controls.getWheelLock();
-        // boolean autoAim = controls.getAutoAim();
+        boolean driveAssistEnabled = controls.getDriveAssist();
 
         double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
         double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
@@ -366,6 +384,16 @@ public class Robot extends TimedRobot {
         if (currentWheelState == WheelState.LOCK_WHEELS) {
             drive.lockWheels();
         } else if (currentWheelState == WheelState.TELEOP) {
+            Transform2d adjustedInput = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
+
+            if (driveAssistEnabled) {
+                adjustedInput = driveAssist.adjustInput(adjustedInput, fieldDrive);
+            }
+
+            forwardPowerFwdPos = adjustedInput.getX();
+            strafePowerLeftPos = adjustedInput.getY();
+            rotatePowerCcwPos = adjustedInput.getRotation().getRadians();
+
             drive.teleopDrive(
                 forwardPowerFwdPos,
                 strafePowerLeftPos,

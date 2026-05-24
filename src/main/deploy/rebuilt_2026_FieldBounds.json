@@ -1,0 +1,114 @@
+{
+  "boundingBoxes": [
+    {
+      "name": "Field boundary",
+      "keepIn": true,
+      "corners": [
+        {"x": 0.0,   "y": 0.0},
+        {"x": 16.54, "y": 0.0},
+        {"x": 16.54, "y": 8.07},
+        {"x": 0.0,   "y": 8.07}
+      ]
+    },
+    {
+      "name": "Blue Hub",
+      "keepIn": false,
+      "corners": [
+        {"x": 3.43, "y": 3.44},
+        {"x": 4.62, "y": 3.44},
+        {"x": 4.62, "y": 4.63},
+        {"x": 3.43, "y": 4.63}
+      ]
+    },
+    {
+      "name": "Red Hub",
+      "keepIn": false,
+      "corners": [
+        {"x": 11.92, "y": 3.44},
+        {"x": 13.11, "y": 3.44},
+        {"x": 13.11, "y": 4.63},
+        {"x": 11.92, "y": 4.63}
+      ]
+    },
+    {
+      "name": "Blue Trench divider (guardrail side)",
+      "keepIn": false,
+      "corners": [
+        {"x": 7.62, "y": 1.668},
+        {"x": 7.92, "y": 1.668},
+        {"x": 7.92, "y": 2.233},
+        {"x": 7.62, "y": 2.233}
+      ]
+    },
+    {
+      "name": "Blue Trench divider (scoring table side)",
+      "keepIn": false,
+      "corners": [
+        {"x": 7.62, "y": 5.837},
+        {"x": 7.92, "y": 5.837},
+        {"x": 7.92, "y": 6.402},
+        {"x": 7.62, "y": 6.402}
+      ]
+    },
+    {
+      "name": "Red Trench divider (guardrail side)",
+      "keepIn": false,
+      "corners": [
+        {"x": 8.62, "y": 1.668},
+        {"x": 8.92, "y": 1.668},
+        {"x": 8.92, "y": 2.233},
+        {"x": 8.62, "y": 2.233}
+      ]
+    },
+    {
+      "name": "Red Trench divider (scoring table side)",
+      "keepIn": false,
+      "corners": [
+        {"x": 8.62, "y": 5.837},
+        {"x": 8.92, "y": 5.837},
+        {"x": 8.92, "y": 6.402},
+        {"x": 8.62, "y": 6.402}
+      ]
+    },
+    {
+      "name": "Blue Tower upright (near scoring table)",
+      "keepIn": false,
+      "corners": [
+        {"x": 0.965, "y": 3.298},
+        {"x": 1.054, "y": 3.298},
+        {"x": 1.054, "y": 3.336},
+        {"x": 0.965, "y": 3.336}
+      ]
+    },
+    {
+      "name": "Blue Tower upright (away from scoring table)",
+      "keepIn": false,
+      "corners": [
+        {"x": 0.965, "y": 4.156},
+        {"x": 1.054, "y": 4.156},
+        {"x": 1.054, "y": 4.194},
+        {"x": 0.965, "y": 4.194}
+      ]
+    },
+    {
+      "name": "Red Tower upright (near scoring table)",
+      "keepIn": false,
+      "corners": [
+        {"x": 15.486, "y": 3.876},
+        {"x": 15.575, "y": 3.876},
+        {"x": 15.575, "y": 3.914},
+        {"x": 15.486, "y": 3.914}
+      ]
+    },
+    {
+      "name": "Red Tower upright (away from scoring table)",
+      "keepIn": false,
+      "corners": [
+        {"x": 15.486, "y": 4.734},
+        {"x": 15.575, "y": 4.734},
+        {"x": 15.575, "y": 4.772},
+        {"x": 15.486, "y": 4.772}
+      ]
+    }
+  ]
+}
