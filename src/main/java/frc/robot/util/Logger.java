@@ -126,22 +126,23 @@ public class Logger {
      * @param object The object to be logged.
      */
     public static void logStruct(String name, Object object) {
-        if (enabled) {
-            if (object == null) {
+        if (enabled) { // logging is enabled
+            if (object == null) { // tried to log a null object
                 System.err.println("ERROR 404: Tried to log null object as \"" + name + "\"");
                 return;
             }
 
+            // attempt to get the existing struct pub
             StructPublisher<?> existing = structPublishers.get(name);
 
-            if (existing != null) {
-                // Check to make sure publishToExisting() will not return an error.
+            if (existing != null) { // there is already a struct pub for this key
+                // Check to make sure the object being logged is the same type as all previously logged objects under passed key
                 if (!existing.getTopic().getStruct().getTypeClass().isInstance(object)) {
                     System.err.println("ERROR 409: Type of object to be logged conflicts with type of previously logged object with name \"" + name + "\"");
                     return;
                 }
 
-                // Safe cast because of check above.
+                // Safe call because of check above.
                 publishToExisting(existing, object);
                 return;
             }
@@ -154,6 +155,7 @@ public class Logger {
                 return;
             }
 
+            // keep the newly created publisher and then publish the object
             structPublishers.put(name, newPub);
             publishToExisting(newPub, object);
         }
@@ -265,14 +267,28 @@ public class Logger {
         return null;  // unsupported type
     }
 
-    public static void setEnabled(Boolean enable) {
+    /**
+     * Sets whether logging should be enabled or disabled
+     * @param enable Whether logging should be enabled or not
+     */
+    public static void setEnabled(boolean enable) {
         enabled = enable;
     }
 
-    public static Boolean getEnabled() {
+    /**
+     * Gets whether logging is enabled or not
+     * @return Whether logging is enabled or not
+     */
+    public static boolean getEnabled() {
         return enabled;
     }
 
+    /**
+     * Gets the value of a struct that has been logged
+     * @param key The name of the struct
+     * @param struct The struct type
+     * @return A StructEntry representing the value
+     */
     public static StructEntry<?> getStruct(String key, Struct<?> struct) {
         return table.getStructTopic(key, struct).getEntry(null, new PubSubOption[] {PubSubOption.sendAll(false)});
     }

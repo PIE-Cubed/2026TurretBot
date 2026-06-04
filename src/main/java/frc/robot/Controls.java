@@ -18,7 +18,7 @@ public class Controls {
         driveController = new ZorroController(0);
     }
 
-    // Zorro Controller
+    // ------------------- Zorro Controller ------------------------- //
 
     public double getForwardPowerFwdPositive() {
         double powerFwdPos = driveController.getLeftY();
@@ -73,7 +73,7 @@ public class Controls {
         // return driveController.getHButton();
     }
 
-    public boolean getAutoAim() {
+    public boolean getDriveAssist() {
         return driveController.getFTwoPosSwitch();
     }
 

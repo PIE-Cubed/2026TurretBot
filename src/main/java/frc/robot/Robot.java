@@ -12,6 +12,7 @@ import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,8 +22,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Drive.PositionState;
 import frc.robot.util.AllianceUtil;
+import frc.robot.util.DriveAssist;
 import frc.robot.util.Elastic;
 import frc.robot.util.Logger;
+import frc.robot.util.DriveAssist.FieldBounds;
+import frc.robot.util.DriveAssist.RobotOutline;
 import frc.robot.util.Elastic.Notification;
 import frc.robot.util.Elastic.NotificationLevel;
 
@@ -59,8 +63,7 @@ public class Robot extends TimedRobot {
     private enum WheelState {
         TELEOP,
         LOCK_WHEELS,
-        AUTO_DRIVE,
-        AUTO_AIM,
+        AUTO_DRIVE
     }
 
     WheelState currentWheelState = WheelState.TELEOP;
@@ -78,6 +81,7 @@ public class Robot extends TimedRobot {
     private Grabber grabber;
     private Odometry odometry;
     private Auto auto;
+    private DriveAssist driveAssist;
 
     private Timer dsConnectTimer = new Timer();
 
@@ -97,6 +101,7 @@ public class Robot extends TimedRobot {
         // side_chooser.addOption("Depot (Risky)", kRiskyDepotAuto);
         side_chooser.addOption("Depot", kDepotAuto);
         // side_chooser.addOption("Test", kTestAuto);
+        side_chooser.addOption("Magic 8 Ball", "Magic 8 Ball");
 
         mod_chooser.setDefaultOption("Mod 1", kMod1);
         mod_chooser.addOption("Mod 2", kMod2);
@@ -104,15 +109,10 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData("Auto | Side Chooser", side_chooser);
         SmartDashboard.putData("Auto | Mod Chooser", mod_chooser);
 
-        SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
-        SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
-        SmartDashboard.putNumber("TargetRightWheelRPM", 0);
-
-        // SmartDashboard.putNumber("ShooterRPM", 0);
-        // SmartDashboard.putNumber("HoodAngle", 0);
-
-        // pdh = new PowerDistribution(2, ModuleType.kRev);
+        // SmartDashboard.putNumber("TargetLeftHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetLeftWheelRPM", 0);
+        // SmartDashboard.putNumber("TargetRightHoodAngleDegrees", 0);
+        // SmartDashboard.putNumber("TargetRightWheelRPM", 0);
 
         controls = new Controls();
         drive = new Drive();
@@ -121,8 +121,18 @@ public class Robot extends TimedRobot {
         grabber = new Grabber();
         odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, grabber);
-
-        // drive.resetPose(new Pose2d(Drive.SWERVE_DIST_FROM_CENTER, Drive.SWERVE_DIST_FROM_CENTER, Rotation2d.kZero));
+        driveAssist = new DriveAssist(
+            new RobotOutline(
+                new Translation2d[] {
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0)),
+                    new Translation2d(Units.inchesToMeters(0), Units.inchesToMeters(0))
+                }
+            ), 
+            new FieldBounds("rebuilt_2026_FieldBounds.json"), 
+            Drive::getPose, 
+            new double[] {SwerveModule.MAX_DRIVE_VEL_MPS, Math.toRadians(SwerveModule.MAX_ROTATE_VEL_DPS)});
 
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
@@ -140,11 +150,11 @@ public class Robot extends TimedRobot {
             .withDisplaySeconds(5)
         );
 
-        // SmartDashboard.putNumber("CurrPosX", 0);
-        // SmartDashboard.putNumber("CurrPosY", 0);
-        // SmartDashboard.putNumber("CurrPosT", 0);
-
         testAuto = Choreo.loadTrajectory("testAuto");
+
+        SmartDashboard.putNumber("targetTurretPos", 0);
+        SmartDashboard.putNumber("demoHoodPos", 0);
+        SmartDashboard.putNumber("demoWheelRPM", 0);
     }
 
     /**
@@ -260,6 +270,8 @@ public class Robot extends TimedRobot {
                 break;
             case kNoAuto:
                 break;
+            case "Magic 8 Ball":
+                auto.eightBallAuto();
             default:
                 // Put default auto code here
                 break;
@@ -302,32 +314,26 @@ public class Robot extends TimedRobot {
     /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
-        // climber.zeroClimberEncoder();
-        auto.restartTimer();
+        // auto.restartTimer();
     }
 
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        // wheelControl();
+        wheelControl();
         // testShooterControl();
         // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
-        // grabberControl();
-        //hopper.indexFuel();
-        //shooterControl();
-        //shooter.setTargetRPMs(3800,3800);
-        // shooter.setHoodAngle(SmartDashboard.getNumber("TargetHoodAngleDegrees", 0));
-        // climberControl();
-        // grabberControl();
+        grabberControl();
+        shooterControl();
 
         // auto.choreoPathFollower(testAuto);
 
-        // testShooterControl();
+        shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
+        shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
 
         // shooter.stopTurrets();
-        // // shooter.testFunction();
-        shooter.setHoodAngle(20, 20);
-        // shooter.setTargetRPMs(2500, 2500);
+        shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
+        shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
         // boolean shootButton = controls.getShootButton();
 
@@ -336,9 +342,6 @@ public class Robot extends TimedRobot {
         // } else {
         //     hopper.stopMotors();
         // }
-
-        // climber.zeroClimberEncoder();
-        // manualClimberControl();
 
         // shooter.stopHood();
         // shooter.stopWheels();
@@ -359,7 +362,7 @@ public class Robot extends TimedRobot {
         boolean resetGyro = controls.resetGyro();
         boolean fieldDrive = controls.getFieldDrive();
         boolean lockWheels = controls.getWheelLock();
-        // boolean autoAim = controls.getAutoAim();
+        boolean driveAssistEnabled = controls.getDriveAssist();
 
         double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
         double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
@@ -374,17 +377,23 @@ public class Robot extends TimedRobot {
 
         if (lockWheels) {
             currentWheelState = WheelState.LOCK_WHEELS;
-        // } else if (autoAim) {
-        //     currentWheelState = WheelState.AUTO_AIM;
         } else {
             currentWheelState = WheelState.TELEOP;
         }
 
         if (currentWheelState == WheelState.LOCK_WHEELS) {
             drive.lockWheels();
-        // } else if (currentWheelState == WheelState.AUTO_AIM) {
-        //     drive.shootAndDrive(forwardPowerFwdPos, strafePowerLeftPos, fieldDrive);
         } else if (currentWheelState == WheelState.TELEOP) {
+            Transform2d adjustedInput = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
+
+            if (driveAssistEnabled) {
+                adjustedInput = driveAssist.adjustInput(adjustedInput, fieldDrive);
+            }
+
+            forwardPowerFwdPos = adjustedInput.getX();
+            strafePowerLeftPos = adjustedInput.getY();
+            rotatePowerCcwPos = adjustedInput.getRotation().getRadians();
+
             drive.teleopDrive(
                 forwardPowerFwdPos,
                 strafePowerLeftPos,

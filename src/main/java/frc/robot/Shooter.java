@@ -99,12 +99,13 @@ public class Shooter {
     private final double LEFT_HOOD_P = 0.5;
     private final double LEFT_HOOD_I = 0.0;
     private final double LEFT_HOOD_D = 0.01;
-    private final double LEFT_HOOD_S = 0.06;
+    // private final double LEFT_HOOD_S = 0.06;
     private final double RIGHT_HOOD_P = 0.5;
     private final double RIGHT_HOOD_I = 0.0;
     private final double RIGHT_HOOD_D = 0.01;
-    private final double RIGHT_HOOD_S = 0.06;
+    // private final double RIGHT_HOOD_S = 0.06;
     private final double HOOD_TOLERANCE = 0.25;
+    private static final double HOOD_SOFT_STOP_ZONE_DEG = 1.5;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
     private final double HOOD_MAX_ANGLE_DEG = 21.75;
@@ -156,6 +157,7 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 21.5));
         distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 21.5)); // guess
 
+        // initialize turrets
         leftTurret = new Turret(
             LEFT_TURRET_MOTOR_ID, LEFT_TURRET_ENCODER_CHANNEL, LEFT_TURRET_ENCODER_OFFSET,
             leftTurretOffset, LEFT_TURRET_P, LEFT_TURRET_I, LEFT_TURRET_D, LEFT_TURRET_TOLERANCE
@@ -166,18 +168,21 @@ public class Shooter {
             rightTurretOffset, RIGHT_TURRET_P, RIGHT_TURRET_I, RIGHT_TURRET_D, RIGHT_TURRET_TOLERANCE
         );
 
+        // initialize flywheel motors
         leftMotor = new SparkFlex(LEFT_MOTOR_ID, MotorType.kBrushless);
         leftMotorConfig = new SparkFlexConfig();
 
         rightMotor = new SparkFlex(RIGHT_MOTOR_ID, MotorType.kBrushless);
         rightMotorConfig = new SparkFlexConfig();
 
+        // initialize hood motors
         leftHoodMotor = new SparkMax(LEFT_HOOD_MOTOR_ID, MotorType.kBrushless);
         leftHoodMotorConfig = new SparkMaxConfig();
 
         rightHoodMotor = new SparkMax(RIGHT_HOOD_MOTOR_ID, MotorType.kBrushless);
         rightHoodMotorConfig = new SparkMaxConfig();
 
+        // configure motors
         leftMotorConfig.idleMode(IdleMode.kCoast);
         leftMotorConfig.smartCurrentLimit(80);
         leftMotorConfig.disableFollowerMode();
@@ -200,6 +205,7 @@ public class Shooter {
         rightHoodMotorConfig.inverted(true);
         rightHoodMotorConfig.disableFollowerMode();
 
+        // initialize and configure flywheel encoders
         leftMotorEncoder = leftMotor.getEncoder();
         leftMotorEncoderConfig = new EncoderConfig();
         leftMotorEncoderConfig.positionConversionFactor(1.0);
@@ -212,6 +218,7 @@ public class Shooter {
         rightMotorEncoderConfig.velocityConversionFactor(1.0);
         rightMotorConfig.apply(rightMotorEncoderConfig);
 
+        // initialize and configure hood encoders
         leftHoodEncoder = leftHoodMotor.getEncoder();
         leftHoodEncoderConfig = new EncoderConfig();
         leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
@@ -224,6 +231,7 @@ public class Shooter {
         rightHoodMotorConfig.apply(rightHoodEncoderConfig);
         rightHoodEncoder.setPosition(0);
 
+        // initialize PID controllers
         leftPIDController = new PIDController(LEFT_P, LEFT_I, LEFT_D);
         leftPIDController.setTolerance(LEFT_TOLERANCE);
 
@@ -236,12 +244,16 @@ public class Shooter {
         rightHoodPIDController = new PIDController(RIGHT_HOOD_P, RIGHT_HOOD_I, RIGHT_HOOD_D);
         rightHoodPIDController.setTolerance(HOOD_TOLERANCE);
 
+        // apply motor configs
         leftMotor.configure(leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         leftHoodMotor.configure(leftHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         rightHoodMotor.configure(rightHoodMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     }
 
+    /**
+     * current logging
+     */
     public void log() {
         SmartDashboard.putNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
         SmartDashboard.putNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
@@ -258,10 +270,16 @@ public class Shooter {
         Robot.totalCurrent += SmartDashboard.getNumber("currents/right turret current", rightTurret.getMotorCurrent());
     }
 
+    /**
+     * helper function for current logging, extrapolates input current from duty cycle and stator current
+     */
     private double getInputCurrent(SparkBase motor) {
         return motor.getOutputCurrent() * Math.abs(motor.getAppliedOutput());
     }
 
+    /**
+     * Sets hood and turret encoders to zero. Should only be ran at match start.
+     */
     public void zeroTurrets() {
         leftHoodEncoder.setPosition(0);
         rightHoodEncoder.setPosition(0);
@@ -269,16 +287,25 @@ public class Shooter {
         rightTurret.zeroEncoder();
     }
 
+    /**
+     * Nudges each turret encoder by the passed amount.
+     */
     public void nudgeTurret(double leftTurretAdjust, double rightTurretAdjust) {
         leftTurret.nudgeEncoder(leftTurretAdjust);
         rightTurret.nudgeEncoder(rightTurretAdjust);
     }
 
+    /**
+     * Nudges the shot distance for each turret by the passed ammount.
+     */
     public void distAdjust(double leftDistAdjust, double rightDistAdjust) {
         this.leftDistAdjust += this.leftDistAdjust + leftDistAdjust;
         this.rightDistAdjust += this.rightDistAdjust + rightDistAdjust;
     }
 
+    /**
+     * weird way of combining distAdjust() and nudgeTurrets() TODO: replace this with some better way of compensation
+     */
     public void nudgeAim(Translation2d leftAdjust, Translation2d rightAdjust) {
         nudgeTurret(leftAdjust.getX(), rightAdjust.getX());
         distAdjust(leftAdjust.getY(), rightAdjust.getY());
@@ -288,67 +315,55 @@ public class Shooter {
     }
 
     /**
-     * voltage should be -12 to 12
-     * @param rightVoltage
-     * @param leftVoltage
+     * Stops both turret motors.
      */
-    // public void setWheelVoltages(double rightVoltage, double leftVoltage) {
-    //     setFlywheelMotorVoltage(rightVoltage);
-    //     setleftMotorVoltage(leftVoltage);
-    // }
-
-    /**
-     * voltage should be -12 to 12
-     * @param voltage
-     */
-    // public void setleftMotorVoltage(double voltage) {
-    //     leftMotor.setVoltage(voltage);
-    // }
-
-    /**
-     * voltage should be -12 to 12
-     * @param voltage
-     */
-    // public void setFlywheelMotorVoltage(double voltage) {
-    //     rightMotor.setVoltage(voltage);
-    // }
-
-    /**
-     * voltage should be -12 to 12
-     * @param voltage
-     */
-    // public void setHoodMotorVoltage(double voltage) {
-    //     leftHoodMotor.setVoltage(voltage);
-    // }
-
     public void stopTurrets() {
         leftTurret.setTurretMotorVoltage(0);
         rightTurret.setTurretMotorVoltage(0);
     }
 
+    /**
+     * Auto adjust but meant for auto in use cases where SOTM is not necessary.
+     */
     public void autoAdjust(boolean hoodUp) {
         autoAdjust(hoodUp, Transform2d.kZero, Translation2d.kZero, true, false);
     }
 
-    public void autoAdjust(boolean hoodUp, Transform2d robotVel, Translation2d aimAdjust, boolean fieldDrive, boolean pass) {
+    /**
+     * Automatically determines hood angle, wheel RPM, and turret angle for both shooters.
+     * @param hoodUp Whether the hood should be up or stowed down for safety under the trench.
+     * @param driveInput Drive controller movement input for SOTM.
+     * @param aimAdjust Manipulator offset of aim.
+     * @param fieldDrive Whether the drive input is for field relative or robot relative drive.
+     * @param pass Whether to aim for passing shots while away from home zone.
+     */
+    public void autoAdjust(boolean hoodUp, Transform2d driveInput, Translation2d aimAdjust, boolean fieldDrive, boolean pass) {
+        // initialize targetPose, set value later
         Pose2d targetPose = null;
+        // get which side of the field you are on for passing
         double y = Drive.getPose().getY();
+        // get which part of the field you're on
         PositionState currPositionState = Drive.getPositionState();
 
-        double leftDist = leftTurret.getAdjustedHubDistance(robotVel) + leftDistAdjust;
-        double rightDist = rightTurret.getAdjustedHubDistance(robotVel) + rightDistAdjust;
+        // TODO figure out how to get the adjusted hub distance better
+        double leftDist = leftTurret.getAdjustedHubDistanceMeters(driveInput, 1);
+        double rightDist = rightTurret.getAdjustedHubDistanceMeters(driveInput, 1);
 
+        // if passing is enabled, do passing logic
         if (pass) {
             if (currPositionState == PositionState.AWAY) {
+                // robot is in opposite alliance zone, do long pass
                 leftDist = -2;
                 rightDist = -2;
                 if (y > 4.04) {
+                    // aim at left side
                     if (AllianceUtil.isRedAlliance()) {
                         targetPose = new Pose2d(11.8, 7.3, Rotation2d.kZero);
                     } else {
                         targetPose = new Pose2d(4.8, 7.3, Rotation2d.kZero);
                     }
                 } else {
+                    // aim at right side
                     if (AllianceUtil.isRedAlliance()) {
                         targetPose = new Pose2d(11.8, 0.75, Rotation2d.kZero);
                     } else {
@@ -356,15 +371,18 @@ public class Shooter {
                     }
                 }
             } else if (currPositionState == PositionState.MID) {
+                // robot is in neutral zone, do short pass
                 leftDist = -1;
                 rightDist = -1;
                 if (y > 4.04) {
+                    // aim at left side
                     if (AllianceUtil.isRedAlliance()) {
                         targetPose = new Pose2d(16.0, 6.2, Rotation2d.kZero);
                     } else {
                         targetPose = new Pose2d(1.0, 6.2, Rotation2d.kZero);
                     }
                 } else {
+                    // aim at right side
                     if (AllianceUtil.isRedAlliance()) {
                         targetPose = new Pose2d(16.0, 1.9, Rotation2d.kZero);
                     } else {
@@ -372,56 +390,80 @@ public class Shooter {
                     }
                 }
             } else {
+                // in home zone, aim at hub
                 targetPose = 
                     ((AllianceUtil.isRedAlliance()) ? FieldConstants.hubRedAlliance : FieldConstants.hubBlueAlliance);
             }
         } else {
+            // passing is disabled, aim at hub
             targetPose = 
                 ((AllianceUtil.isRedAlliance()) ? FieldConstants.hubRedAlliance : FieldConstants.hubBlueAlliance);
         }
         
+        // get result of distance map for left shooter
         Matrix<N4, N1> mapResult = distMapMeters.get(leftDist);
         
+        // extract RPM and angle from vector
         double targetLeftRPM = mapResult.get(0, 0);
         double targetLeftHoodAngle = mapResult.get(1, 0);
+        // get air time for left shooter
         double ballAirTimeLeft = getFlightTime(leftDist);
 
+        // get result of distance map for right shooter
         mapResult = distMapMeters.get(rightDist);
         
+        // extract RPM and angle from vector
         double targetRightRPM = mapResult.get(2, 0);
         double targetRightHoodAngle = mapResult.get(3, 0);
+        // get air time for right shooter
         double ballAirTimeRight = getFlightTime(rightDist);
 
+        // weird distance adjust logic, TODO make this better
         double targetTheta = Math.atan2(targetPose.getY() - Drive.getPose().getY(), targetPose.getX() - Drive.getPose().getX());
 
         targetPose = targetPose.plus(new Transform2d(aimAdjust.rotateBy(Rotation2d.fromRadians(targetTheta)), Rotation2d.kZero));
 
+        // adjust drive input for robot relative driving
         if (!fieldDrive) {
-            robotVel = new Transform2d(robotVel.getTranslation().rotateBy(Drive.getPose().getRotation()), robotVel.getRotation());
+            driveInput = new Transform2d(driveInput.getTranslation().rotateBy(Drive.getPose().getRotation()), driveInput.getRotation());
         }
 
-        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, robotVel);
-        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, robotVel);
+        // move turrets
+        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
+        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
+        // set RPM
         setTargetRPMs(targetRightRPM, targetLeftRPM);
 
+        // only move the hood if hoodUp is true
         if (hoodUp) {
             setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
         } else {
+            // stow hood
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
         }
 
-        leftTurret.printEncoderValues();
-        rightTurret.printEncoderValues();
+        // leftTurret.printEncoderValues();
+        // rightTurret.printEncoderValues();
     }
 
+    /**
+     * helper function for SOTM, gets the estimated time that the fuel will be in the air
+     * @param distanceMeters distance from the hub
+     * @return the flight time
+     */
     private double getFlightTime(double distanceMeters) {
+        // passing, shoot on the move should be disabled
         if (distanceMeters < 0) {
             return 0;
         }
 
+        // acceleration from gravity (FPS)
         final double G        = 32.174;
-        final double V0       = 23.5; // measured at 3000 rpm
+        // velocity of ball coming out of the shooter
+        final double V0       = 20.5; // measured at 3000 rpm
+        // launch height (feet)
         final double H_LAUNCH = 16.0 / 12.0;
+        // target height (feet)
         final double H_TARGET = 56.5 / 12.0;
 
         // equation needs angle from flat, but we store angle from vertical.
@@ -446,6 +488,7 @@ public class Shooter {
         if (t1 > 0 && t2 > 0) return Math.max(t1, t2);
         if (t1 > 0) return t1;
         if (t2 > 0) return t2;
+        // quadratic failed, return 0.8 seconds as a last resort
         return 0.8;
     }
 
@@ -455,18 +498,23 @@ public class Shooter {
      * @param targetleftRPM Target RPM of the left motor.
      */
     public void setTargetRPMs(double targetRightRPM, double targetLeftRPM) {
+        // get current RPM
         double currentRightRPM = rightMotorEncoder.getVelocity();
         double currentLeftRPM = leftMotorEncoder.getVelocity();
 
+        // log current RPM
         SmartDashboard.putNumber("Left RPM", currentLeftRPM);
         SmartDashboard.putNumber("Right RPM", currentRightRPM);
 
+        // calculate voltage via PIDF controller
         double leftVoltage = LEFT_F * targetLeftRPM + leftPIDController.calculate(currentLeftRPM, targetLeftRPM);
         double rightVoltage = RIGHT_F * targetRightRPM + rightPIDController.calculate(currentRightRPM, targetRightRPM);
 
+        // clamp voltage to usable values
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
         leftVoltage = MathUtil.clamp(leftVoltage, -12, 12);
 
+        // set voltage to motor
         rightMotor.setVoltage(rightVoltage);
         leftMotor.setVoltage(leftVoltage);
     }
@@ -476,29 +524,41 @@ public class Shooter {
      * @param targetLeftAngleDeg The target angle, in degrees. Clamped to HOOD_MIN_ANGLE_DEG and HOOD_MAX_ANGLE_DEG.
      */
     public void setHoodAngle(double targetLeftAngleDeg, double targetRightAngleDeg) {
+        // clamp the target angle to usable range
         targetLeftAngleDeg = MathUtil.clamp(targetLeftAngleDeg, HOOD_MIN_ANGLE_DEG, HOOD_MAX_ANGLE_DEG);
         targetRightAngleDeg = MathUtil.clamp(targetRightAngleDeg, HOOD_MIN_ANGLE_DEG, HOOD_MAX_ANGLE_DEG);
 
+        // log the target angle
         SmartDashboard.putNumber("Target Left Hood", targetLeftAngleDeg);
         SmartDashboard.putNumber("Target Right Hood", targetRightAngleDeg);
 
+        // get current hood angle
         double currLeftPositionDeg = leftHoodEncoder.getPosition();
         double currRightPositionDeg = rightHoodEncoder.getPosition();
 
+        // calculate voltage from PID
         double leftVoltage = leftHoodPIDController.calculate(currLeftPositionDeg, targetLeftAngleDeg);
+        // clamp to reasonable value
         leftVoltage = MathUtil.clamp(leftVoltage, -12, 12);
+        // stop motor if PID tries to go above max angle
         leftVoltage = applySoftStop(leftVoltage, currLeftPositionDeg);
 
+        // same as above but for right hood
         double rightVoltage = rightHoodPIDController.calculate(currRightPositionDeg, targetRightAngleDeg);
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
         rightVoltage = applySoftStop(rightVoltage, currRightPositionDeg);
 
+        // set hood voltage
         leftHoodMotor.setVoltage(leftVoltage);
         rightHoodMotor.setVoltage(rightVoltage);
     }
 
-    private static final double SOFT_STOP_ZONE_DEG = 1.5; // tune this
-
+    /**
+     * helper function for hood PID controller, stops hood motor if PID tries to push past the max/min angle
+     * @param voltage PID output voltage
+     * @param currentAngleDeg current hood angle
+     * @return the adjusted voltage
+     */
     private double applySoftStop(double voltage, double currentAngleDeg) {
         // Distance from each hard limit
         double distFromMin = currentAngleDeg - HOOD_MIN_ANGLE_DEG;
@@ -509,46 +569,54 @@ public class Shooter {
         if (distFromMax <= 0 && voltage > 0) return 0;
 
         // Soft stop: scale down voltage approaching min
-        if (distFromMin < SOFT_STOP_ZONE_DEG && voltage < 0) {
-            voltage *= (distFromMin / SOFT_STOP_ZONE_DEG);
+        if (distFromMin < HOOD_SOFT_STOP_ZONE_DEG && voltage < 0) {
+            voltage *= (distFromMin / HOOD_SOFT_STOP_ZONE_DEG);
         }
 
         // Soft stop: scale down voltage approaching max
-        if (distFromMax < SOFT_STOP_ZONE_DEG && voltage > 0) {
-            voltage *= (distFromMax / SOFT_STOP_ZONE_DEG);
+        if (distFromMax < HOOD_SOFT_STOP_ZONE_DEG && voltage > 0) {
+            voltage *= (distFromMax / HOOD_SOFT_STOP_ZONE_DEG);
         }
 
         return voltage;
     }
 
+    /**
+     * logging of flywheel RPM
+     */
     public void printWheelRPMs() {
         SmartDashboard.putNumber("Shooter/CurrentRightRPM", rightMotorEncoder.getVelocity());
         SmartDashboard.putNumber("Shooter/CurrentLeftRPM", leftMotorEncoder.getVelocity());
     }
 
+    /**
+     * stops flywheel motors
+     */
     public void stopWheels() {
         rightMotor.stopMotor();
         leftMotor.stopMotor();
     }
 
-    // public void testFunction() {
-        
-    // }
-
+    /**
+     * stops hood motors
+     */
     public void stopHood() {
         leftHoodMotor.stopMotor();
         rightHoodMotor.stopMotor();
     }
 
-    public boolean atTargetRPM() {
-        if (leftPIDController.atSetpoint() && rightPIDController.atSetpoint()) {
-            atTargetRPMCount ++;
-        } else {
-            atTargetRPMCount = 0;
-        }
+    /**
+     * unused code, TODO make this work and implement in auto
+     */
+    // public boolean atTargetRPM() {
+    //     if (leftPIDController.atSetpoint() && rightPIDController.atSetpoint()) {
+    //         atTargetRPMCount ++;
+    //     } else {
+    //         atTargetRPMCount = 0;
+    //     }
 
-        return atTargetRPMCount >= 10;
-    }
+    //     return atTargetRPMCount >= 10;
+    // }
 
     /******************************************************************************************************
      *
@@ -556,11 +624,25 @@ public class Shooter {
      *
      ******************************************************************************************************/
 
-    public void testVoltageVsVelocity(double voltage) {
-        double velocity;
+    // public void testVoltageVsVelocity(double voltage) {
+    //     double velocity;
 
-        rightMotor.setVoltage(voltage);
-        velocity = rightMotorEncoder.getVelocity();
-        System.out.println("velocity = " + velocity + "    " + voltage);
+    //     rightMotor.setVoltage(voltage);
+    //     velocity = rightMotorEncoder.getVelocity();
+    //     System.out.println("velocity = " + velocity + "    " + voltage);
+    // }
+
+    public void testLeftTurret() {
+        leftTurret.setTurretMotorVoltage(12);
+        leftTurret.logMotorPosition();
+        leftTurret.logMotorVelocity();
+    }
+
+    public void setTargetLeftTurretPos(double targetPosDegrees) {
+        leftTurret.setTargetFullRotation(targetPosDegrees);
+    }
+
+    public void setTargetRightTurretPos(double targetPosDegrees) {
+        rightTurret.setTargetFullRotation(targetPosDegrees);
     }
 }
