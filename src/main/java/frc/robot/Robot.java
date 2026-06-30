@@ -82,6 +82,7 @@ public class Robot extends TimedRobot {
     private Odometry odometry;
     private Auto auto;
     private DriveAssist driveAssist;
+    private LED led;
 
     private Timer dsConnectTimer = new Timer();
 
@@ -133,6 +134,7 @@ public class Robot extends TimedRobot {
             new FieldBounds("rebuilt_2026_FieldBounds.json"), 
             Drive::getPose, 
             new double[] {SwerveModule.MAX_DRIVE_VEL_MPS, Math.toRadians(SwerveModule.MAX_ROTATE_VEL_DPS)});
+        led = new LED();
 
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
@@ -166,6 +168,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
+        led.periodic();
+
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
 
         // Odometry and Pose
