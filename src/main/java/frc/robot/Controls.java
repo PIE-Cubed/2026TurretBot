@@ -73,7 +73,7 @@ public class Controls {
         // return driveController.getHButton();
     }
 
-    public boolean getAutoAim() {
+    public boolean getDriveAssist() {
         return driveController.getFTwoPosSwitch();
     }
 
