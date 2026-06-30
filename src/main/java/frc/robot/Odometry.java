@@ -4,13 +4,17 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -339,18 +343,6 @@ public class Odometry {
         return !getAllTags().isEmpty();
     }
 
-    /*******************************************************************************************
-     *
-     *                                     HELPER FUNCTIONS
-     *
-     *******************************************************************************************/
-
-    /*******************************************************************************************
-     *
-     *                                      TEST FUNCTIONS
-     *
-     *******************************************************************************************/
-
     public static class CameraPackage {
         private PhotonCamera camera;
         private PhotonPoseEstimator poseEstimator;
@@ -427,6 +419,52 @@ public class Odometry {
 
         public List<PhotonPipelineResult> getRawResults() {
             return cameraResults;
+        }
+    }
+
+    public static class ObjectDetector {
+        private PhotonCamera camera;
+        private Transform3d cameraOffset;
+
+        private ArrayList<Pose2d> objectPositions;
+
+        public ObjectDetector(
+            PhotonCamera camera,
+            Transform3d cameraOffset
+        ) {
+            this.camera = camera;
+            this.cameraOffset = cameraOffset;
+
+            objectPositions = new ArrayList<>();
+        }
+
+        public ArrayList<Pose2d> getObjects() {
+            return new ArrayList<>(objectPositions);
+        }
+
+        public void update() {
+            List<PhotonPipelineResult> results = camera.getAllUnreadResults();
+            PhotonPipelineResult latestResult = results.get(results.size() - 1);
+
+            for (PhotonTrackedTarget target : latestResult.getTargets()) {
+                objectPositions.add(getFieldLocationOfObject(target));
+            }
+        }
+
+        private Pose2d getFieldLocationOfObject(PhotonTrackedTarget target) {
+            double yaw = target.getYaw();
+            double pitch = target.getPitch();
+
+            Transform3d cameraOffsetWithInput = cameraOffset.plus(new Transform3d(Translation3d.kZero, new Rotation3d(0, pitch, yaw)));
+
+            double adjustedHeight = cameraOffsetWithInput.getZ() - Units.inchesToMeters(6/2); // TODO make this work for other game pieces than this year's fuel
+            double distance = Math.tan(Math.PI/2 - cameraOffsetWithInput.getRotation().getY()) * adjustedHeight;
+
+            Translation2d robotToFuel = new Translation2d(distance, Rotation2d.fromRadians(cameraOffsetWithInput.getRotation().getZ()));
+
+            Pose2d fieldLocation = new Pose2d(Drive.getPose().getTranslation().plus(robotToFuel), Rotation2d.kZero);
+
+            return fieldLocation;
         }
     }
 }

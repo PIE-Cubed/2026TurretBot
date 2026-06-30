@@ -41,6 +41,8 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.photonvision.EstimatedRobotPose;
 
@@ -81,6 +83,7 @@ public class Drive {
     private PathPlannerTrajectory otfTrajectory;
     private boolean otfFirstTime = true;
     private Timer otfTimer;
+    private RobotConfig robotConfig;
 
     // AprilTag PID controllers
     private PIDController otfStrafePID;
@@ -241,6 +244,16 @@ public class Drive {
             BUMP_STD_DEV
         );
 
+        robotConfig = new RobotConfig(
+            ROBOT_MASS_KG,
+            ROBOT_MOI,
+            SwerveModule.swerveModuleConfig,
+            frontLeftLocation,
+            frontRightLocation,
+            backLeftLocation,
+            backRightLocation
+        );
+
         otfTimer.restart();
     }
 
@@ -378,13 +391,11 @@ public class Drive {
 
     /**
      * <p> Drives the robot to a target pose on the field.
-     * <p> The PID controllers are tuned for PathPlanner trajectory samples,
-     *     not for large movements which driveToAprilTag's PIDs are tuned for.
      * <p> OTF means on-the-fly
      * @param targetPose
      * The target robot pose to drive to based on field coordinates (x = 0, y = 0 at the blue alliance's right corner from blue driver perspective)
      */
-    public int otfDriveTo(Pose2d targetPose) {
+    public int otfDriveTo(Translation2d startVelocity, Pose2d... targetPoses) {
         Pose2d pose = getPose();
 
         if (
@@ -411,52 +422,43 @@ public class Drive {
             //System.out.println("yaw rate: " + getYawRate());
             //System.out.println("initial pose: " + initialPose);
 
-            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-                initialPose,
-                // initialPose.interpolate(targetPose, 0.5),
-                targetPose
-            );
+            // make a list of the target poses with the initial pose appended to the front
+            ArrayList<Pose2d> allPoses = new ArrayList<Pose2d>((List.of(targetPoses)));
+            allPoses.add(0, initialPose);
+
+            List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(allPoses);
 
             // for (Waypoint point : waypoints) {
             //     System.out.println("waypoint anchor: " + point.anchor());
             // }
 
-            // used to be unlimited constraints HOWEVER PathPlanner apparently sets all the max values EXTREMELY low for safety
             PathConstraints constraints = new PathConstraints(
-                2,
-                2.5,
-                Units.degreesToRadians(270),
-                Units.degreesToRadians(270),
-                12,
-                false
+                7, // max velocity MPS
+                2.75, // max accel MPS^2
+                Units.degreesToRadians(270), // max rotational vel RADPS
+                Units.degreesToRadians(270), // max rotational accel RADPS^2
+                12, // nominal voltage
+                false // constraints are not unlimited
             );
 
             otfPath = new PathPlannerPath(
                 waypoints,
                 constraints,
-                new IdealStartingState(0/* change this to current velocity later */, initialPose.getRotation()),
-                new GoalEndState(0, targetPose.getRotation())
+                new IdealStartingState(startVelocity.getNorm(), startVelocity.getAngle()), // bezier curve start
+                new GoalEndState(0, targetPoses[targetPoses.length - 1].getRotation()) // bezier curve end
             );
 
             // for (PathPoint point : otfPath.getAllPathPoints()) {
             //     System.out.println("OTF path sample" + point.position);
             // }
 
-            ChassisSpeeds initialSpeeds = new ChassisSpeeds(0, 0, getYawRateRadians());
+            ChassisSpeeds initialSpeeds = new ChassisSpeeds(startVelocity.getX(), startVelocity.getY(), getYawRateRadians());
 
             otfTrajectory = new PathPlannerTrajectory(
                 otfPath,
                 initialSpeeds,
                 initialPose.getRotation(),
-                new RobotConfig(
-                    ROBOT_MASS_KG,
-                    ROBOT_MOI,
-                    SwerveModule.swerveModuleConfig,
-                    frontLeftLocation,
-                    frontRightLocation,
-                    backLeftLocation,
-                    backRightLocation
-                )
+                robotConfig
             );
 
             // for (PathPlannerTrajectoryState point : otfTrajectory.getStates()) {
@@ -486,21 +488,6 @@ public class Drive {
             false
         );
 
-        //DogLog.log("Drive/otfSamplePose", samplePose);
-        /*
-        ChassisSpeeds speeds = 
-            ChassisSpeeds.fromFieldRelativeSpeeds(otfForwardPID.calculate(pose.getX(),                     samplePose.getX()),
-                                                  otfStrafePID.calculate( pose.getY(),                     samplePose.getY()),
-                                                  otfRotatePID.calculate( pose.getRotation().getDegrees(), samplePose.getRotation().getDegrees()),
-                                                  pose.getRotation());
-
-        SwerveModuleState[] swerveModuleStates = swerveDriveKinematics.toSwerveModuleStates(speeds);
-
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_WHEEL_SPEED);
-
-        setModuleStates(swerveModuleStates, true);
-        */
-
         return Robot.CONT;
     }
 
@@ -529,7 +516,7 @@ public class Drive {
             return;
         }
 
-        otfDriveTo(targetPose);
+        otfDriveTo(Translation2d.kZero, targetPose);
     }
 
     /**
