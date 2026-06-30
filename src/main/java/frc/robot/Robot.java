@@ -76,6 +76,7 @@ public class Robot extends TimedRobot {
     private Grabber grabber;
     private Odometry odometry;
     private Auto auto;
+    private LED led;
 
     private Timer dsConnectTimer = new Timer();
 
@@ -115,6 +116,7 @@ public class Robot extends TimedRobot {
         grabber = new Grabber();
         odometry = new Odometry(drive);
         auto = new Auto(drive, shooter, hopper, grabber);
+        led = new LED();
 
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
@@ -148,6 +150,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
+        led.periodic();
+
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
 
         // Odometry and Pose
