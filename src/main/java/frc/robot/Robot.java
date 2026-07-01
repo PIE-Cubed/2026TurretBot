@@ -168,6 +168,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
+        led.applyTeamColors();
         led.periodic();
 
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());

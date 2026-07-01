@@ -13,16 +13,17 @@ public class LED {
     // we also typically use final variables at the top of the class for things that get changed manually, like the LED port here
     private final int LED_PORT = 1;
     private AddressableLED LED = new AddressableLED(LED_PORT);
-    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(10);
+    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(71);
+
+    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 14); //Left section, change # to change amount of lights in section
+    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(15,54); //Middle section
+    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(55,70); //Right section
 
     // moved the pattern you had here so it can be stored for easier access
     // i would probably try to put most patterns up here though you don't have to
     // private final LEDPattern disabledPattern = LEDPattern.solid(Color.kBlue); //One color
-    //private final LEDPattern steps = LEDPattern.steps(Map.of(0, Color.kYellow, .25, Color.kBlue, .75, Color.kYellow)); //Different section of lights
-    //private final AddressableLEDBufferView   leftHopper = LEDBuffer.createView(0, 15); //Left section, change # to change amount of lights in section
-    //private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(16,57); //Middle section
-    //private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(58,72); //Right section
-
+    // private final LEDPattern steps = LEDPattern.steps(Map.of(0, Color.kYellow, .25, Color.kBlue, .75, Color.kYellow)); //Different section of lights
+    
     private final LEDPattern solidYellow = LEDPattern.solid(Color.kYellow);
     private final LEDPattern solidBlue   = LEDPattern.solid(Color.kBlue);
 
@@ -31,20 +32,19 @@ public class LED {
     // Taco belly
     public LED() {
         LED.setLength(LEDBuffer.getLength());
+        LEDPattern.kOff.applyTo(LEDBuffer);
         LED.setData(LEDBuffer);
         LED.start();
-        
-        // solidYellow.applyTo(leftHopper);
-        // solidBlue.applyTo(middleHopper);
-        // solidYellow.applyTo(rightHopper);
-
-        //steps.applyTo(LEDBuffer);
-        //disabledPattern.applyTo(LEDBuffer);
     }
 
     public void periodic() {
-        solidYellow.applyTo(LEDBuffer);
         LED.setData(LEDBuffer);
+    }
+
+    public void applyTeamColors() {
+        solidBlue.applyTo(leftHopper);
+        solidYellow.applyTo(middleHopper);
+        solidBlue.applyTo(rightHopper);
     }
 
     /*
