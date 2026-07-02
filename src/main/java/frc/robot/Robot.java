@@ -168,7 +168,9 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
-        led.applyTeamColors();
+        //led.applyTeamColors();
+        //led.applyRSLSync();
+        led.applyPatrioticColors();
         led.periodic();
 
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
@@ -325,20 +327,21 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {
-        wheelControl();
+        //led.periodic();
+        //wheelControl();
         // testShooterControl();
         // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
-        grabberControl();
-        shooterControl();
+        //grabberControl();
+        //shooterControl();
 
         // auto.choreoPathFollower(testAuto);
 
-        shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
-        shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
+        //shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
+        //shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
 
         // shooter.stopTurrets();
-        shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
-        shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
+        //shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
+        //shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
         // boolean shootButton = controls.getShootButton();
 

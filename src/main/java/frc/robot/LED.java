@@ -1,10 +1,14 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.Second;
+
 import java.util.Map;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
 
 public class LED {
@@ -26,8 +30,14 @@ public class LED {
     
     private final LEDPattern solidYellow = LEDPattern.solid(Color.kYellow);
     private final LEDPattern solidBlue   = LEDPattern.solid(Color.kBlue);
+    private final LEDPattern solidOrange = LEDPattern.solid(new Color(248, 27, 0));
 
-    
+    private final LEDPattern patriotic = LEDPattern.steps(Map.of(0, Color.kRed, 0.33, Color.kWhite, 0.67, Color.kBlue));
+    private final LEDPattern scrollingPatriotic = patriotic.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(200));
+
+    private final LEDPattern blinkRSL = solidOrange.synchronizedBlink(RobotController :: getRSLState);
+
+
     // the other code you had was outside of a constructor or other function so it didn't like that
     // Taco belly
     public LED() {
@@ -45,6 +55,14 @@ public class LED {
         solidBlue.applyTo(leftHopper);
         solidYellow.applyTo(middleHopper);
         solidBlue.applyTo(rightHopper);
+    }
+
+    public void applyPatrioticColors() {
+        scrollingPatriotic.applyTo(LEDBuffer);
+    }
+
+    public void applyRSLSync() {
+        blinkRSL.applyTo(LEDBuffer);
     }
 
     /*
