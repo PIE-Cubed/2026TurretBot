@@ -803,7 +803,8 @@ public class Drive {
      * @return The estimated Pose. (in meters)
      */
     public static Pose2d getPose() {
-        return aprilTagsEstimator.getEstimatedPosition();
+        // return aprilTagsEstimator.getEstimatedPosition();
+        return new Pose2d(new Translation2d(3.269482374191284, 4.017659759521484), new Rotation2d(0));
     }
 
     public boolean isOnBump() {
