@@ -27,6 +27,7 @@ public class Odometry {
     public static List<PhotonPipelineResult> cameraResults;
     public static PhotonPipelineResult latestResult;
 
+    private final int MINIMUM_HERD_SIZE = 4; // Minimum amount of fuel in a herd
     private final int REQUIRED_APRILTAGS = 2; // Number of required AprilTags to update the AprilTag estimator
     private final double MAX_YAW_RATE_DEGREES = 360; // Maximum angular velocity(degrees/s) to update AprilTag estimator
     private final double AMBIGUITY_CUTOFF = 0.1;
@@ -34,7 +35,7 @@ public class Odometry {
     /***********************************************************************************************************************/
     /*                Standard deviations for each camera, with X and Y in meters and rotation in radians.                 */
     /***********************************************************************************************************************/
-    /*                                                                   | X |     | Y |          | ROTATION |             */
+    /*                                                                  | X |   | Y |            | ROTATION |             */
     public static final Vector<N3> CAMERA1_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
     public static final Vector<N3> CAMERA2_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
     public static final Vector<N3> CAMERA3_STD_DEVS = VecBuilder.fill(0.8, 0.8, Units.degreesToRadians(7.5));
@@ -425,30 +426,142 @@ public class Odometry {
     public static class ObjectDetector {
         private PhotonCamera camera;
         private Transform3d cameraOffset;
+        private int minimumHerdFuel;
+        private double maxHerdPieceDistance;
 
         private ArrayList<Pose2d> objectPositions;
 
         public ObjectDetector(
             PhotonCamera camera,
-            Transform3d cameraOffset
+            Transform3d cameraOffset,
+            int minimumHerdFuel,
+            double maxHerdPieceDistance
         ) {
             this.camera = camera;
             this.cameraOffset = cameraOffset;
+            this.minimumHerdFuel = minimumHerdFuel;
+            this.maxHerdPieceDistance = maxHerdPieceDistance;
 
             objectPositions = new ArrayList<>();
         }
 
-        public ArrayList<Pose2d> getObjects() {
+        public ArrayList<Pose2d> getObjectPositions() {
             return new ArrayList<>(objectPositions);
         }
 
+        public ArrayList<Pose2d[]> getAllHerds() {
+            ArrayList<ArrayList<Pose2d>> herdList = new ArrayList<>();
+
+            // check if there are enough objects in FOV to constitute a herd at all
+            if (objectPositions.size() >= minimumHerdFuel) {
+                // clone the list of object positions so i can remove fuel i've already looked at
+                ArrayList<Pose2d> clonedPositions = new ArrayList<>(objectPositions);
+
+                // group fuel together into herds
+                while (0 < clonedPositions.size()) {
+                    ArrayList<Pose2d> currHerd = new ArrayList<>();
+
+                    // runs groupHerds until it returns false (nothing left to group)
+                    while (groupHerds(clonedPositions, currHerd));
+                }
+            }
+            else {
+                // not enough fuel in FOV to even try, return null and let Drive.java handle it
+                return null;
+            }
+
+            // remove any herds that don't have enough fuel (getHerdFrontCenter returns null if there isn't enough)
+            for (ArrayList<Pose2d> i : herdList) {
+                if (null == getHerdBoundBoxCenters(i)) {
+                    herdList.remove(i);
+                }
+            }
+
+            Translation2d currTranslation = Drive.getPose().getTranslation();
+
+            // sort list of herds based on how far they are from the robot
+            herdList.sort(
+                (p1, p2) -> Double.compare(
+                    getHerdBoundBoxCenters(p1)[0].getTranslation().getDistance(currTranslation), 
+                    getHerdBoundBoxCenters(p2)[0].getTranslation().getDistance(currTranslation)
+                )
+            );
+
+            ArrayList<Pose2d[]> allHerdCenters = new ArrayList<>();
+
+            for (ArrayList<Pose2d> i : herdList) {
+                allHerdCenters.add(getHerdBoundBoxCenters(i));
+            }
+
+            return allHerdCenters;
+        }
+
+        /**
+         * returns true if anything was grouped, otherwise false
+         */
+        private boolean groupHerds(ArrayList<Pose2d> nonGrouped, ArrayList<Pose2d> currHerd) {
+            boolean changed = false;
+
+            for (Pose2d x : nonGrouped) {
+                if (0 == currHerd.size()) {
+                    currHerd.add(x);
+                    nonGrouped.remove(x);
+
+                    changed = true;
+                }
+                else {
+                    for (Pose2d y : currHerd) {
+                        if (x.getTranslation().getDistance(y.getTranslation()) <= maxHerdPieceDistance) {
+                            currHerd.add(x);
+                            nonGrouped.remove(x);
+
+                            changed = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return changed;
+        }
+
+        /**
+         * Gets the centers of the shorter sides of the herd (calculated as a rectangle)
+         * @param herd The herd to return the centers of
+         * @return 
+         * The centers in the order of [close, far]
+         */
+        private Pose2d[] getHerdBoundBoxCenters(ArrayList<Pose2d> herd) {
+            // TODO: create code for this function
+            return null;
+        }
+
+        public Pose2d getClosestObject() {
+            return objectPositions.get(0);
+        }
+
+        /**
+         * Call once per loop
+         */
         public void update() {
+            objectPositions.clear();
             List<PhotonPipelineResult> results = camera.getAllUnreadResults();
             PhotonPipelineResult latestResult = results.get(results.size() - 1);
 
             for (PhotonTrackedTarget target : latestResult.getTargets()) {
-                objectPositions.add(getFieldLocationOfObject(target));
+                Pose2d location = getFieldLocationOfObject(target);
+
+                if (location != null) {
+                    objectPositions.add(location);
+                }
             }
+
+            Translation2d currTranslation = Drive.getPose().getTranslation();
+
+            // sort the list of object positions based on their distance to the robot
+            objectPositions.sort(
+                (p1, p2) -> Double.compare(
+                    p1.getTranslation().getDistance(currTranslation), p2.getTranslation().getDistance(currTranslation)));
         }
 
         private Pose2d getFieldLocationOfObject(PhotonTrackedTarget target) {
@@ -456,6 +569,9 @@ public class Odometry {
             double pitch = target.getPitch();
 
             Transform3d cameraOffsetWithInput = cameraOffset.plus(new Transform3d(Translation3d.kZero, new Rotation3d(0, pitch, yaw)));
+            if (cameraOffsetWithInput.getRotation().getY() < 0) {
+                return null;
+            }
 
             double adjustedHeight = cameraOffsetWithInput.getZ() - Units.inchesToMeters(6/2); // TODO make this work for other game pieces than this year's fuel
             double distance = Math.tan(Math.PI/2 - cameraOffsetWithInput.getRotation().getY()) * adjustedHeight;
