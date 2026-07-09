@@ -13,7 +13,11 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import java.awt.Shape;
+import java.awt.geom.*;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -423,7 +427,7 @@ public class Odometry {
         }
     }
 
-    public static class ObjectDetector {
+    public static class ObjectDetector{
         private PhotonCamera camera;
         private Transform3d cameraOffset;
         private int minimumHerdFuel;
@@ -449,6 +453,11 @@ public class Odometry {
             return new ArrayList<>(objectPositions);
         }
 
+        /**
+         * Groups objects that are closer than the max herd piece distance into herds,
+         * represented by a Pose2d[] containing two target poses for OTF drive ordered closest first.
+         * @return
+         */
         public ArrayList<Pose2d[]> getAllHerds() {
             ArrayList<ArrayList<Pose2d>> herdList = new ArrayList<>();
 
@@ -470,9 +479,9 @@ public class Odometry {
                 return null;
             }
 
-            // remove any herds that don't have enough fuel (getHerdFrontCenter returns null if there isn't enough)
+            // remove any herds that don't have enough fuel
             for (ArrayList<Pose2d> i : herdList) {
-                if (null == getHerdBoundBoxCenters(i)) {
+                if (i.size() < minimumHerdFuel) {
                     herdList.remove(i);
                 }
             }
@@ -497,7 +506,7 @@ public class Odometry {
         }
 
         /**
-         * returns true if anything was grouped, otherwise false
+         * @return true if anything was grouped, otherwise false
          */
         private boolean groupHerds(ArrayList<Pose2d> nonGrouped, ArrayList<Pose2d> currHerd) {
             boolean changed = false;
@@ -532,8 +541,95 @@ public class Odometry {
          * The centers in the order of [close, far]
          */
         private Pose2d[] getHerdBoundBoxCenters(ArrayList<Pose2d> herd) {
-            // TODO: create code for this function
-            return null;
+            Path2D herdShape = new Path2D.Double();
+
+            for (int i = 0; i < herd.size(); i++) {
+                herdShape.append((Shape) new Point2D.Double(herd.get(i).getX(), herd.get(i).getY()), (i != 0));
+            }
+
+            ArrayList<Rotation2d> lineAngles = new ArrayList<>();
+
+            Translation2d prevObj = null;
+
+            for (Pose2d objPose : herd) {
+                Translation2d currObj = objPose.getTranslation();
+
+                if (prevObj != null) {
+                    lineAngles.add(currObj.minus(prevObj).getAngle());
+                }
+                else {
+                    prevObj = currObj;
+                }
+            }
+
+            Area smallestBound = new Area();
+            double smallestBoundArea = Double.MAX_VALUE;
+
+            for (Rotation2d currLineAngle : lineAngles) {
+                Shape rotatedHerd = herdShape.createTransformedShape(AffineTransform.getRotateInstance(currLineAngle.getRadians()));
+
+                Rectangle2D currentBound = rotatedHerd.getBounds2D();
+                double currentBoundArea = currentBound.getWidth() * currentBound.getHeight();
+                
+                if (currentBoundArea < smallestBoundArea) {
+                    smallestBound = new Area(currentBound).createTransformedArea(
+                        AffineTransform.getRotateInstance(currLineAngle.getRadians() * -1)
+                    );
+                    smallestBoundArea = currentBoundArea;
+                }
+            }
+
+            PathIterator boundIterator = smallestBound.getPathIterator(null);
+
+            ArrayList<Translation2d> corners = new ArrayList<>();
+
+            while (!boundIterator.isDone()) {
+                double[] currCorner = new double[] {};
+                boundIterator.currentSegment(currCorner);
+                corners.add(new Translation2d(currCorner[0], currCorner[1]));
+            }
+
+            ArrayList<Translation2d> lineMiddles = new ArrayList<>();
+
+            for (int i = 0; i >= 4; i++) {
+                Translation2d currCorner = corners.get(i);
+                // if i+1 is 4 then next corner should be index 0
+                Translation2d nextCorner = corners.get(((i + 1) >+ 4) ? 0 : (i + 1));
+
+                lineMiddles.add(currCorner.interpolate(nextCorner, 0.5));
+            }
+
+            double line1Length = corners.get(0).getDistance(lineMiddles.get(0));
+            double line2Length = corners.get(0).getDistance(lineMiddles.get(0));
+
+            if (line1Length <= line2Length) {
+                lineMiddles.remove(3); // lines 3 and 1 are the longer sides
+                lineMiddles.remove(1);
+            }
+            else {
+                lineMiddles.remove(2); // lines 2 and 0 are the longer sides
+                lineMiddles.remove(0);
+            }
+
+            double center1Dist = lineMiddles.get(0).getDistance(Drive.getPose().getTranslation());
+            double center2Dist = lineMiddles.get(1).getDistance(Drive.getPose().getTranslation());
+
+            if (center1Dist <= center2Dist) {
+                Rotation2d thruAngle = lineMiddles.get(1).minus(lineMiddles.get(0)).getAngle();
+
+                return new Pose2d[] {
+                    new Pose2d(lineMiddles.get(0), thruAngle),
+                    new Pose2d(lineMiddles.get(1), thruAngle)
+                };
+            }
+            else {
+                Rotation2d thruAngle = lineMiddles.get(0).minus(lineMiddles.get(1)).getAngle();
+
+                return new Pose2d[] {
+                    new Pose2d(lineMiddles.get(1), thruAngle),
+                    new Pose2d(lineMiddles.get(0), thruAngle)
+                };
+            }
         }
 
         public Pose2d getClosestObject() {
