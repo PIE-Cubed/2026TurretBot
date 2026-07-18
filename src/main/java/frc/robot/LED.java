@@ -82,7 +82,7 @@ public class LED {
         blinkRSL.applyTo(LEDBuffer);
     }
      
-    /*  public void applyHubSync() {
+      /*public void applyHubSync() {
         
          if (DriverStation.isAutonomous()) {
             solidBlue.applyTo(leftHopper);
