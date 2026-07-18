@@ -169,8 +169,9 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         //led.applyTeamColors();
-        //led.applyRSLSync();
-        led.applyPatrioticColors();
+        led.applyRSLSync();
+        //led.applyPatrioticColors();
+        //led.applyHubSync();
         led.periodic();
 
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
@@ -330,7 +331,7 @@ public class Robot extends TimedRobot {
         //led.periodic();
         //wheelControl();
         // testShooterControl();
-        // SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
+        //SmartDashboard.putNumber("Hub Distance", Units.metersToInches(drive.getHubDistanceMeters()));
         //grabberControl();
         //shooterControl();
 
@@ -339,21 +340,21 @@ public class Robot extends TimedRobot {
         //shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
         //shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
 
-        // shooter.stopTurrets();
+        //shooter.stopTurrets();
         //shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
         //shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
-        // boolean shootButton = controls.getShootButton();
+         //boolean shootButton = controls.getShootButton();
 
-        // if (shootButton) {
-        //     hopper.indexFuel();
-        // } else {
-        //     hopper.stopMotors();
-        // }
+         //if (shootButton) {
+           //  hopper.indexFuel();
+         //} else {
+           //  hopper.stopMotors();
+         //}
 
-        // shooter.stopHood();
-        // shooter.stopWheels();
-        // grabber.stopGrabber();
+         //shooter.stopHood();
+         //shooter.stopWheels();
+         //grabber.stopGrabber();
         // grabber.stopWheel();
         // drive.stopWheels();
     }

@@ -14,7 +14,8 @@ import java.util.Optional;
 public final class AllianceUtil {
 
     // Prevent construction
-    private AllianceUtil() {}
+    public AllianceUtil() {}
+    // private AllianceUtil() {}
 
     // CONSTANTS
     private static final double TELEOP_LENGTH = 140.0;
