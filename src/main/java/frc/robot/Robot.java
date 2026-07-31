@@ -157,6 +157,13 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("targetTurretPos", 0);
         SmartDashboard.putNumber("demoHoodPos", 0);
         SmartDashboard.putNumber("demoWheelRPM", 0);
+        SmartDashboard.putNumber("nF", 0);
+        SmartDashboard.putNumber("nP", 0);
+        SmartDashboard.putNumber("nI", 0);
+        SmartDashboard.putNumber("nD", 0);
+        SmartDashboard.putBoolean("testingRightTurret", true);
+        SmartDashboard.putNumber("testRPM", 2700);
+        SmartDashboard.putNumber("testHoodAngle", 15);
     }
 
     /**
@@ -340,21 +347,31 @@ public class Robot extends TimedRobot {
         //shooter.setTargetLeftTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
         //shooter.setTargetRightTurretPos(SmartDashboard.getNumber("targetTurretPos", 0));
 
-        //shooter.stopTurrets();
-        //shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
-        //shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
+        // shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
+        // shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
-         //boolean shootButton = controls.getShootButton();
+        shooter.stopTurrets();
+        // shooter.tuneShooter(
+        //     SmartDashboard.getBoolean("testingRightTurret", true), 
+        //     SmartDashboard.getNumber("testRPM", 2700), 
+        //     SmartDashboard.getNumber("testHoodAngle", 15), 
+        //     SmartDashboard.getNumber("nF", 0), 
+        //     SmartDashboard.getNumber("nP", 0), 
+        //     SmartDashboard.getNumber("nI", 0), 
+        //     SmartDashboard.getNumber("nD", 0)
+        // );
 
-         //if (shootButton) {
-           //  hopper.indexFuel();
-         //} else {
-           //  hopper.stopMotors();
-         //}
+        // boolean shootButton = controls.getShootButton();
 
-         //shooter.stopHood();
-         //shooter.stopWheels();
-         //grabber.stopGrabber();
+        // if (shootButton) {
+        //    hopper.indexFuel();
+        // } else {
+        //    hopper.stopMotors();
+        // }
+
+        //shooter.stopHood();
+        //shooter.stopWheels();
+        //grabber.stopGrabber();
         // grabber.stopWheel();
         // drive.stopWheels();
     }

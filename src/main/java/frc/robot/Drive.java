@@ -385,7 +385,6 @@ public class Drive {
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, MAX_WHEEL_POWER);
 
-        // Check for deadzone
         setModuleStates(swerveModuleStates, true);
     }
 

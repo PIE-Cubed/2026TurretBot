@@ -14,13 +14,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** a */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 7;
+    private final double INDEX_POWER_VOLTS = 9;
     private final double KICKER_POWER_VOLTS = 9;
 
     private final int LEFT_KICKER_ID = 23;
     private final int RIGHT_KICKER_ID = 22;
-    private final int LEFT_SPINDEXER_ID = 21;
-    private final int RIGHT_SPINDEXER_ID = 20;
+    private final int LEFT_SPINDEXER_ID = 20;
+    private final int RIGHT_SPINDEXER_ID = 21;
 
     private SparkBase rightSpindexerMotor = new SparkFlex(RIGHT_SPINDEXER_ID, MotorType.kBrushless);
     private SparkBaseConfig rightSpindexerMotorConfig = new SparkFlexConfig();
@@ -37,10 +37,10 @@ public class Hopper {
     public Hopper() {
         rightSpindexerMotorConfig
             .inverted(false)
-            .smartCurrentLimit(40)
+            .smartCurrentLimit(60)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(80);
+            .secondaryCurrentLimit(90);
 
         rightSpindexerMotor.configure(
             rightSpindexerMotorConfig,
@@ -50,10 +50,10 @@ public class Hopper {
 
         leftSpindexerMotorConfig
             .inverted(true)
-            .smartCurrentLimit(40)
+            .smartCurrentLimit(60)
             .disableFollowerMode()
             .idleMode(IdleMode.kCoast)
-            .secondaryCurrentLimit(80);
+            .secondaryCurrentLimit(90);
 
         leftSpindexerMotor.configure(
             leftSpindexerMotorConfig,

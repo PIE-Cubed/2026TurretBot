@@ -84,16 +84,16 @@ public class Shooter {
     private final double RIGHT_TURRET_ENCODER_OFFSET = 0.5193; // 0 to 1
 
     // PID Values
-    private final double LEFT_F = 0.001968;
+    private       double LEFT_F = 0.001941;
     private final double LEFT_P = 0.00201;
     private final double LEFT_I = 0.0;
-    private final double LEFT_D = 0.00007;
+    private final double LEFT_D = 0.00009;
     private final double LEFT_TOLERANCE = 100.0;
 
-    private final double RIGHT_F = 0.002;
+    private       double RIGHT_F = 0.001873;
     private final double RIGHT_P = 0.0028;
     private final double RIGHT_I = 0.0;
-    private final double RIGHT_D = 0.00006;
+    private final double RIGHT_D = 0.00008;
     private final double RIGHT_TOLERANCE = 100.0;
 
     private final double LEFT_HOOD_P = 0.5;
@@ -490,6 +490,25 @@ public class Shooter {
         if (t2 > 0) return t2;
         // quadratic failed, return 0.8 seconds as a last resort
         return 0.8;
+    }
+
+    public void tuneShooter(
+        boolean rightShooter, double targetRPM, double targetHoodAngleDeg, 
+        double nF, double nP, double nI, double nD
+    ) {
+        if (rightShooter) {
+            rightPIDController.setPID(nP, nI, nD);
+            RIGHT_F = nF;
+
+            setTargetRPMs(targetRPM, 0);
+            setHoodAngle(0, targetHoodAngleDeg);
+        } else {
+            leftPIDController.setPID(nP, nI, nD);
+            LEFT_F = nF;
+
+            setTargetRPMs(0, targetRPM);
+            setHoodAngle(targetHoodAngleDeg, 0);
+        }
     }
 
     /**

@@ -190,7 +190,9 @@ public class SwerveModule {
         rotateMotor.set(MathUtil.clamp(power, -1, 1));
     }
 
-    /// Returns SwerveModulePosition, with `distanceMeters` in feet
+    /**
+     * Returns SwerveModulePosition, with `distanceMeters` in feet
+     */
     public SwerveModulePosition getModulePosition() {
         return new SwerveModulePosition(
             driveEncoder.getPosition(),
