@@ -28,12 +28,11 @@ public class LED {
     private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(15,54); //Middle section
     private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(55,70); //Right section
 
-    private final LEDPattern normalTeamHub = LEDPattern.steps(Map.of(0, Color.kBlue, .22, Color.kYellow, .8, Color.kBlue ));
+    private final LEDPattern normalTeamHub = LEDPattern.steps(Map.of(0, Color.kBlue, 0.2113, Color.kYellow, 0.7888, Color.kBlue));
 
     // moved the pattern you had here so it can be stored for easier access
     // i would probably try to put most patterns up here though you don't have to
-    // private final LEDPattern disabledPattern = LEDPattern.solid(Color.kBlue); //One color
-    // private final LEDPattern steps = LEDPattern.steps(Map.of(0, Color.kYellow, .25, Color.kBlue, .75, Color.kYellow)); //Different section of lights
+    // private final LEDPattern disabledPattern = LEDPattern.solid(Color.kBlue); // One color
     
     private final LEDPattern solidYellow = LEDPattern.solid(Color.kYellow);
     private final LEDPattern solidBlue   = LEDPattern.solid(Color.kBlue);
@@ -43,25 +42,18 @@ public class LED {
     private final LEDPattern patriotic = LEDPattern.steps(Map.of(0, Color.kRed, 0.33, Color.kWhite, 0.67, Color.kBlue));
     private final LEDPattern scrollingPatriotic = patriotic.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(200));
 
-    private final LEDPattern blinkRSL = solidOrange.synchronizedBlink(RobotController :: getRSLState);
+    private final LEDPattern blinkRSL = solidOrange.synchronizedBlink(RobotController::getRSLState);
 
     private final LEDPattern blinkHub = normalTeamHub.blink(Second.of(0.5));
-
-
-    private AllianceUtil allianceUtil;
-    
 
     // the other code you had was outside of a constructor or other function so it didn't like that
     // Taco belly
     public LED() {
         LED.setLength(LEDBuffer.getLength());
         LEDPattern.kOff.applyTo(LEDBuffer);
-        allianceUtil = new AllianceUtil();
         LED.setData(LEDBuffer);
         LED.start();
-
     }
-
 
     public void periodic() {
         LED.setData(LEDBuffer);
@@ -82,46 +74,41 @@ public class LED {
         blinkRSL.applyTo(LEDBuffer);
     }
      
-      /*public void applyHubSync() {
+    public void applyHubSync() {
+        double currTime = DriverStation.getMatchTime();
+
+        // use else {} blocks WAY more often joey
         
-         if (DriverStation.isAutonomous()) {
+        // currently in autonomous
+        if (DriverStation.isAutonomous()) {
             solidBlue.applyTo(leftHopper);
             solidYellow.applyTo(middleHopper);
             solidBlue.applyTo(rightHopper);
-        }
-        
-        if ((allianceUtil.isOurHubActive(DriverStation.getMatchTime()) == true) && 
-            (allianceUtil.timeUntilHubStateChange(DriverStation.getMatchTime()) <= 5)) {
-            blinkHub.applyTo(LEDBuffer);
-        }
-
-        if (allianceUtil.isOurHubActive(DriverStation.getMatchTime()) == true) {
+        } // currently in endgame
+        else if (AllianceUtil.isEndgame(currTime)) {
             solidBlue.applyTo(leftHopper);
             solidYellow.applyTo(middleHopper);
             solidBlue.applyTo(rightHopper);
-        }
+        } // our hub is active in teleop
+        else if (AllianceUtil.isOurHubActive(currTime) == true) {
+            solidBlue.applyTo(leftHopper);
+            solidYellow.applyTo(middleHopper);
+            solidBlue.applyTo(rightHopper);
 
-        if (allianceUtil.isOurHubActive(DriverStation.getMatchTime()) == false) {
+            // the hub is about to turn off
+            if (AllianceUtil.timeUntilHubStateChange(currTime) <= 5) {
+                blinkHub.applyTo(LEDBuffer);
+            }
+        } // our hub is not active in teleop
+        else {
             off.applyTo(LEDBuffer);
-        }
 
-        if ((allianceUtil.isOurHubActive(DriverStation.getMatchTime()) == false) && 
-            (allianceUtil.timeUntilHubStateChange(DriverStation.getMatchTime()) <= 5)) {
-            blinkHub.applyTo(LEDBuffer);
+            // the hub is about to turn on
+            if (AllianceUtil.timeUntilHubStateChange(currTime) <= 5) {
+                blinkHub.applyTo(LEDBuffer);
+            }
         }
-        */
-       /* if (allianceUtil.timeUntilHubStateChange(6.0) <= 5) {
-        blinkHub.applyTo(LEDBuffer);
-        }
-        */
-        /* if (allianceUtil.isEndgame(ENDGAME_SECONDS)) {
-            solidBlue.applyTo(leftHopper);
-            solidYellow.applyTo(middleHopper);
-            solidBlue.applyTo(rightHopper);
-        }
-        
-        
-    }*/
+    }
         
 
     /*
