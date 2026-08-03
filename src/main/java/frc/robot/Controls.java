@@ -10,8 +10,8 @@ public class Controls {
 
     public static final double DRIVE_CONTROLLER_DEADZONE = 0.01;
 
-    private boolean leftAdjusted = false;
-    private boolean rightAdjusted = true;
+    // private boolean leftAdjusted = false;
+    // private boolean rightAdjusted = true;
 
     public Controls() {
         manipController = new XboxController(1);
@@ -92,6 +92,10 @@ public class Controls {
     /*********************************************/
 
     public boolean getPauseTurret() {
+        return manipController.getYButton();
+    }
+
+    public boolean getManualTurretRevButton() {
         return manipController.getAButton();
     }
 
@@ -127,37 +131,45 @@ public class Controls {
         return manipController.getLeftBumperButton();
     }
 
+    @Deprecated
     public boolean getLeftAdjustButton() {
-        return manipController.getXButton();
+        return false;
     }
 
+    @Deprecated
     public boolean getRightAdjustButton() {
-        return manipController.getYButton();
+        return false;
     }
 
+    @Deprecated
     public boolean getLeftAdjustReleased() {
-        if (!leftAdjusted && manipController.getXButtonReleased()) {
-            leftAdjusted = true;
-            return true;
-        }
+        // if (!leftAdjusted && manipController.getXButtonReleased()) {
+        //     leftAdjusted = true;
+        //     return true;
+        // }
 
         return false;
     }
 
+    @Deprecated
     public boolean getRightAdjustReleased() {
-        if (!rightAdjusted && manipController.getYButtonReleased()) {
-            rightAdjusted = true;
-            return true;
-        }
+        // if (!rightAdjusted && manipController.getYButtonReleased()) {
+        //     rightAdjusted = true;
+        //     return true;
+        // }
 
         return false;
     }
 
+    @Deprecated
     public Translation2d getLeftAdjust() {
-        return new Translation2d(manipController.getLeftX(), manipController.getLeftY());
+        // return new Translation2d(manipController.getLeftX(), manipController.getLeftY());
+        return Translation2d.kZero;
     }
 
+    @Deprecated
     public Translation2d getRightAdjust() {
-        return new Translation2d(manipController.getRightX(), manipController.getRightY());
+        // return new Translation2d(manipController.getRightX(), manipController.getRightY());
+        return Translation2d.kZero;
     }
 }

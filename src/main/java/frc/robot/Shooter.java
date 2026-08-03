@@ -91,7 +91,7 @@ public class Shooter {
     private final double LEFT_TOLERANCE = 100.0;
 
     private       double RIGHT_F = 0.001873;
-    private final double RIGHT_P = 0.0028;
+    private final double RIGHT_P = 0.0027;
     private final double RIGHT_I = 0.0;
     private final double RIGHT_D = 0.00008;
     private final double RIGHT_TOLERANCE = 100.0;
@@ -99,11 +99,9 @@ public class Shooter {
     private final double LEFT_HOOD_P = 0.5;
     private final double LEFT_HOOD_I = 0.0;
     private final double LEFT_HOOD_D = 0.01;
-    // private final double LEFT_HOOD_S = 0.06;
     private final double RIGHT_HOOD_P = 0.5;
     private final double RIGHT_HOOD_I = 0.0;
     private final double RIGHT_HOOD_D = 0.01;
-    // private final double RIGHT_HOOD_S = 0.06;
     private final double HOOD_TOLERANCE = 0.25;
     private static final double HOOD_SOFT_STOP_ZONE_DEG = 1.5;
 
@@ -125,6 +123,8 @@ public class Shooter {
     private double rightDistAdjust = 0;
 
     private int atTargetRPMCount = 0;
+
+    private final double REST_RPM = 2200;
 
     private static final double HOOD_ENCODER_CONVERSION = 20.0 / 214.0 * 360.0 / 12.0;
 
@@ -148,13 +148,13 @@ public class Shooter {
         distMapMeters.put(Units.inchesToMeters(72.0 + 45.25 /* 117.25 */), VecBuilder.fill( 2840, 16.5,    2840, 16.5));
         distMapMeters.put(Units.inchesToMeters(84.0 + 45.25 /* 129.25 */), VecBuilder.fill( 2960, 18.0,    2960, 18.0));
         distMapMeters.put(Units.inchesToMeters(96.0 + 45.25 /* 141.25 */), VecBuilder.fill( 3090, 20.25,   3090, 20.25));
-        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 22.5,    3235, 21.5)); // max angle
+        distMapMeters.put(Units.inchesToMeters(108.0 + 45.25 /* 153.25 */), VecBuilder.fill(3235, 21.5,    3235, 21.5)); // max angle
         // distMapMeters.put(Units.inchesToMeters(120.0 + 45.25 /* 165.25 */), VecBuilder.fill(3403, 24.86,   3403, 24.86)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(132.0 + 45.25 /* 177.25 */), VecBuilder.fill(3601, 27.34,   3601, 27.34)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(144.0 + 45.25 /* 189.25 */), VecBuilder.fill(3835, 29.94,   3835, 29.94)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(156.0 + 45.25 /* 201.25 */), VecBuilder.fill(4109, 32.66,   4109, 32.66)); // extrapolated
         // distMapMeters.put(Units.inchesToMeters(168.0 + 45.25 /* 213.25 */), VecBuilder.fill(4428, 35.50,   4428, 35.50)); // extrapolated
-        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 23.0, 3300, 21.5));
+        distMapMeters.put(Units.inchesToMeters(-1.0 /* short pass */), VecBuilder.fill(3300, 21.5, 3300, 21.5));
         distMapMeters.put(Units.inchesToMeters(-2.0 /* long pass */), VecBuilder.fill(4500, 24.0, 4500, 21.5)); // guess
 
         // initialize turrets
@@ -262,12 +262,12 @@ public class Shooter {
         SmartDashboard.putNumber("currents/left turret current", leftTurret.getMotorCurrent());
         SmartDashboard.putNumber("currents/right turret current", rightTurret.getMotorCurrent());
 
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/left hood current",  getInputCurrent(leftHoodMotor));
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/left flywheel current",  getInputCurrent(leftMotor));
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/right hood current", getInputCurrent(rightHoodMotor));
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/right flywheel current", getInputCurrent(rightMotor));
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/left turret current", leftTurret.getMotorCurrent());
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/right turret current", rightTurret.getMotorCurrent());
+        Robot.totalCurrent += getInputCurrent(leftHoodMotor);
+        Robot.totalCurrent += getInputCurrent(leftMotor);
+        Robot.totalCurrent += getInputCurrent(rightHoodMotor);
+        Robot.totalCurrent += getInputCurrent(rightMotor);
+        Robot.totalCurrent += leftTurret.getMotorCurrent();
+        Robot.totalCurrent += rightTurret.getMotorCurrent();
     }
 
     /**
@@ -326,7 +326,7 @@ public class Shooter {
      * Auto adjust but meant for auto in use cases where SOTM is not necessary.
      */
     public void autoAdjust(boolean hoodUp) {
-        autoAdjust(hoodUp, Transform2d.kZero, Translation2d.kZero, true, false);
+        autoAdjust(hoodUp, true, Transform2d.kZero, Translation2d.kZero, true, false);
     }
 
     /**
@@ -335,9 +335,11 @@ public class Shooter {
      * @param driveInput Drive controller movement input for SOTM.
      * @param aimAdjust Manipulator offset of aim.
      * @param fieldDrive Whether the drive input is for field relative or robot relative drive.
-     * @param pass Whether to aim for passing shots while away from home zone.
+     * @param allowPass Whether to aim for passing shots while away from home zone. 
+     * All logic for whether to pass or not is handled within this function,
+     * the parameter only tells the robot if it is allowed to pass or not.
      */
-    public void autoAdjust(boolean hoodUp, Transform2d driveInput, Translation2d aimAdjust, boolean fieldDrive, boolean pass) {
+    public void autoAdjust(boolean hoodUp, boolean revUp, Transform2d driveInput, Translation2d aimAdjust, boolean fieldDrive, boolean allowPass) {
         // initialize targetPose, set value later
         Pose2d targetPose = null;
         // get which side of the field you are on for passing
@@ -350,7 +352,7 @@ public class Shooter {
         double rightDist = rightTurret.getAdjustedHubDistanceMeters(driveInput, 1);
 
         // if passing is enabled, do passing logic
-        if (pass) {
+        if (allowPass) {
             if (currPositionState == PositionState.AWAY) {
                 // robot is in opposite alliance zone, do long pass
                 leftDist = -2;
@@ -418,10 +420,9 @@ public class Shooter {
         // get air time for right shooter
         double ballAirTimeRight = getFlightTime(rightDist);
 
-        // weird distance adjust logic, TODO make this better
-        double targetTheta = Math.atan2(targetPose.getY() - Drive.getPose().getY(), targetPose.getX() - Drive.getPose().getX());
-
-        targetPose = targetPose.plus(new Transform2d(aimAdjust.rotateBy(Rotation2d.fromRadians(targetTheta)), Rotation2d.kZero));
+        // weird distance adjust logic, TODO? make this better
+        // double targetTheta = Math.atan2(targetPose.getY() - Drive.getPose().getY(), targetPose.getX() - Drive.getPose().getX());
+        // targetPose = targetPose.plus(new Transform2d(aimAdjust.rotateBy(Rotation2d.fromRadians(targetTheta)), Rotation2d.kZero));
 
         // adjust drive input for robot relative driving
         if (!fieldDrive) {
@@ -432,12 +433,19 @@ public class Shooter {
         leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
         rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
         // set RPM
-        setTargetRPMs(targetRightRPM, targetLeftRPM);
+        if (revUp) {
+            setTargetRPMs(targetRightRPM, targetLeftRPM);
+        }
+        else {
+            // use rest RPM to save power unless revUp is true
+            setTargetRPMs(REST_RPM, REST_RPM);
+        }
 
         // only move the hood if hoodUp is true
         if (hoodUp) {
             setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-        } else {
+        } 
+        else {
             // stow hood
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
         }
@@ -601,14 +609,6 @@ public class Shooter {
     }
 
     /**
-     * logging of flywheel RPM
-     */
-    public void printWheelRPMs() {
-        SmartDashboard.putNumber("Shooter/CurrentRightRPM", rightMotorEncoder.getVelocity());
-        SmartDashboard.putNumber("Shooter/CurrentLeftRPM", leftMotorEncoder.getVelocity());
-    }
-
-    /**
      * stops flywheel motors
      */
     public void stopWheels() {
@@ -625,17 +625,26 @@ public class Shooter {
     }
 
     /**
-     * unused code, TODO make this work and implement in auto
+     * logging of flywheel RPM
      */
-    // public boolean atTargetRPM() {
-    //     if (leftPIDController.atSetpoint() && rightPIDController.atSetpoint()) {
-    //         atTargetRPMCount ++;
-    //     } else {
-    //         atTargetRPMCount = 0;
-    //     }
+    public void printWheelRPMs() {
+        SmartDashboard.putNumber("Shooter/CurrentRightRPM", rightMotorEncoder.getVelocity());
+        SmartDashboard.putNumber("Shooter/CurrentLeftRPM", leftMotorEncoder.getVelocity());
+    }
 
-    //     return atTargetRPMCount >= 10;
-    // }
+    /**
+     * detects whether both flywheels are at the target RPM
+     * @return true if both wheels have been within their tolerance for several loops, otherwise false
+     */
+    public boolean atTargetRPM() {
+        if (leftPIDController.atSetpoint() && rightPIDController.atSetpoint()) {
+            atTargetRPMCount ++;
+        } else {
+            atTargetRPMCount = 0;
+        }
+
+        return atTargetRPMCount >= 5;
+    }
 
     /******************************************************************************************************
      *

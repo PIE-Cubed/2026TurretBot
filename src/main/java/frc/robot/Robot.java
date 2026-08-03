@@ -450,19 +450,21 @@ public class Robot extends TimedRobot {
 
         Transform2d robotVel = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
 
-        if (controls.getLeftAdjustReleased()) {
-            shooter.nudgeTurret(360, 0);
-        }
+        // if (controls.getLeftAdjustReleased()) {
+        //     shooter.nudgeTurret(360, 0);
+        // }
         
-        if (controls.getRightAdjustReleased()) {
-            shooter.nudgeTurret(0, 360);
-        }
+        // if (controls.getRightAdjustReleased()) {
+        //     shooter.nudgeTurret(0, 360);
+        // }
 
-        shooter.autoAdjust(shootReady, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
+        boolean revWheels = controls.getManualTurretRevButton() || controls.getShootButton();
+
+        shooter.autoAdjust(shootReady, revWheels, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
 
         if (reverseIndexer) {
             hopper.reverse();
-        } else if (shootButton) {
+        } else if (shootButton && shooter.atTargetRPM()) {
             hopper.indexFuel();
         } else {
             hopper.stopMotors();
