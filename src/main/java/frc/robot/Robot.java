@@ -175,8 +175,8 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
-        //led.applyTeamColors();
-        led.applyRSLSync();
+        led.applyTeamColors();
+        //led.applyRSLSync();
         //led.applyPatrioticColors();
         //led.applyHubSync();
         led.periodic();
