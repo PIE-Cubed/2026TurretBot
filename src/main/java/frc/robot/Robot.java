@@ -462,9 +462,11 @@ public class Robot extends TimedRobot {
 
         shooter.autoAdjust(shootReady, revWheels, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
 
+        shooter.atTargetRPM();
+
         if (reverseIndexer) {
             hopper.reverse();
-        } else if (shootButton && shooter.atTargetRPM()) {
+        } else if (shootButton) {
             hopper.indexFuel();
         } else {
             hopper.stopMotors();

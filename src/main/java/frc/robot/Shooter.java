@@ -85,15 +85,15 @@ public class Shooter {
 
     // PID Values
     private       double LEFT_F = 0.001941;
-    private final double LEFT_P = 0.00201;
+    private final double LEFT_P = 0.0024;
     private final double LEFT_I = 0.0;
-    private final double LEFT_D = 0.00009;
+    private final double LEFT_D = 0.00012;
     private final double LEFT_TOLERANCE = 100.0;
 
     private       double RIGHT_F = 0.001873;
-    private final double RIGHT_P = 0.0027;
+    private final double RIGHT_P = 0.0029;
     private final double RIGHT_I = 0.0;
-    private final double RIGHT_D = 0.00008;
+    private final double RIGHT_D = 0.000011;
     private final double RIGHT_TOLERANCE = 100.0;
 
     private final double LEFT_HOOD_P = 0.5;
@@ -642,6 +642,8 @@ public class Shooter {
         } else {
             atTargetRPMCount = 0;
         }
+
+        SmartDashboard.putBoolean("atTargetRPM", atTargetRPMCount >= 5);
 
         return atTargetRPMCount >= 5;
     }
