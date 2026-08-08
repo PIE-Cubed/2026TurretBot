@@ -22,9 +22,9 @@ public class LED {
     private AddressableLED LED = new AddressableLED(LED_PORT);
     private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(71);
 
-    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 14); //Left section, change # to change amount of lights in section
-    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(15,54); //Middle section
-    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(55,70); //Right section
+    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 13); //Left section, change # to change amount of lights in section
+    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(14,55); //Middle section
+    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(56,70); //Right section
 
     private final LEDPattern normalTeamHub = LEDPattern.steps(Map.of(0, Color.kBlue, 0.2113, Color.kYellow, 0.7888, Color.kBlue));
 

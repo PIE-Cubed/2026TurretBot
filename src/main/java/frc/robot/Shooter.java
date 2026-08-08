@@ -28,6 +28,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Drive.PositionState;
+import frc.robot.util.ADRC;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
 
@@ -66,6 +67,8 @@ public class Shooter {
 
     private PIDController leftPIDController;
     private PIDController rightPIDController;
+    private ADRC.VelocityController leftADRCController;
+    private ADRC.VelocityController rightADRCController;
     private PIDController leftHoodPIDController;
     private PIDController rightHoodPIDController;
 
@@ -237,6 +240,8 @@ public class Shooter {
 
         rightPIDController = new PIDController(RIGHT_P, RIGHT_I, RIGHT_D);
         rightPIDController.setTolerance(RIGHT_TOLERANCE);
+
+        leftADRCController = new ADRC.VelocityController(0, 0, 0);
 
         leftHoodPIDController = new PIDController(LEFT_HOOD_P, LEFT_HOOD_I, LEFT_HOOD_D);
         leftHoodPIDController.setTolerance(HOOD_TOLERANCE);
@@ -534,8 +539,8 @@ public class Shooter {
         SmartDashboard.putNumber("Right RPM", currentRightRPM);
 
         // calculate voltage via PIDF controller
-        double leftVoltage = LEFT_F * targetLeftRPM + leftPIDController.calculate(currentLeftRPM, targetLeftRPM);
-        double rightVoltage = RIGHT_F * targetRightRPM + rightPIDController.calculate(currentRightRPM, targetRightRPM);
+        double leftVoltage = LEFT_F * targetLeftRPM + leftADRCController.calculate(currentLeftRPM, targetLeftRPM);
+        double rightVoltage = RIGHT_F * targetRightRPM + rightADRCController.calculate(currentRightRPM, targetRightRPM);
 
         // clamp voltage to usable values
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
