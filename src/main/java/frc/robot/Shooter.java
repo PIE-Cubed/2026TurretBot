@@ -28,9 +28,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Drive.PositionState;
-import frc.robot.util.ADRC;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
+import frc.robot.util.ADRC.ADRCVelocityController;
 
 /**
  * chud shooter class
@@ -67,8 +67,8 @@ public class Shooter {
 
     private PIDController leftPIDController;
     private PIDController rightPIDController;
-    private ADRC.VelocityController leftADRCController;
-    private ADRC.VelocityController rightADRCController;
+    private ADRCVelocityController leftADRCController;
+    private ADRCVelocityController rightADRCController;
     private PIDController leftHoodPIDController;
     private PIDController rightHoodPIDController;
 
@@ -241,7 +241,7 @@ public class Shooter {
         rightPIDController = new PIDController(RIGHT_P, RIGHT_I, RIGHT_D);
         rightPIDController.setTolerance(RIGHT_TOLERANCE);
 
-        leftADRCController = new ADRC.VelocityController(0, 0, 0);
+        leftADRCController = new ADRCVelocityController(0d, 0d, 0d, 12d);
 
         leftHoodPIDController = new PIDController(LEFT_HOOD_P, LEFT_HOOD_I, LEFT_HOOD_D);
         leftHoodPIDController.setTolerance(HOOD_TOLERANCE);
