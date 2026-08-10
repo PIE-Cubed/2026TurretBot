@@ -4,18 +4,25 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.hardware.DeviceIdentifier;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.configs.AudioConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 
 /** Grabber. */
 public class Grabber {
@@ -44,11 +51,11 @@ public class Grabber {
 
     // Motor variables
     private SparkBase pivotMotor;
-    private SparkBase intakeMotor;
+    private TalonFX intakeKraken;
     private SparkBaseConfig pivotMotorConfig;
-    private SparkBaseConfig intakeMotorConfig;
     private AbsoluteEncoder pivotEncoder;
     private AbsoluteEncoderConfig pivotEncoderConfig;
+    private TalonFXConfiguration intakeKrakenConfig;
 
     public Grabber() {
         pivotMotor = new SparkMax(PIVOT_MOTOR_ID, MotorType.kBrushless);
@@ -64,24 +71,30 @@ public class Grabber {
             .apply(pivotEncoderConfig);
         pivotMotor.configure(pivotMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        intakeMotor = new SparkFlex(INTAKE_MOTOR_ID, MotorType.kBrushless);
-        intakeMotorConfig = new SparkFlexConfig();
-        intakeMotorConfig
-            .idleMode(IdleMode.kCoast)
-            .inverted(false)
-            .smartCurrentLimit(60)
-            .disableFollowerMode();
-        intakeMotor.configure(intakeMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        intakeKraken = new TalonFX(INTAKE_MOTOR_ID);
+        intakeKrakenConfig = new TalonFXConfiguration();
+        intakeKrakenConfig.withMotorOutput(
+            new MotorOutputConfigs()
+            .withInverted(InvertedValue.Clockwise_Positive)
+            .withNeutralMode(NeutralModeValue.Coast)
+        ).withAudio(
+            new AudioConfigs()
+            .withBeepOnBoot(true)
+            .withBeepOnConfig(true)
+            .withAllowMusicDurDisable(true)
+        );
+        TalonFXConfigurator configurator = new TalonFXConfigurator(new DeviceIdentifier(INTAKE_MOTOR_ID, "Kraken X60", CANBus.roboRIO()));
+        configurator.apply(intakeKrakenConfig);
     }
 
     /**
      * current logging
      */
     public void log() {
-        SmartDashboard.putNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
+        SmartDashboard.putNumber("currents/grabber wheel current",  intakeKraken.getStatorCurrent().getValueAsDouble());
         SmartDashboard.putNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
 
-        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber wheel current",  getInputCurrent(intakeMotor));
+        Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber wheel current",  intakeKraken.getStatorCurrent().getValueAsDouble());
         Robot.totalCurrent += SmartDashboard.getNumber("currents/grabber pivot current",  getInputCurrent(pivotMotor));
     }
 
@@ -222,20 +235,20 @@ public class Grabber {
      * Runs the intake roller in the normal direction.
      */
     public void intake() {
-        intakeMotor.setVoltage(INTAKE_VOLTAGE);
+        intakeKraken.setVoltage(INTAKE_VOLTAGE);
     }
 
     /**
      * Runs the intake roller in the opposite direction.
      */
     public void outtake() {
-        intakeMotor.setVoltage(-INTAKE_VOLTAGE);
+        intakeKraken.setVoltage(-INTAKE_VOLTAGE);
     }
 
     /**
      * Stops the intake roller.
      */
     public void stopWheel() {
-        intakeMotor.stopMotor();
+        intakeKraken.stopMotor();
     }
 }
