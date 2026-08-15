@@ -241,7 +241,8 @@ public class Shooter {
         rightPIDController = new PIDController(RIGHT_P, RIGHT_I, RIGHT_D);
         rightPIDController.setTolerance(RIGHT_TOLERANCE);
 
-        leftADRCController = new ADRCVelocityController(0d, 0d, 0d, 12d);
+        leftADRCController = new ADRCVelocityController(544.0, 110.0, 25.0, 12.0);
+        rightADRCController = new ADRCVelocityController(544.0, 110.0, 25.0, 12.0);
 
         leftHoodPIDController = new PIDController(LEFT_HOOD_P, LEFT_HOOD_I, LEFT_HOOD_D);
         leftHoodPIDController.setTolerance(HOOD_TOLERANCE);
