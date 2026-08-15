@@ -40,7 +40,7 @@ public class ADRCVelocityController {
      * @param targetState The target velocity.
      * @return The output to be applied to the motor.
      */
-    public double calculate(double measurementState, double targetState) {
+    public double calculate(double measurementState, double targetState, double feedforward) {
         double error = measurementState - estimatedVelocity;
         double dT = timer.get();
 
@@ -50,6 +50,7 @@ public class ADRCVelocityController {
         double desiredAccel = controlGain * (targetState - estimatedVelocity);
         double output = (desiredAccel - estimatedDisturbance) / bGain;
 
+        output = output + feedforward;
         output = MathUtil.clamp(output, -outputClamp, outputClamp);
 
         lastOutput = output;

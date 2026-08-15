@@ -241,8 +241,8 @@ public class Shooter {
         rightPIDController = new PIDController(RIGHT_P, RIGHT_I, RIGHT_D);
         rightPIDController.setTolerance(RIGHT_TOLERANCE);
 
-        leftADRCController = new ADRCVelocityController(544.0, 110.0, 25.0, 12.0);
-        rightADRCController = new ADRCVelocityController(544.0, 110.0, 25.0, 12.0);
+        leftADRCController = new ADRCVelocityController(544.0, 55.0, 13.0, 12.0);
+        rightADRCController = new ADRCVelocityController(544.0, 55.0, 13.0, 12.0);
 
         leftHoodPIDController = new PIDController(LEFT_HOOD_P, LEFT_HOOD_I, LEFT_HOOD_D);
         leftHoodPIDController.setTolerance(HOOD_TOLERANCE);
@@ -540,8 +540,8 @@ public class Shooter {
         SmartDashboard.putNumber("Right RPM", currentRightRPM);
 
         // calculate voltage via PIDF controller
-        double leftVoltage = LEFT_F * targetLeftRPM + leftADRCController.calculate(currentLeftRPM, targetLeftRPM);
-        double rightVoltage = RIGHT_F * targetRightRPM + rightADRCController.calculate(currentRightRPM, targetRightRPM);
+        double leftVoltage = leftADRCController.calculate(currentLeftRPM, targetLeftRPM, LEFT_F * targetLeftRPM);
+        double rightVoltage = rightADRCController.calculate(currentRightRPM, targetRightRPM, RIGHT_F * targetRightRPM);
 
         // clamp voltage to usable values
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
