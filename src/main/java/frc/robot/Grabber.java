@@ -14,15 +14,12 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.ctre.phoenix6.hardware.DeviceIdentifier;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
 
 /** Grabber. */
 public class Grabber {
@@ -83,8 +80,7 @@ public class Grabber {
             .withBeepOnConfig(true)
             .withAllowMusicDurDisable(true)
         );
-        TalonFXConfigurator configurator = new TalonFXConfigurator(new DeviceIdentifier(INTAKE_MOTOR_ID, "Kraken X60", CANBus.roboRIO()));
-        configurator.apply(intakeKrakenConfig);
+        intakeKraken.getConfigurator().apply(intakeKrakenConfig);
     }
 
     /**
