@@ -540,8 +540,8 @@ public class Shooter {
         SmartDashboard.putNumber("Right RPM", currentRightRPM);
 
         // calculate voltage via PIDF controller
-        double leftVoltage = leftADRCController.calculate(currentLeftRPM, targetLeftRPM, LEFT_F * targetLeftRPM);
-        double rightVoltage = rightADRCController.calculate(currentRightRPM, targetRightRPM, RIGHT_F * targetRightRPM);
+        double leftVoltage = LEFT_F * targetLeftRPM + leftPIDController.calculate(currentLeftRPM, targetLeftRPM);
+        double rightVoltage = RIGHT_F * targetRightRPM + rightPIDController.calculate(currentRightRPM, targetRightRPM);
 
         // clamp voltage to usable values
         rightVoltage = MathUtil.clamp(rightVoltage, -12, 12);
