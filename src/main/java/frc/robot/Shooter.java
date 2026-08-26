@@ -87,16 +87,17 @@ public class Shooter {
     private final double RIGHT_TURRET_ENCODER_OFFSET = 0.5193; // 0 to 1
 
     // PID Values
+    // TODO return left turret
     private       double LEFT_F = 0.001941;
     private final double LEFT_P = 0.0024;
     private final double LEFT_I = 0.0;
     private final double LEFT_D = 0.00012;
     private final double LEFT_TOLERANCE = 100.0;
 
-    private       double RIGHT_F = 0.001873;
-    private final double RIGHT_P = 0.0029;
+    private       double RIGHT_F = 0.00191;
+    private final double RIGHT_P = 0.0033;
     private final double RIGHT_I = 0.0;
-    private final double RIGHT_D = 0.000011;
+    private final double RIGHT_D = 0.00009;
     private final double RIGHT_TOLERANCE = 100.0;
 
     private final double LEFT_HOOD_P = 0.5;

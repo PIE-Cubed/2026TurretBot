@@ -229,8 +229,8 @@ public class Robot extends TimedRobot {
         totalCurrent = 0;
 
         shooter.log();
-        hopper.log();
-        grabber.log();
+        // hopper.log();
+        // grabber.log();
         drive.log();
 
         SmartDashboard.putNumber("currents/totalCurrent", totalCurrent);
@@ -351,23 +351,23 @@ public class Robot extends TimedRobot {
         // shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
         shooter.stopTurrets();
-        // shooter.tuneShooter(
-        //     SmartDashboard.getBoolean("testingRightTurret", true), 
-        //     SmartDashboard.getNumber("testRPM", 2700), 
-        //     SmartDashboard.getNumber("testHoodAngle", 15), 
-        //     SmartDashboard.getNumber("nF", 0), 
-        //     SmartDashboard.getNumber("nP", 0), 
-        //     SmartDashboard.getNumber("nI", 0), 
-        //     SmartDashboard.getNumber("nD", 0)
-        // );
+        shooter.tuneShooter(
+            SmartDashboard.getBoolean("testingRightTurret", true), 
+            SmartDashboard.getNumber("testRPM", 2800), 
+            SmartDashboard.getNumber("testHoodAngle", 15), 
+            SmartDashboard.getNumber("nF", 0), 
+            SmartDashboard.getNumber("nP", 0), 
+            SmartDashboard.getNumber("nI", 0), 
+            SmartDashboard.getNumber("nD", 0)
+        );
 
-        // boolean shootButton = controls.getShootButton();
+        boolean shootButton = controls.getShootButton();
 
-        // if (shootButton) {
-        //    hopper.indexFuel();
-        // } else {
-        //    hopper.stopMotors();
-        // }
+        if (shootButton) {
+           hopper.indexFuel();
+        } else {
+           hopper.stopMotors();
+        }
 
         //shooter.stopHood();
         //shooter.stopWheels();
