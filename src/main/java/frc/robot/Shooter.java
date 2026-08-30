@@ -91,7 +91,7 @@ public class Shooter {
     private       double LEFT_F = 0.001941;
     private final double LEFT_P = 0.0024;
     private final double LEFT_I = 0.0;
-    private final double LEFT_D = 0.00012;
+    private final double LEFT_D = 0.0001;
     private final double LEFT_TOLERANCE = 100.0;
 
     private       double RIGHT_F = 0.00191;
@@ -436,26 +436,31 @@ public class Shooter {
             driveInput = new Transform2d(driveInput.getTranslation().rotateBy(Drive.getPose().getRotation()), driveInput.getRotation());
         }
 
-        // move turrets
-        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
-        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
-        // set RPM
-        if (revUp) {
-            setTargetRPMs(targetRightRPM, targetLeftRPM);
-        }
-        else {
-            // use rest RPM to save power unless revUp is true
-            setTargetRPMs(REST_RPM, REST_RPM);
-        }
+        // // move turrets
+        // leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
+        // rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
+        // // set RPM
+        // if (revUp) {
+        //     setTargetRPMs(targetRightRPM, targetLeftRPM);
+        // }
+        // else {
+        //     // use rest RPM to save power unless revUp is true
+        //     setTargetRPMs(REST_RPM, REST_RPM);
+        // }
 
-        // only move the hood if hoodUp is true
-        if (hoodUp) {
-            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-        } 
-        else {
-            // stow hood
-            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-        }
+        // // only move the hood if hoodUp is true
+        // if (hoodUp) {
+        //     setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
+        // } 
+        // else {
+        //     // stow hood
+        //     setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
+        // }
+
+        leftTurret.setTargetFullRotation(0);
+        rightTurret.setTargetFullRotation(0);
+        setTargetRPMs(2700, 2700);
+        setHoodAngle(15, 15);
 
         // leftTurret.printEncoderValues();
         // rightTurret.printEncoderValues();
