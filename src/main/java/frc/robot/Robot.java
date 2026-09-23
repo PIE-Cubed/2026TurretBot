@@ -467,7 +467,7 @@ public class Robot extends TimedRobot {
         if (reverseIndexer) {
             hopper.reverse();
         } else if (shootButton) {
-            hopper.indexFuel();
+            hopper.indexFuelConsiderTurrets(shooter.getTurretStatus());
         } else {
             hopper.stopMotors();
         }

@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Shooter.TurretStatus;
 
 /** a */
 public class Hopper {
@@ -111,6 +112,21 @@ public class Hopper {
         leftKickerMotor.setVoltage(-KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
     }
 
+    public void indexFuelConsiderTurrets(TurretStatus turretStatus) {
+        if (turretStatus == TurretStatus.LEFT_OFF_TARGET) {
+            indexRight();
+        }
+        else if (turretStatus == TurretStatus.RIGHT_OFF_TARGET) {
+            indexLeft();
+        }
+        else if (turretStatus == TurretStatus.BOTH_OFF_TARGET) {
+            stopMotors();
+        }
+        else if (turretStatus == TurretStatus.ON_TARGET) {
+            indexFuel();
+        }
+    }
+
     public void indexFuel() {
         rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
         leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
@@ -118,17 +134,21 @@ public class Hopper {
         leftKickerMotor.setVoltage(KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
     }
 
-    // public void indexRight() {
-    //     // leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
-    //     rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-    //     rightKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    // }
+    public void indexRight() {
+        // leftSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        rightSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        rightKickerMotor.setVoltage(KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((rightKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftSpindexerMotor.stopMotor();
+        leftKickerMotor.stopMotor();
+    }
 
-    // public void indexLeft() {
-    //     // rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
-    //     leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS);
-    //     leftKickerMotor.setVoltage(KICKER_POWER_VOLTS);
-    // }
+    public void indexLeft() {
+        // rightSpindexerMotor.setVoltage(-INDEX_POWER_VOLTS);
+        leftSpindexerMotor.setVoltage(INDEX_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftSpindexerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        leftKickerMotor.setVoltage(KICKER_POWER_VOLTS * MathUtil.clamp(1.0 - Math.pow((leftKickerMotor.getMotorTemperature() - 45.0) / 45.0, 3), 0, 1));
+        rightSpindexerMotor.stopMotor();
+        rightKickerMotor.stopMotor();
+    }
 
     // public void kickFuel() {
     //     kickLeft();

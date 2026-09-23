@@ -340,6 +340,10 @@ public class Turret {
         return input;
     }
 
+    public boolean isOnTarget() {
+        return turretPID.atSetpoint();
+    }
+
     /**
      * Gets the distance from this turret to the hub, accounting for robot velocity.
      * @param chassisPower Current x, y, and rotational duty cycle power being applied to the chassis.

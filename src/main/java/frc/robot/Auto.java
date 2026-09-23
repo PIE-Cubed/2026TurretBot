@@ -65,8 +65,7 @@ public class Auto {
         centerOP1 = Choreo.loadTrajectory("centerOV1P1");
         centerOP2 = Choreo.loadTrajectory("centerOV1P2");
         centerDP1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
-        centerDP2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P1").get()).mirrorY());
-        // outpostNC = Choreo.loadTrajectory("holyFemale");
+        centerDP2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("centerOV1P2").get()).mirrorY());
         outpostV1 = Choreo.loadTrajectory("outpostV1P1");
         outpostV2 = Choreo.loadTrajectory("outpostV2P1");
         depotV1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P1").get()).mirrorY());
@@ -221,7 +220,7 @@ public class Auto {
 
                 grabber.resetJostle();
 
-                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+                status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
             case 5:
                 // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = true;
@@ -230,7 +229,7 @@ public class Auto {
                 grabber.intake();
                 hopper.indexFuel();
 
-                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
+                status = (waitTimer2.hasElapsed(4)) ? Robot.DONE : Robot.CONT;
                 break;
             case 6:
                 timer.restart();
@@ -257,7 +256,7 @@ public class Auto {
                 grabber.resetJostle();
                 hopper.stopMotors();
 
-                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+                status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
             case 9:
                 // choreoPathFollower(outpostPass2);
                 hoodUp = true;
@@ -283,7 +282,9 @@ public class Auto {
                 return Robot.DONE;
         }
 
-        shooter.autoAdjust(hoodUp);
+        if (step > 2) {
+            shooter.autoAdjust(hoodUp);
+        }
 
         if (status == Robot.DONE) {
             step++;
@@ -657,7 +658,7 @@ public class Auto {
 
                 grabber.resetJostle();
 
-                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+                status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
             case 5:
                 // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = true;
@@ -666,7 +667,7 @@ public class Auto {
                 grabber.intake();
                 hopper.indexFuel();
 
-                status = (waitTimer2.hasElapsed(3.25)) ? Robot.DONE : Robot.CONT;
+                status = (waitTimer2.hasElapsed(4)) ? Robot.DONE : Robot.CONT;
                 break;
             case 6:
                 timer.restart();
@@ -693,7 +694,7 @@ public class Auto {
                 grabber.resetJostle();
                 hopper.stopMotors();
 
-                status = waitTimer2.hasElapsed(1.25) ? Robot.DONE : Robot.CONT;
+                status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
             case 9:
                 // choreoPathFollower(outpostPass2);
                 hoodUp = true;
@@ -719,7 +720,9 @@ public class Auto {
                 return Robot.DONE;
         }
 
-        shooter.autoAdjust(hoodUp);
+        if (step > 2) {
+            shooter.autoAdjust(hoodUp);
+        }shooter.autoAdjust(hoodUp);
 
         if (status == Robot.DONE) {
             step++;

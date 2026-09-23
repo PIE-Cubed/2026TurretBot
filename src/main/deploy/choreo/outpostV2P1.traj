@@ -247,7 +247,5 @@
  },
  "events":[
    {"name":"start intake", "from":{"target":1, "targetTimestamp":1.87352, "offset":{"exp":"-0.25 s", "val":-0.25}}, "event":null},
-   {"name":"start shoot", "from":{"target":5, "targetTimestamp":5.90975, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
-   {"name":"stop shoot", "from":{"target":null, "targetTimestamp":null, "offset":{"exp":"0 s", "val":0.0}}, "event":null},
    {"name":"lower intake", "from":{"target":0, "targetTimestamp":0.0, "offset":{"exp":"0.75 s", "val":0.75}}, "event":null}]
 }

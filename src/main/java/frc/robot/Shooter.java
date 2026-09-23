@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.revrobotics.PersistMode;
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase;
@@ -134,6 +135,13 @@ public class Shooter {
 
     private final InterpolatingMatrixTreeMap<Double, N4, N1> distMapMeters = new InterpolatingMatrixTreeMap<>();
 
+    public static enum TurretStatus {
+        LEFT_OFF_TARGET,
+        RIGHT_OFF_TARGET,
+        BOTH_OFF_TARGET,
+        ON_TARGET
+    }
+
     /**
      * I love my chud son Terry the Turret bot :D
      */
@@ -227,13 +235,13 @@ public class Shooter {
         leftHoodEncoderConfig = new EncoderConfig();
         leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         leftHoodMotorConfig.apply(leftHoodEncoderConfig);
-        leftHoodEncoder.setPosition(0);
+        initLeftHood();
 
         rightHoodEncoder = rightHoodMotor.getEncoder();
         rightHoodEncoderConfig = new EncoderConfig();
         rightHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         rightHoodMotorConfig.apply(rightHoodEncoderConfig);
-        rightHoodEncoder.setPosition(0);
+        initRightHood();
 
         // initialize PID controllers
         leftPIDController = new PIDController(LEFT_P, LEFT_I, LEFT_D);
@@ -275,6 +283,30 @@ public class Shooter {
         Robot.totalCurrent += getInputCurrent(rightMotor);
         Robot.totalCurrent += leftTurret.getMotorCurrent();
         Robot.totalCurrent += rightTurret.getMotorCurrent();
+    }
+
+    private void initLeftHood() {
+        REVLibError status = REVLibError.kError;
+        int attempts = 0;
+
+        while (status != REVLibError.kOk) {
+            status = leftHoodEncoder.setPosition(0);
+            attempts++;
+        }
+
+        System.out.println("Zeroed Left Hood in " + attempts);
+    }
+
+    private void initRightHood() {
+        REVLibError status = REVLibError.kError;
+        int attempts = 0;
+
+        while (status != REVLibError.kOk) {
+            status = rightHoodEncoder.setPosition(0);
+            attempts++;
+        }
+
+        System.out.println("Zeroed Right Hood in " + attempts);
     }
 
     /**
@@ -327,6 +359,14 @@ public class Shooter {
     public void stopTurrets() {
         leftTurret.setTurretMotorVoltage(0);
         rightTurret.setTurretMotorVoltage(0);
+    }
+
+    public boolean getLeftTurretOnTarget() {
+        return leftTurret.isOnTarget();
+    }
+    
+    public boolean getRightTurretOnTarget() {
+        return rightTurret.isOnTarget();
     }
 
     /**
@@ -436,31 +476,31 @@ public class Shooter {
             driveInput = new Transform2d(driveInput.getTranslation().rotateBy(Drive.getPose().getRotation()), driveInput.getRotation());
         }
 
-        // // move turrets
-        // leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
-        // rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
-        // // set RPM
-        // if (revUp) {
-        //     setTargetRPMs(targetRightRPM, targetLeftRPM);
-        // }
-        // else {
-        //     // use rest RPM to save power unless revUp is true
-        //     setTargetRPMs(REST_RPM, REST_RPM);
-        // }
+        // move turrets
+        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
+        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
+        // set RPM
+        if (revUp) {
+            setTargetRPMs(targetRightRPM, targetLeftRPM);
+        }
+        else {
+            // use rest RPM to save power unless revUp is true
+            setTargetRPMs(REST_RPM, REST_RPM);
+        }
 
-        // // only move the hood if hoodUp is true
-        // if (hoodUp) {
-        //     setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-        // } 
-        // else {
-        //     // stow hood
-        //     setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-        // }
+        // only move the hood if hoodUp is true
+        if (hoodUp) {
+            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
+        } 
+        else {
+            // stow hood
+            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
+        }
 
-        leftTurret.setTargetFullRotation(0);
-        rightTurret.setTargetFullRotation(0);
-        setTargetRPMs(2700, 2700);
-        setHoodAngle(15, 15);
+        // leftTurret.setTargetFullRotation(0);
+        // rightTurret.setTargetFullRotation(0);
+        // setTargetRPMs(2700, 2700);
+        // setHoodAngle(15, 15);
 
         // leftTurret.printEncoderValues();
         // rightTurret.printEncoderValues();
@@ -658,6 +698,25 @@ public class Shooter {
         SmartDashboard.putBoolean("atTargetRPM", atTargetRPMCount >= 5);
 
         return atTargetRPMCount >= 5;
+    }
+
+    public TurretStatus getTurretStatus() {
+        if (leftTurret.isOnTarget() == false) {
+            if (rightTurret.isOnTarget() == false) {
+                return TurretStatus.BOTH_OFF_TARGET;
+            }
+            else {
+                return TurretStatus.LEFT_OFF_TARGET;
+            }
+        }
+        else {
+            if (rightTurret.isOnTarget() == false) {
+                return TurretStatus.RIGHT_OFF_TARGET;
+            }
+            else {
+                return TurretStatus.ON_TARGET;
+            }
+        }
     }
 
     /******************************************************************************************************
