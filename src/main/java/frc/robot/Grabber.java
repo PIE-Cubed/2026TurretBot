@@ -30,7 +30,7 @@ public class Grabber {
 
     // Soft stop limits
     private final double MAX_PIVOT_ANGLE = 140.0;
-    private final double MIN_PIVOT_ANGLE = 17.5;
+    private final double MIN_PIVOT_ANGLE = 12.5;
 
     // Voltage settings
     private final double PIVOT_DOWN_VOLTAGE = -4;
@@ -38,9 +38,8 @@ public class Grabber {
     private final double INTAKE_VOLTAGE = 6;
 
     // jostleGrabber() variables
-    private final double JOSTLE_MAX_DELAY_SECONDS = 0.1;
-    private final double JOSTLE_DOWN_TIME_MULT = 2.25;
-    private final double BASE_JOSTLE_TIME = 0.1;
+    private final double JOSTLE_MAX_DELAY_SECONDS = 0.2;
+    private final double BASE_JOSTLE_TIME = 0.065;
     private final Timer jostleTimer = new Timer();
     private int jostleStep = 0;
     private double currentJostleDelay = 0;
@@ -159,8 +158,6 @@ public class Grabber {
         // loop end/first time, reset code
         if (jostleStep == 0) {
             jostleStep = 1;
-            currentJostleDelay = Math.random() * JOSTLE_MAX_DELAY_SECONDS;
-            // currJostleTime = BASE_JOSTLE_TIME;
             jostleTimer.restart();
         }
 
@@ -171,7 +168,7 @@ public class Grabber {
                 // raise the grabber for the current jostle time
                 raiseGrabber();
 
-                if (jostleTimer.hasElapsed(currJostleTime)) {
+                if (pivotEncoder.getPosition() > 30) {
                     status = Robot.DONE;
                 } else {
                     status = Robot.CONT;
@@ -179,28 +176,21 @@ public class Grabber {
                 break;
             case 2:
                 // lower grabber for the current jostle time times down time mult
-                lowerGrabber();
-
-                if (jostleTimer.hasElapsed(currJostleTime * JOSTLE_DOWN_TIME_MULT)) {
-                    status = Robot.DONE;
-                } else {
-                    status = Robot.CONT;
-                }
+                jostleTimer.restart();
+                status = lowerGrabber();
                 break;
             case 3:
                 // wait to raise again for the current jostle delay
                 stopGrabber();
 
-                if (jostleTimer.hasElapsed(currentJostleDelay)) {
+                if (jostleTimer.hasElapsed(JOSTLE_MAX_DELAY_SECONDS)) {
                     status = Robot.DONE;
                 } else {
                     status = Robot.CONT;
                 }
                 break;
             default:
-                // raise current jostle time by 0.1 seconds every loop
                 jostleStep = 0;
-                currJostleTime += 0.1;
                 pivotMotor.stopMotor();
                 break;
         }
@@ -223,7 +213,6 @@ public class Grabber {
      */
     public void resetJostle() {
         jostleStep = 0;
-        currJostleTime = BASE_JOSTLE_TIME;
         // pivotEncoder.setPosition(0);
     }
 

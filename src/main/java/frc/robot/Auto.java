@@ -18,8 +18,6 @@ import frc.robot.util.Logger;
 import java.util.List;
 import java.util.Optional;
 
-import org.opencv.objdetect.HOGDescriptor;
-
 /**
  * This class has all the autonomous programs.
  */
@@ -42,12 +40,14 @@ public class Auto {
     private Optional<Trajectory<SwerveSample>> centerDP1;
     private Optional<Trajectory<SwerveSample>> centerDP2;
     private Optional<Trajectory<SwerveSample>> depotPass2;
+    private Optional<Trajectory<SwerveSample>> depotPass2V2;
     private Optional<Trajectory<SwerveSample>> depotV1;
     private Optional<Trajectory<SwerveSample>> depotV2;
     // private Optional<Trajectory<SwerveSample>> outpostNC;
     private Optional<Trajectory<SwerveSample>> outpostV1;
     private Optional<Trajectory<SwerveSample>> outpostV2;
     private Optional<Trajectory<SwerveSample>> outpostPass2;
+    private Optional<Trajectory<SwerveSample>> outpostPass2V2;
     private Optional<Trajectory<SwerveSample>> testAuto;
     // private Optional<Trajectory<SwerveSample>> currentSplit;
     // private int currentSplitIndex = 1;
@@ -71,7 +71,9 @@ public class Auto {
         depotV1 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P1").get()).mirrorY());
         depotV2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV2P1").get()).mirrorY());
         outpostPass2 = Choreo.loadTrajectory("outpostV1P2");
+        outpostPass2V2 = Choreo.loadTrajectory("outpostV2P2");
         depotPass2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV1P2").get()).mirrorY());
+        depotPass2V2 = Optional.of(((Trajectory<SwerveSample>) Choreo.loadTrajectory("outpostV2P2").get()).mirrorY());
     }
 
     public void resetAuto() {
@@ -221,15 +223,16 @@ public class Auto {
                 grabber.resetJostle();
 
                 status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
+                break;
             case 5:
                 // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
                 hoodUp = true;
 
-                grabber.jostleGrabber();
                 grabber.intake();
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
-                status = (waitTimer2.hasElapsed(4)) ? Robot.DONE : Robot.CONT;
+                status = (waitTimer2.hasElapsed(100)) ? Robot.DONE : Robot.CONT;
                 break;
             case 6:
                 timer.restart();
@@ -245,10 +248,10 @@ public class Auto {
 
                 waitTimer2.restart();
 
-                status = choreoPathFollower(outpostPass2);
+                status = choreoPathFollower((mod2) ? outpostPass2V2 : outpostPass2);
                 break;
             case 8:
-                choreoPathFollower(outpostPass2);
+                choreoPathFollower((mod2) ? outpostPass2V2 : outpostPass2);
                 hoodUp = false;
 
                 grabber.intake();
@@ -257,6 +260,7 @@ public class Auto {
                 hopper.stopMotors();
 
                 status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
+                break;
             case 9:
                 // choreoPathFollower(outpostPass2);
                 hoodUp = true;
@@ -268,7 +272,7 @@ public class Auto {
                 if (DriverStation.isFMSAttached()) {
                     status = Robot.CONT;
                 } else {
-                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() > 20) ? Robot.DONE : Robot.CONT;
                 }
                 break;
             default:
