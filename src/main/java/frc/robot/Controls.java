@@ -95,6 +95,10 @@ public class Controls {
         return manipController.getYButton();
     }
 
+    // public boolean getZeroHoods() {
+    //     return manipController.getXButton();
+    // }
+
     public boolean getManualTurretRevButton() {
         return manipController.getAButton();
     }

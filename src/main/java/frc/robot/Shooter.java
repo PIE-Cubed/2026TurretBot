@@ -73,6 +73,11 @@ public class Shooter {
     private PIDController leftHoodPIDController;
     private PIDController rightHoodPIDController;
 
+    private boolean leftHoodZeroed = false;
+    private boolean rightHoodZeroed = false;
+    private final double HOOD_ZEROING_VOLTAGE = -3;
+    private final double HOOD_ZEROING_MAX_CURRENT = 10;
+
     // Motor IDs
     private final int LEFT_TURRET_MOTOR_ID = 45;
     private final int RIGHT_TURRET_MOTOR_ID = 44;
@@ -90,13 +95,13 @@ public class Shooter {
     // PID Values
     // TODO return left turret
     private       double LEFT_F = 0.001941;
-    private final double LEFT_P = 0.0024;
+    private final double LEFT_P = 0.0023;
     private final double LEFT_I = 0.0;
     private final double LEFT_D = 0.0001;
     private final double LEFT_TOLERANCE = 100.0;
 
     private       double RIGHT_F = 0.00191;
-    private final double RIGHT_P = 0.0033;
+    private final double RIGHT_P = 0.0025;
     private final double RIGHT_I = 0.0;
     private final double RIGHT_D = 0.00009;
     private final double RIGHT_TOLERANCE = 100.0;
@@ -108,10 +113,10 @@ public class Shooter {
     private final double RIGHT_HOOD_I = 0.0;
     private final double RIGHT_HOOD_D = 0.01;
     private final double HOOD_TOLERANCE = 0.25;
-    private static final double HOOD_SOFT_STOP_ZONE_DEG = 1.5;
+    private static final double HOOD_SOFT_STOP_ZONE_DEG = 2;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
-    private final double HOOD_MAX_ANGLE_DEG = 21.75;
+    private final double HOOD_MAX_ANGLE_DEG = 21.25;
     private final double HOOD_STOW_ANGLE_DEG = 0;
 
     private final double LEFT_TURRET_P = 0.55;
@@ -236,11 +241,13 @@ public class Shooter {
         leftHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         leftHoodMotorConfig.apply(leftHoodEncoderConfig);
         initLeftHood();
+        initLeftHood();
 
         rightHoodEncoder = rightHoodMotor.getEncoder();
         rightHoodEncoderConfig = new EncoderConfig();
         rightHoodEncoderConfig.positionConversionFactor(HOOD_ENCODER_CONVERSION);
         rightHoodMotorConfig.apply(rightHoodEncoderConfig);
+        initRightHood();
         initRightHood();
 
         // initialize PID controllers
@@ -292,6 +299,10 @@ public class Shooter {
         while (status != REVLibError.kOk) {
             status = leftHoodEncoder.setPosition(0);
             attempts++;
+
+            if (attempts > 5) {
+                System.err.println("Failed to zero left hood");
+            }
         }
 
         System.out.println("Zeroed Left Hood in " + attempts);
@@ -304,6 +315,10 @@ public class Shooter {
         while (status != REVLibError.kOk) {
             status = rightHoodEncoder.setPosition(0);
             attempts++;
+
+            if (attempts > 5) {
+                System.err.println("Failed to zero right hood");
+            }
         }
 
         System.out.println("Zeroed Right Hood in " + attempts);
@@ -496,6 +511,9 @@ public class Shooter {
             // stow hood
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
         }
+
+        leftHoodZeroed = false;
+        rightHoodZeroed = false;
 
         // leftTurret.setTargetFullRotation(0);
         // rightTurret.setTargetFullRotation(0);
@@ -745,5 +763,35 @@ public class Shooter {
 
     public void setTargetRightTurretPos(double targetPosDegrees) {
         rightTurret.setTargetFullRotation(targetPosDegrees);
+    }
+
+    public double hoodZeroingProgram() {
+        if (leftHoodZeroed == false) {
+            leftHoodMotor.setVoltage(HOOD_ZEROING_VOLTAGE);
+
+            if (leftHoodMotor.getOutputCurrent() > HOOD_ZEROING_MAX_CURRENT) {
+                leftHoodMotor.stopMotor();
+                initLeftHood();
+                initLeftHood();
+                leftHoodZeroed = true;
+            }
+        }
+
+        if (rightHoodZeroed == false) {
+            rightHoodMotor.setVoltage(HOOD_ZEROING_VOLTAGE);
+
+            if (rightHoodMotor.getOutputCurrent() > HOOD_ZEROING_MAX_CURRENT) {
+                rightHoodMotor.stopMotor();
+                initRightHood();
+                initRightHood();
+                rightHoodZeroed = true;
+            }
+        }
+
+        if (leftHoodZeroed && rightHoodZeroed) {
+            return Robot.DONE;
+        }
+
+        return Robot.CONT;
     }
 }
