@@ -122,12 +122,12 @@ public class Shooter {
     private final double LEFT_TURRET_P = 0.55;
     private final double LEFT_TURRET_I = 0;
     private final double LEFT_TURRET_D = 0.01;
-    private final double LEFT_TURRET_TOLERANCE = 0.5;
+    private final double LEFT_TURRET_TOLERANCE = 1;
 
     private final double RIGHT_TURRET_P = 0.55;
     private final double RIGHT_TURRET_I = 0;
     private final double RIGHT_TURRET_D = 0.01;
-    private final double RIGHT_TURRET_TOLERANCE = 0.5;
+    private final double RIGHT_TURRET_TOLERANCE = 1;
 
     private double leftDistAdjust = 0;
     private double rightDistAdjust = 0;

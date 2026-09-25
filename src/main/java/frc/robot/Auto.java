@@ -541,22 +541,32 @@ public class Auto {
 
         switch (step) {
             case 1:
-                hoodUp = true;
+                hoodUp = false;
+
+                grabber.resetJostle();
+                waitTimer2.restart();
                 
-                status = waitTimer2.hasElapsed(5) ? Robot.DONE : Robot.CONT;
+                status = grabber.lowerGrabber();
 
                 break;
             case 2:
                 hoodUp = true;
 
-                grabber.intake();
+                grabber.stopGrabber();
+
+                status = (waitTimer2.advanceIfElapsed(3)) ? Robot.DONE : Robot.CONT;
+                break;
+            case 3:
+                hoodUp = true;
+
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
-                if (DriverStation.isFMSAttached()) {
-                    status = Robot.CONT;
-                } else {
-                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
-                }
+                // if (DriverStation.isFMSAttached()) {
+                //     status = Robot.CONT;
+                // } else {
+                //     status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                // }
                 break;
             default:
                 drive.stopWheels();
@@ -569,7 +579,9 @@ public class Auto {
                 return Robot.DONE;
         }
 
-        shooter.autoAdjust(hoodUp);
+        if (step > 1) {
+            shooter.autoAdjust(hoodUp);
+        }
 
         if (status == Robot.DONE) {
             step++;
