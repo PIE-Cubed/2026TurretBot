@@ -136,6 +136,9 @@ public class Robot extends TimedRobot {
             new double[] {SwerveModule.MAX_DRIVE_VEL_MPS, Math.toRadians(SwerveModule.MAX_ROTATE_VEL_DPS)});
         led = new LED();
 
+        shooter.initLeftHood();
+        shooter.initRightHood();
+
         dsConnectTimer.restart();
         DriverStation.waitForDsConnection(0);
         dsConnectTimer.stop();
@@ -383,6 +386,8 @@ public class Robot extends TimedRobot {
         //grabber.stopGrabber();
         // grabber.stopWheel();
         // drive.stopWheels();
+        
+        wheelControl();
     }
 
     /** This function is called once when the robot is first started up. */
