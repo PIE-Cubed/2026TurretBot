@@ -15,8 +15,8 @@ import frc.robot.Shooter.TurretStatus;
 
 /** a */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 9;
-    private final double KICKER_POWER_VOLTS = 9;
+    private final double INDEX_POWER_VOLTS = 8;
+    private final double KICKER_POWER_VOLTS = 10;
 
     private final int LEFT_KICKER_ID = 23;
     private final int RIGHT_KICKER_ID = 22;
@@ -87,6 +87,9 @@ public class Hopper {
             ResetMode.kNoResetSafeParameters,
             PersistMode.kPersistParameters
         );
+
+        // SmartDashboard.putNumber("testing/spindexerVoltage", INDEX_POWER_VOLTS);
+        // SmartDashboard.putNumber("testing/kickerVoltage", KICKER_POWER_VOLTS);
     }
 
     public void log() {
@@ -99,6 +102,11 @@ public class Hopper {
         Robot.totalCurrent += SmartDashboard.getNumber("currents/left kick current",  getInputCurrent(leftKickerMotor));
         Robot.totalCurrent += SmartDashboard.getNumber("currents/right spin current", getInputCurrent(rightSpindexerMotor));
         Robot.totalCurrent += SmartDashboard.getNumber("currents/right kick current", getInputCurrent(rightKickerMotor));
+    }
+
+    public void updateTestVoltage() {
+        // INDEX_POWER_VOLTS = SmartDashboard.getNumber("testing/spindexerVoltage", INDEX_POWER_VOLTS);
+        // KICKER_POWER_VOLTS = SmartDashboard.getNumber("testing/kickerVoltage", KICKER_POWER_VOLTS);
     }
 
     private double getInputCurrent(SparkBase motor) {
