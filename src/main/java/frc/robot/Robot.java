@@ -399,7 +399,7 @@ public class Robot extends TimedRobot {
     public void simulationPeriodic() {}
 
     private void wheelControl() {
-        boolean resetGyro = controls.resetGyro();
+        boolean resetGyro = controls.getResetGyro();
         boolean fieldDrive = controls.getFieldDrive();
         boolean lockWheels = controls.getWheelLock();
         boolean driveAssistEnabled = controls.getDriveAssist();
