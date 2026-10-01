@@ -63,7 +63,7 @@ public class Controls {
         return driveController.getDButton();
     }
 
-    public boolean resetGyro() {
+    public boolean getResetGyro() {
         return false;
         // return driveController.getGButton();
     }
