@@ -116,17 +116,17 @@ public class Shooter {
     private static final double HOOD_SOFT_STOP_ZONE_DEG = 1.25;
 
     private final double HOOD_MIN_ANGLE_DEG = 0;
-    private final double HOOD_MAX_ANGLE_DEG = 20.75;
+    private final double HOOD_MAX_ANGLE_DEG = 20.25;
     private final double HOOD_STOW_ANGLE_DEG = 0;
 
     private final double LEFT_TURRET_P = 0.55;
     private final double LEFT_TURRET_I = 0;
-    private final double LEFT_TURRET_D = 0.01;
+    private final double LEFT_TURRET_D = 0.012;
     private final double LEFT_TURRET_TOLERANCE = 1;
 
     private final double RIGHT_TURRET_P = 0.55;
     private final double RIGHT_TURRET_I = 0;
-    private final double RIGHT_TURRET_D = 0.01;
+    private final double RIGHT_TURRET_D = 0.012;
     private final double RIGHT_TURRET_TOLERANCE = 1;
 
     private double leftDistAdjust = 0;
