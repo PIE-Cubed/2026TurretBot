@@ -159,22 +159,17 @@ public class Turret {
      * Points the turret at a target position on the field, accounting for robot velocity.
      * @param targetPose The target position.
      * @param inAirTime The amount of time the fuel is in the air for.
-     * @param chassisPower Current x, y, and rotational duty cycle power being applied to the chassis.
+     * @param chassisFieldVel Current x, y, and rotational duty cycle power being applied to the chassis.
      * @return Status of PID.
      */
-    public int pointAtWithVelocity(Pose2d targetPose, double inAirTime, Transform2d chassisPower) {
-        // get components from transform2d
-        double xPower = chassisPower.getX();
-        double yPower = chassisPower.getY();
-        double rotationalPower = chassisPower.getRotation().getRadians();
-
+    public int pointAtWithVelocity(Pose2d targetPose, double inAirTime, Transform2d chassisFieldVel) {
         // logging values
-        Logger.logStruct("targetPose2d " + turretMotor.getDeviceId(), targetPose.plus(getCurrentVelocity(xPower, yPower, rotationalPower).times(-inAirTime)));
-        Logger.logStruct("currentTurretVelocity " + turretMotor.getDeviceId(), getCurrentVelocity(xPower, yPower, rotationalPower));
+        Logger.logStruct("targetPose2d " + turretMotor.getDeviceId(), targetPose.plus(chassisFieldVel.times(-inAirTime)));
+        Logger.logStruct("currentTurretVelocity " + turretMotor.getDeviceId(), chassisFieldVel);
         SmartDashboard.putNumber("currentInAirTime " + turretMotor.getDeviceId(), inAirTime);
 
         // return status of PID function 
-        return pointAt(targetPose.plus(getCurrentVelocity(xPower, yPower, rotationalPower).times(-inAirTime)));
+        return pointAt(targetPose.plus(chassisFieldVel.times(-inAirTime)));
     }
 
     /**
