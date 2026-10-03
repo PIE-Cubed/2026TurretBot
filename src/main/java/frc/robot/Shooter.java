@@ -503,8 +503,8 @@ public class Shooter {
             setTargetRPMs(REST_RPM, REST_RPM);
         }
 
-        // only move the hood if hoodUp is true
-        if (hoodUp) {
+        // only keep the hood raised if safe to raise the hood and the manipulator is holding revUp
+        if (hoodSafe && revUp) {
             setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
         } 
         else {
@@ -515,6 +515,7 @@ public class Shooter {
         leftHoodZeroed = false;
         rightHoodZeroed = false;
 
+        // demo code
         // leftTurret.setTargetFullRotation(0);
         // rightTurret.setTargetFullRotation(0);
         // setTargetRPMs(2700, 2700);
