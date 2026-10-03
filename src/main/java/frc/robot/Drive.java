@@ -38,6 +38,7 @@ import com.studica.frc.Navx;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
@@ -68,12 +69,12 @@ public class Drive {
         -SWERVE_DIST_FROM_CENTER
     );
 
-    public SwerveDriveKinematics swerveDriveKinematics;
+    public static SwerveDriveKinematics swerveDriveKinematics;
 
-    private SwerveModule frontLeft;
-    private SwerveModule frontRight;
-    private SwerveModule backLeft;
-    private SwerveModule backRight;
+    private static SwerveModule frontLeft;
+    private static SwerveModule frontRight;
+    private static SwerveModule backLeft;
+    private static SwerveModule backRight;
 
     // on-the-fly drive variables
     private final double ROBOT_MASS_KG = 37; // robot mass in kilograms (for pathPlanner)
@@ -895,18 +896,41 @@ public class Drive {
     }
 
     /**
-     * Returns the current velocity of the robot as a Transform2d.
+     * Returns the current field-relative velocity of the robot (meters/S, degrees/S) as a Transform2d.
      */
-    public static Transform2d getVelocity() {
-        // Multiplied by the ammount of loops per second to get units per second
+    public static Transform2d getFieldVelocity() {
+        ChassisSpeeds swerveChassisSpeeds = swerveDriveKinematics.toChassisSpeeds(
+            frontLeft.getModuleState(),
+            frontRight.getModuleState(),
+            backLeft.getModuleState(),
+            backRight.getModuleState()
+        );
+
         Transform2d velocityMeters = new Transform2d(
-            (currPose.getX() - lastPose.getX()) * 50, (currPose.getY() - lastPose.getY()) * 50, 
-            currPose.getRotation().minus(lastPose.getRotation()).times(50)
+            new Translation2d(
+                swerveChassisSpeeds.vxMetersPerSecond, 
+                swerveChassisSpeeds.vyMetersPerSecond
+            ).rotateBy(getPose().getRotation()),
+            Rotation2d.fromDegrees(navx.getAngularVel()[2].in(RadiansPerSecond))
         );
 
         Logger.logStruct("currRobotSpeed", velocityMeters);
 
         return velocityMeters;
+    }
+
+    /**
+     * Returns the current field-relative acceleration of the robot (meters/S^2, degrees/S^2) as a Transform2d.
+     */
+    public static Translation2d getFieldAcceleration() {
+        Translation2d accelMPSPerSecond = new Translation2d(
+                navx.getLinearAccel()[0].in(MetersPerSecondPerSecond), 
+                navx.getLinearAccel()[1].in(MetersPerSecondPerSecond)
+        ).rotateBy(getPose().getRotation());
+
+        Logger.logStruct("currRobotAccel", accelMPSPerSecond);
+
+        return accelMPSPerSecond;
     }
 
     public void log() {

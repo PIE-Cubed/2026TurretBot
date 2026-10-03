@@ -447,22 +447,18 @@ public class Robot extends TimedRobot {
     public void shooterControl() {
         boolean shootButton = controls.getShootButton();
         boolean reverseIndexer = controls.getReverseIndexer();
-
-        PositionState currentPositionState = Drive.getPositionState();
-
+        
         boolean shootReady = true;
+        PositionState currentPositionState = Drive.getPositionState();
 
         if (currentPositionState == PositionState.TRENCH) {
             shootReady = false;
         }
 
-        // we always run the flywheel
         // System.out.println("current distance to hub: " + drive.getHubDistance());
         double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
         double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
         double rotatePowerCcwPos = controls.getRotatePowerCcwPositive();
-
-        Transform2d robotVel = new Transform2d(forwardPowerFwdPos, strafePowerLeftPos, new Rotation2d(rotatePowerCcwPos));
 
         // if (controls.getLeftAdjustReleased()) {
         //     shooter.nudgeTurret(360, 0);
@@ -474,8 +470,16 @@ public class Robot extends TimedRobot {
 
         boolean revWheels = controls.getManualTurretRevButton() || controls.getShootButton();
 
-        shooter.autoAdjust(shootReady, revWheels, robotVel, controls.getLeftAdjust(), controls.getFieldDrive(), true);
+        shooter.autoAdjust(
+            shootReady, 
+            revWheels, 
+            Drive.getFieldVelocity(), 
+            Drive.getFieldAcceleration(), 
+            controls.getFieldDrive(), 
+            true
+        );
 
+        // running this here on its own because it puts its value on smartDashboard for the manipulator to see
         shooter.atTargetRPM();
 
         if (reverseIndexer) {

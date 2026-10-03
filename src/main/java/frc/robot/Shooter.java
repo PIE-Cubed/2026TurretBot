@@ -393,15 +393,15 @@ public class Shooter {
 
     /**
      * Automatically determines hood angle, wheel RPM, and turret angle for both shooters.
-     * @param hoodUp Whether the hood should be up or stowed down for safety under the trench.
-     * @param driveInput Drive controller movement input for SOTM.
-     * @param aimAdjust Manipulator offset of aim.
+     * @param hoodSafe Whether the hood should be up or stowed down for safety under the trench.
+     * @param currentFieldVelocityMPS The current velocity of the robot, in m/s and deg/s.
+     * @param currentFieldAccelMeters The current linear acceleration of the robot, in m/s^2.
      * @param fieldDrive Whether the drive input is for field relative or robot relative drive.
      * @param allowPass Whether to aim for passing shots while away from home zone. 
      * All logic for whether to pass or not is handled within this function,
      * the parameter only tells the robot if it is allowed to pass or not.
      */
-    public void autoAdjust(boolean hoodUp, boolean revUp, Transform2d driveInput, Translation2d aimAdjust, boolean fieldDrive, boolean allowPass) {
+    public void autoAdjust(boolean hoodSafe, boolean revUp, Transform2d currentFieldVelocityMPS, Translation2d currentFieldAccelMeters, boolean fieldDrive, boolean allowPass) {
         // initialize targetPose, set value later
         Pose2d targetPose = null;
         // get which side of the field you are on for passing
@@ -409,9 +409,13 @@ public class Shooter {
         // get which part of the field you're on
         PositionState currPositionState = Drive.getPositionState();
 
+        Transform2d acceleratedFieldVelocity = currentFieldVelocityMPS.plus(
+            new Transform2d(currentFieldAccelMeters, Rotation2d.kZero)
+        );
+
         // TODO figure out how to get the adjusted hub distance better
-        double leftDist = leftTurret.getAdjustedHubDistanceMeters(driveInput, 1);
-        double rightDist = rightTurret.getAdjustedHubDistanceMeters(driveInput, 1);
+        double leftDist = leftTurret.getAdjustedHubDistanceMeters(acceleratedFieldVelocity, 1);
+        double rightDist = rightTurret.getAdjustedHubDistanceMeters(acceleratedFieldVelocity, 1);
 
         // if passing is enabled, do passing logic
         if (allowPass) {
@@ -486,14 +490,10 @@ public class Shooter {
         // double targetTheta = Math.atan2(targetPose.getY() - Drive.getPose().getY(), targetPose.getX() - Drive.getPose().getX());
         // targetPose = targetPose.plus(new Transform2d(aimAdjust.rotateBy(Rotation2d.fromRadians(targetTheta)), Rotation2d.kZero));
 
-        // adjust drive input for robot relative driving
-        if (!fieldDrive) {
-            driveInput = new Transform2d(driveInput.getTranslation().rotateBy(Drive.getPose().getRotation()), driveInput.getRotation());
-        }
-
         // move turrets
-        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, driveInput);
-        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, driveInput);
+        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, acceleratedFieldVelocity);
+        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, acceleratedFieldVelocity);
+
         // set RPM
         if (revUp) {
             setTargetRPMs(targetRightRPM, targetLeftRPM);
@@ -512,8 +512,8 @@ public class Shooter {
             setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
         }
 
-        leftHoodZeroed = false;
-        rightHoodZeroed = false;
+        // leftHoodZeroed = false;
+        // rightHoodZeroed = false;
 
         // demo code
         // leftTurret.setTargetFullRotation(0);
