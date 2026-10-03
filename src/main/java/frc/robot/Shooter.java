@@ -409,9 +409,9 @@ public class Shooter {
         // get which part of the field you're on
         PositionState currPositionState = Drive.getPositionState();
 
-        Transform2d acceleratedFieldVelocity = currentFieldVelocityMPS.plus(
-            new Transform2d(currentFieldAccelMeters, Rotation2d.kZero)
-        );
+        Transform2d acceleratedFieldVelocity = currentFieldVelocityMPS;// .plus(
+        //     new Transform2d(currentFieldAccelMeters, Rotation2d.kZero)
+        // );
 
         // TODO figure out how to get the adjusted hub distance better
         double leftDist = leftTurret.getAdjustedHubDistanceMeters(acceleratedFieldVelocity, 1);
@@ -539,7 +539,7 @@ public class Shooter {
         // acceleration from gravity (FPS)
         final double G        = 32.174;
         // velocity of ball coming out of the shooter
-        final double V0       = 20.5; // measured at 3000 rpm
+        final double V0       = 20.25; // measured at 3000 rpm
         // launch height (feet)
         final double H_LAUNCH = 16.0 / 12.0;
         // target height (feet)
