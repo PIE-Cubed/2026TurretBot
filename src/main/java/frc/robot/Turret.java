@@ -54,8 +54,8 @@ public class Turret {
     // private final double MAX_TURRET_ANGLE_DEGREES = 365;
 
     // Kalman filter variables
-    private final double MODEL_STD_DEV       = 3.0;  // Q: model uncertainty
-    private final double MEASUREMENT_STD_DEV = 0.35; // R: sensor noise
+    private final double MODEL_STD_DEV       = 2.5;  // Q: model uncertainty
+    private final double MEASUREMENT_STD_DEV = 0.4; // R: sensor noise
   
     private final LinearSystem<N1, N1, N1> plant = new LinearSystem<>(
         MatBuilder.fill(Nat.N1(), Nat.N1(), 1.0),

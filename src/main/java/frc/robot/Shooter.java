@@ -518,7 +518,7 @@ public class Shooter {
         // demo code
         // leftTurret.setTargetFullRotation(0);
         // rightTurret.setTargetFullRotation(0);
-        // setTargetRPMs(2700, 2700);
+        // setTargetRPMs(2200, 2200);
         // setHoodAngle(15, 15);
 
         // leftTurret.printEncoderValues();
