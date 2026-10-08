@@ -353,24 +353,24 @@ public class Robot extends TimedRobot {
         // shooter.setHoodAngle(SmartDashboard.getNumber("demoHoodPos", 0), SmartDashboard.getNumber("demoHoodPos", 0));
         // shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
-        // shooter.stopTurrets();
-        // shooter.tuneShooter(
-        //     SmartDashboard.getBoolean("testingRightTurret", true), 
-        //     SmartDashboard.getNumber("testRPM", 2800), 
-        //     SmartDashboard.getNumber("testHoodAngle", 15), 
-        //     SmartDashboard.getNumber("nF", 0), 
-        //     SmartDashboard.getNumber("nP", 0), 
-        //     SmartDashboard.getNumber("nI", 0), 
-        //     SmartDashboard.getNumber("nD", 0)
-        // );
+        shooter.stopTurrets();
+        shooter.tuneShooter(
+            SmartDashboard.getBoolean("testingRightTurret", true), 
+            SmartDashboard.getNumber("testRPM", 2800), 
+            SmartDashboard.getNumber("testHoodAngle", 15), 
+            SmartDashboard.getNumber("nF", 0), 
+            SmartDashboard.getNumber("nP", 0), 
+            SmartDashboard.getNumber("nI", 0), 
+            SmartDashboard.getNumber("nD", 0)
+        );
 
-        // boolean shootButton = controls.getShootButton();
+        boolean shootButton = controls.getShootButton();
 
-        // if (shootButton) {
-        //    hopper.indexFuel();
-        // } else {
-        //    hopper.stopMotors();
-        // }
+        if (shootButton) {
+           hopper.indexFuel();
+        } else {
+           hopper.stopMotors();
+        }
 
         // grabber.jostleGrabber();
 

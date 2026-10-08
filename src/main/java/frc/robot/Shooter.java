@@ -4,10 +4,15 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController.ArbFFUnits;
 import com.revrobotics.spark.config.EncoderConfig;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -31,7 +36,6 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Drive.PositionState;
 import frc.robot.util.AllianceUtil;
 import frc.robot.util.Logger;
-import frc.robot.util.ADRC.ADRCVelocityController;
 
 /**
  * chud shooter class
@@ -68,8 +72,8 @@ public class Shooter {
 
     private PIDController leftPIDController;
     private PIDController rightPIDController;
-    private ADRCVelocityController leftADRCController;
-    private ADRCVelocityController rightADRCController;
+    private SparkClosedLoopController rightInbuiltPIDController;
+    private SparkClosedLoopController leftInbuiltPIDController;
     private PIDController leftHoodPIDController;
     private PIDController rightHoodPIDController;
 
@@ -93,7 +97,6 @@ public class Shooter {
     private final double RIGHT_TURRET_ENCODER_OFFSET = 0.5193; // 0 to 1
 
     // PID Values
-    // TODO return left turret
     private       double LEFT_F = 0.001941;
     private final double LEFT_P = 0.0029;
     private final double LEFT_I = 0.0;
@@ -205,12 +208,24 @@ public class Shooter {
         leftMotorConfig.disableFollowerMode();
         leftMotorConfig.inverted(false);
         leftMotorConfig.secondaryCurrentLimit(100);
+        leftMotorConfig.encoder.uvwMeasurementPeriod(10).uvwAverageDepth(2);
+        leftMotorConfig.closedLoop
+            .pid(RIGHT_P/12, RIGHT_I/12, RIGHT_D/12)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+
+        leftInbuiltPIDController = leftMotor.getClosedLoopController();
 
         rightMotorConfig.idleMode(IdleMode.kCoast);
         rightMotorConfig.smartCurrentLimit(80);
         rightMotorConfig.disableFollowerMode();
         rightMotorConfig.inverted(false);
         rightMotorConfig.secondaryCurrentLimit(100);
+        rightMotorConfig.encoder.uvwMeasurementPeriod(10).uvwAverageDepth(2);
+        rightMotorConfig.closedLoop
+            .pid(RIGHT_P/12, RIGHT_I/12, RIGHT_D/12)
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+
+        rightInbuiltPIDController = rightMotor.getClosedLoopController();
 
         leftHoodMotorConfig.idleMode(IdleMode.kBrake);
         leftHoodMotorConfig.smartCurrentLimit(Robot.NEO_550_CURRENT_LIMIT);
@@ -256,9 +271,6 @@ public class Shooter {
 
         rightPIDController = new PIDController(RIGHT_P, RIGHT_I, RIGHT_D);
         rightPIDController.setTolerance(RIGHT_TOLERANCE);
-
-        leftADRCController = new ADRCVelocityController(544.0, 55.0, 13.0, 12.0);
-        rightADRCController = new ADRCVelocityController(544.0, 55.0, 13.0, 12.0);
 
         leftHoodPIDController = new PIDController(LEFT_HOOD_P, LEFT_HOOD_I, LEFT_HOOD_D);
         leftHoodPIDController.setTolerance(HOOD_TOLERANCE);
@@ -615,6 +627,37 @@ public class Shooter {
         // set voltage to motor
         rightMotor.setVoltage(rightVoltage);
         leftMotor.setVoltage(leftVoltage);
+    }
+
+    public void setTargetRPMsInbuilt(double targetLeftRPM, double targetRightRPM) {
+        // get current RPM
+        double currentRightRPM = rightMotorEncoder.getVelocity();
+        double currentLeftRPM = leftMotorEncoder.getVelocity();
+
+        // log current RPM
+        SmartDashboard.putNumber("Left RPM", currentLeftRPM);
+        SmartDashboard.putNumber("Right RPM", currentRightRPM);
+
+        // use inbuilt motor controller PIDF to reduce latency
+        leftInbuiltPIDController.setSetpoint(
+            targetLeftRPM, 
+            ControlType.kVelocity, 
+
+            ClosedLoopSlot.kSlot0, 
+
+            LEFT_F, 
+            ArbFFUnits.kVoltage
+        );
+        
+        rightInbuiltPIDController.setSetpoint(
+            targetRightRPM, 
+            ControlType.kVelocity, 
+
+            ClosedLoopSlot.kSlot0, 
+
+            RIGHT_F, 
+            ArbFFUnits.kVoltage
+        );
     }
 
     /**
