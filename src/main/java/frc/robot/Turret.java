@@ -206,7 +206,6 @@ public class Turret {
         Rotation2d filteredTargetAngle = Rotation2d.fromDegrees(filter.getXhat(0));
 
         // adjust to robot relative
-        // TODO: test this math
         Rotation2d targetAbsRotation = filteredTargetAngle.minus(currentRobotAngle);
 
         // logging

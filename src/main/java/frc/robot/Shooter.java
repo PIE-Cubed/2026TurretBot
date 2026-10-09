@@ -370,7 +370,7 @@ public class Shooter {
     }
 
     /**
-     * weird way of combining distAdjust() and nudgeTurrets() TODO: replace this with some better way of compensation
+     * weird way of combining distAdjust() and nudgeTurrets() TODO replace this with some better way of compensation
      */
     public void nudgeAim(Translation2d leftAdjust, Translation2d rightAdjust) {
         nudgeTurret(leftAdjust.getX(), rightAdjust.getX());

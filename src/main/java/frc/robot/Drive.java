@@ -134,7 +134,6 @@ public class Drive {
 
     private static SwerveDrivePoseEstimator aprilTagsEstimator;
 
-    private static Pose2d lastPose = new Pose2d();
     private static Pose2d currPose = new Pose2d();
 
     // private AHRS ahrs;
@@ -761,7 +760,6 @@ public class Drive {
         // Update vision estimator with encoder data
         aprilTagsEstimator.update(currentRotation, currentPosition);
 
-        lastPose = currPose;
         currPose = getPose();
     }
 

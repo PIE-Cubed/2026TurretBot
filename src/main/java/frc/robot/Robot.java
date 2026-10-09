@@ -46,13 +46,13 @@ public class Robot extends TimedRobot {
     public static final int VORTEX_CURRENT_LIMIT = 80;
 
     private static final String kNoAuto = "No Auto";
-    private static final String kTestAuto = "Test Auto";
+    // private static final String kTestAuto = "Test Auto";
     private static final String kCenterOutAuto = "Center Outpost Auto";
     private static final String kCenterDepAuto = "Center Depot Auto";
     private static final String kOutpostAuto = "Outpost Auto (Safe)";
-    private static final String kRiskyOutpostAuto = "Outpost Auto (Risky)";
+    // private static final String kRiskyOutpostAuto = "Outpost Auto (Risky)";
     private static final String kDepotAuto = "Depot Auto (Safe)";
-    private static final String kRiskyDepotAuto = "Depot Auto (Risky)";
+    // private static final String kRiskyDepotAuto = "Depot Auto (Risky)";
     private static final String kMod1 = "Climb";
     private static final String kMod2 = "No Climb";
     private String m_sideSelected;
@@ -156,6 +156,8 @@ public class Robot extends TimedRobot {
         );
 
         testAuto = Choreo.loadTrajectory("testAuto");
+        testAuto.isPresent();
+        // this is here so i don't get a warning about "testAuto isn't being used"
 
         SmartDashboard.putNumber("targetTurretPos", 0);
         SmartDashboard.putNumber("demoHoodPos", 0);
@@ -456,9 +458,6 @@ public class Robot extends TimedRobot {
         }
 
         // System.out.println("current distance to hub: " + drive.getHubDistance());
-        double forwardPowerFwdPos = controls.getForwardPowerFwdPositive();
-        double strafePowerLeftPos = controls.getStrafePowerLeftPositive();
-        double rotatePowerCcwPos = controls.getRotatePowerCcwPositive();
 
         // if (controls.getLeftAdjustReleased()) {
         //     shooter.nudgeTurret(360, 0);
@@ -496,7 +495,7 @@ public class Robot extends TimedRobot {
         boolean intakeDown = controls.getIntakeDown();
         boolean runIntake = controls.getRunIntake();
         boolean reverseIntake = controls.getReverseIntake();
-        boolean shootButton = controls.getShootButton();
+        // boolean shootButton = controls.getShootButton();
 
         if (runIntake /*|| shootButton*/) {
             grabber.intake();

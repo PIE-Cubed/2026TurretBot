@@ -634,7 +634,8 @@ public class Auto {
         }
 
         int status = Robot.CONT;
-        SmartDashboard.putNumber("Auto Step", step);
+
+        // SmartDashboard.putNumber("Auto Step", step);
 
         boolean hoodUp = false;
 
@@ -675,15 +676,16 @@ public class Auto {
                 grabber.resetJostle();
 
                 status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
+                break;
             case 5:
-                // choreoPathFollower((mod2) ? outpostV2 : outpostV1);
+                // choreoPathFollower((mod2) ? depotV2 : depotV1);
                 hoodUp = true;
 
-                grabber.jostleGrabber();
                 grabber.intake();
+                grabber.jostleGrabber();
                 hopper.indexFuel();
 
-                status = (waitTimer2.hasElapsed(4)) ? Robot.DONE : Robot.CONT;
+                status = (waitTimer2.hasElapsed(100)) ? Robot.DONE : Robot.CONT;
                 break;
             case 6:
                 timer.restart();
@@ -699,10 +701,10 @@ public class Auto {
 
                 waitTimer2.restart();
 
-                status = choreoPathFollower(depotPass2);
+                status = choreoPathFollower((mod2) ? depotPass2V2 : depotPass2);
                 break;
             case 8:
-                choreoPathFollower(depotPass2);
+                choreoPathFollower((mod2) ? depotPass2V2 : depotPass2);
                 hoodUp = false;
 
                 grabber.intake();
@@ -711,8 +713,9 @@ public class Auto {
                 hopper.stopMotors();
 
                 status = waitTimer2.hasElapsed(1) ? Robot.DONE : Robot.CONT;
+                break;
             case 9:
-                // choreoPathFollower(outpostPass2);
+                // choreoPathFollower(depotPass2);
                 hoodUp = true;
 
                 grabber.intake();
@@ -722,7 +725,7 @@ public class Auto {
                 if (DriverStation.isFMSAttached()) {
                     status = Robot.CONT;
                 } else {
-                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() >= 20) ? Robot.DONE : Robot.CONT;
+                    status = (DriverStation.getMatchTime() <= 0 || DriverStation.getMatchTime() > 20) ? Robot.DONE : Robot.CONT;
                 }
                 break;
             default:
@@ -738,7 +741,7 @@ public class Auto {
 
         if (step > 2) {
             shooter.autoAdjust(hoodUp);
-        }shooter.autoAdjust(hoodUp);
+        }
 
         if (status == Robot.DONE) {
             step++;

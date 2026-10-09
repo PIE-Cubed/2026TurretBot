@@ -39,11 +39,8 @@ public class Grabber {
 
     // jostleGrabber() variables
     private final double JOSTLE_MAX_DELAY_SECONDS = 0.2;
-    private final double BASE_JOSTLE_TIME = 0.065;
     private final Timer jostleTimer = new Timer();
     private int jostleStep = 0;
-    private double currentJostleDelay = 0;
-    private double currJostleTime = BASE_JOSTLE_TIME;
 
     // Motor variables
     private SparkBase pivotMotor;
@@ -149,7 +146,6 @@ public class Grabber {
         // System.out.println("Nothing pressed");
     }
 
-    // TODO: do this better for the new bot
     /**
      * Moves the grabber in a jostling motion.
      * @return Status of the jostle. DONE if not in between motions, CONT if in the middle of moving the intake.
