@@ -356,10 +356,18 @@ public class Robot extends TimedRobot {
         // shooter.setTargetRPMs(SmartDashboard.getNumber("demoWheelRPM", 0), SmartDashboard.getNumber("demoWheelRPM", 0));
 
         shooter.stopTurrets();
-        shooter.tuneShooter(
+        // shooter.tuneShooter(
+        //     SmartDashboard.getBoolean("testingRightTurret", true), 
+        //     SmartDashboard.getNumber("testRPM", 2800), 
+        //     SmartDashboard.getNumber("testHoodAngle", 15), 
+        //     SmartDashboard.getNumber("nF", 0), 
+        //     SmartDashboard.getNumber("nP", 0), 
+        //     SmartDashboard.getNumber("nI", 0), 
+        //     SmartDashboard.getNumber("nD", 0)
+        // );
+        
+        shooter.configureInbuiltFlywheelPID(
             SmartDashboard.getBoolean("testingRightTurret", true), 
-            SmartDashboard.getNumber("testRPM", 2800), 
-            SmartDashboard.getNumber("testHoodAngle", 15), 
             SmartDashboard.getNumber("nF", 0), 
             SmartDashboard.getNumber("nP", 0), 
             SmartDashboard.getNumber("nI", 0), 

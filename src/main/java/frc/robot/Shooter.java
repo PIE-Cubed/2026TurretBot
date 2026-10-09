@@ -498,21 +498,20 @@ public class Shooter {
         // get air time for right shooter
         double ballAirTimeRight = getFlightTime(rightDist);
 
-        // weird distance adjust logic, TODO? make this better
-        // double targetTheta = Math.atan2(targetPose.getY() - Drive.getPose().getY(), targetPose.getX() - Drive.getPose().getX());
-        // targetPose = targetPose.plus(new Transform2d(aimAdjust.rotateBy(Rotation2d.fromRadians(targetTheta)), Rotation2d.kZero));
-
         // move turrets
         leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, acceleratedFieldVelocity);
         rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, acceleratedFieldVelocity);
 
         // set RPM
+        // TODO TODO TODO TODO TODO test and tune the new PID code
         if (revUp) {
-            setTargetRPMs(targetRightRPM, targetLeftRPM);
+            setTargetRPMsInbuilt(targetLeftRPM, targetRightRPM);
+            // setTargetRPMs(targetRightRPM, targetLeftRPM);
         }
         else {
             // use rest RPM to save power unless revUp is true
-            setTargetRPMs(REST_RPM, REST_RPM);
+            setTargetRPMsInbuilt(REST_RPM, REST_RPM);
+            // setTargetRPMs(REST_RPM, REST_RPM);
         }
 
         // only keep the hood raised if safe to raise the hood and the manipulator is holding revUp
@@ -794,6 +793,21 @@ public class Shooter {
     //     velocity = rightMotorEncoder.getVelocity();
     //     System.out.println("velocity = " + velocity + "    " + voltage);
     // }
+
+    public void configureInbuiltFlywheelPID(
+        boolean rightShooter,
+        double nF, double nP, double nI, double nD
+    ) {
+        if (rightShooter) {
+            RIGHT_F = nF;
+            rightMotorConfig.apply(rightMotorConfig.closedLoop.pid(nP, nI, nD));
+            rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        } else {
+            LEFT_F = nF;
+            leftMotorConfig.apply(leftMotorConfig.closedLoop.pid(nP, nI, nD));
+            leftMotor.configure(leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        }
+    }
 
     public void testLeftTurret() {
         leftTurret.setTurretMotorVoltage(12);
