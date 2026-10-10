@@ -97,16 +97,16 @@ public class Shooter {
     private final double RIGHT_TURRET_ENCODER_OFFSET = 0.5193; // 0 to 1
 
     // PID Values
-    private       double LEFT_F = 0.001941;
-    private final double LEFT_P = 0.0029;
+    private       double LEFT_F = 0.00192;
+    private final double LEFT_P = 0.0032;
     private final double LEFT_I = 0.0;
-    private final double LEFT_D = 0.00011;
+    private final double LEFT_D = 0.00017;
     private final double LEFT_TOLERANCE = 100.0;
 
-    private       double RIGHT_F = 0.00191;
-    private final double RIGHT_P = 0.0026;
+    private       double RIGHT_F = 0.00187;
+    private final double RIGHT_P = 0.003;
     private final double RIGHT_I = 0.0;
-    private final double RIGHT_D = 0.00009;
+    private final double RIGHT_D = 0.00015;
     private final double RIGHT_TOLERANCE = 100.0;
 
     private final double LEFT_HOOD_P = 0.5;
@@ -211,7 +211,8 @@ public class Shooter {
         leftMotorConfig.encoder.uvwMeasurementPeriod(10).uvwAverageDepth(2);
         leftMotorConfig.closedLoop
             .pid(RIGHT_P/12, RIGHT_I/12, RIGHT_D/12)
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .feedForward.kV(LEFT_F);
 
         leftInbuiltPIDController = leftMotor.getClosedLoopController();
 
@@ -223,7 +224,8 @@ public class Shooter {
         rightMotorConfig.encoder.uvwMeasurementPeriod(10).uvwAverageDepth(2);
         rightMotorConfig.closedLoop
             .pid(RIGHT_P/12, RIGHT_I/12, RIGHT_D/12)
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .feedForward.kV(RIGHT_F);
 
         rightInbuiltPIDController = rightMotor.getClosedLoopController();
 
@@ -550,7 +552,7 @@ public class Shooter {
         // acceleration from gravity (FPS)
         final double G        = 32.174;
         // velocity of ball coming out of the shooter
-        final double V0       = 20.25; // measured at 3000 rpm
+        final double V0       = 18; // measured at 3000 rpm
         // launch height (feet)
         final double H_LAUNCH = 16.0 / 12.0;
         // target height (feet)
@@ -800,11 +802,11 @@ public class Shooter {
     ) {
         if (rightShooter) {
             RIGHT_F = nF;
-            rightMotorConfig.apply(rightMotorConfig.closedLoop.pid(nP, nI, nD));
+            rightMotorConfig.closedLoop.pid(nP, nI, nD).feedForward.kV(nF);
             rightMotor.configure(rightMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         } else {
             LEFT_F = nF;
-            leftMotorConfig.apply(leftMotorConfig.closedLoop.pid(nP, nI, nD));
+            leftMotorConfig.closedLoop.pid(nP, nI, nD).feedForward.kV(nF);
             leftMotor.configure(leftMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         }
     }
