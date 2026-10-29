@@ -500,42 +500,39 @@ public class Shooter {
         // get air time for right shooter
         double ballAirTimeRight = getFlightTime(rightDist);
 
-        // move turrets
-        leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, acceleratedFieldVelocity);
-        rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, acceleratedFieldVelocity);
+        // // move turrets
+        // leftTurret.pointAtWithVelocity(targetPose, ballAirTimeLeft, acceleratedFieldVelocity);
+        // rightTurret.pointAtWithVelocity(targetPose, ballAirTimeRight, acceleratedFieldVelocity);
 
-        // set RPM
-        // TODO TODO TODO TODO TODO test and tune the new PID code
-        if (revUp) {
-            setTargetRPMsInbuilt(targetLeftRPM, targetRightRPM);
-            // setTargetRPMs(targetRightRPM, targetLeftRPM);
-        }
-        else {
-            // use rest RPM to save power unless revUp is true
-            setTargetRPMsInbuilt(REST_RPM, REST_RPM);
-            // setTargetRPMs(REST_RPM, REST_RPM);
-        }
+        // // set RPM
+        // // TODO TODO TODO TODO TODO test and tune the new PID code
+        // if (revUp) {
+        //     setTargetRPMsInbuilt(targetLeftRPM, targetRightRPM);
+        //     // setTargetRPMs(targetRightRPM, targetLeftRPM);
+        // }
+        // else {
+        //     // use rest RPM to save power unless revUp is true
+        //     setTargetRPMsInbuilt(REST_RPM, REST_RPM);
+        //     // setTargetRPMs(REST_RPM, REST_RPM);
+        // }
 
-        // only keep the hood raised if safe to raise the hood and the manipulator is holding revUp
-        if (hoodSafe && revUp) {
-            setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
-        } 
-        else {
-            // stow hood
-            setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
-        }
+        // // only keep the hood raised if safe to raise the hood and the manipulator is holding revUp
+        // if (hoodSafe && revUp) {
+        //     setHoodAngle(targetLeftHoodAngle, targetRightHoodAngle);
+        // } 
+        // else {
+        //     // stow hood
+        //     setHoodAngle(HOOD_STOW_ANGLE_DEG, HOOD_STOW_ANGLE_DEG);
+        // }
 
         // leftHoodZeroed = false;
         // rightHoodZeroed = false;
 
         // demo code
-        // leftTurret.setTargetFullRotation(0);
-        // rightTurret.setTargetFullRotation(0);
-        // setTargetRPMs(2200, 2200);
-        // setHoodAngle(15, 15);
-
-        // leftTurret.printEncoderValues();
-        // rightTurret.printEncoderValues();
+        leftTurret.setTargetFullRotation(0);
+        rightTurret.setTargetFullRotation(0);
+        setTargetRPMsInbuilt(2200, 2200);
+        setHoodAngle(15, 15);
     }
 
     /**
