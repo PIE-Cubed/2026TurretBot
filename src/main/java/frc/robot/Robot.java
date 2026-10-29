@@ -184,7 +184,8 @@ public class Robot extends TimedRobot {
         //led.applyRSLSync();
         //led.applyPatrioticColors();
         //led.applyHubSync();
-        led.applyHalloween();
+        // led.applyHalloween();
+        led.applyCoolHalloween();
         led.periodic();
 
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());
