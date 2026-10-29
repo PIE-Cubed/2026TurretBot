@@ -44,8 +44,8 @@ public class LED {
 
     private final LEDPattern blinkHub = normalTeamHub.blink(Second.of(0.5));
 
-    private final LEDPattern halloween = LEDPattern.steps(Map.of(0, Color.kPurple, 0.30, new Color(248, 27,0), .70, Color.kPurple));
-    private final LEDPattern scrollingHalloween = halloween.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(150));
+    private final LEDPattern halloween = LEDPattern.steps(Map.of(0, new Color(128, 0, 255), 0.30, new Color(248, 27,0), .70, new Color(128, 0, 255)));
+    private final LEDPattern scrollingHalloween = halloween.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(200));
     // the other code you had was outside of a constructor or other function so it didn't like that
     // Taco belly
     public LED() {
