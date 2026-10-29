@@ -20,11 +20,11 @@ public class LED {
     private final int LED_PORT = 1;
 
     private AddressableLED LED = new AddressableLED(LED_PORT);
-    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(71);
+    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(109);
 
-    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 13); //Left section, change # to change amount of lights in section
-    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(14,55); //Middle section
-    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(56,70); //Right section
+    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 33); //Left section, change # to change amount of lights in section
+    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(34,76); //Middle section
+    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(77,108); //Right section
 
     private final LEDPattern normalTeamHub = LEDPattern.steps(Map.of(0, Color.kBlue, 0.2113, Color.kYellow, 0.7888, Color.kBlue));
 
@@ -44,6 +44,8 @@ public class LED {
 
     private final LEDPattern blinkHub = normalTeamHub.blink(Second.of(0.5));
 
+    private final LEDPattern halloween = LEDPattern.steps(Map.of(0, Color.kPurple, 0.30, new Color(248, 27,0), .70, Color.kPurple));
+    private final LEDPattern scrollingHalloween = halloween.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(150));
     // the other code you had was outside of a constructor or other function so it didn't like that
     // Taco belly
     public LED() {
@@ -62,6 +64,10 @@ public class LED {
         solidYellow.applyTo(middleHopper);
         solidBlue.applyTo(rightHopper);
         //normalTeamHub.applyTo(LEDBuffer);
+    }
+
+    public void applyHalloween(){
+        scrollingHalloween.applyTo(LEDBuffer);
     }
 
     public void applyPatrioticColors() {
