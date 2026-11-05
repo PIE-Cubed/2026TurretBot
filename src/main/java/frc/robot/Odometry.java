@@ -150,16 +150,17 @@ public class Odometry {
         tagCount += camera3Package.updateCamera(drive.getYawRateDegrees());
         tagCount += camera4Package.updateCamera(drive.getYawRateDegrees());
 
-        camera1RobotPose = camera1Package.getPose();
-        camera2RobotPose = camera2Package.getPose();
-        camera3RobotPose = camera3Package.getPose();
-        camera4RobotPose = camera4Package.getPose();
-
         if (tagCount < REQUIRED_APRILTAGS) {
             camera1RobotPose = null;
             camera2RobotPose = null;
             camera3RobotPose = null;
             camera4RobotPose = null;
+        }
+        else {
+            camera1RobotPose = camera1Package.getPose();
+            camera2RobotPose = camera2Package.getPose();
+            camera3RobotPose = camera3Package.getPose();
+            camera4RobotPose = camera4Package.getPose();
         }
     }
 
