@@ -180,10 +180,12 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotPeriodic() {
-        led.applyTeamColors();
+        //led.applyTeamColors();
         //led.applyRSLSync();
         //led.applyPatrioticColors();
         //led.applyHubSync();
+        // led.applyHalloween();
+        led.applyCoolHalloween();
         led.periodic();
 
         // SmartDashboard.putNumber("Voltage", pdh.getVoltage());

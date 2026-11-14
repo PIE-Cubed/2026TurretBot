@@ -1,15 +1,20 @@
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Second;
 
 import java.util.Map;
+
+import edu.wpi.first.units.FrequencyUnit;
+import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.AddressableLEDBufferView;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.LEDPattern.GradientType;
 import edu.wpi.first.wpilibj.util.Color;
 import frc.robot.util.AllianceUtil;
 
@@ -20,11 +25,11 @@ public class LED {
     private final int LED_PORT = 1;
 
     private AddressableLED LED = new AddressableLED(LED_PORT);
-    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(71);
+    private AddressableLEDBuffer LEDBuffer = new AddressableLEDBuffer(108);
 
-    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 13); //Left section, change # to change amount of lights in section
-    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(14,55); //Middle section
-    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(56,70); //Right section
+    private final AddressableLEDBufferView  rightHopper = LEDBuffer.createView(0, 33); //Left section, change # to change amount of lights in section
+    private final AddressableLEDBufferView middleHopper = LEDBuffer.createView(34,76); //Middle section
+    private final AddressableLEDBufferView  leftHopper = LEDBuffer.createView(77,107); //Right section
 
     private final LEDPattern normalTeamHub = LEDPattern.steps(Map.of(0, Color.kBlue, 0.2113, Color.kYellow, 0.7888, Color.kBlue));
 
@@ -44,7 +49,20 @@ public class LED {
 
     private final LEDPattern blinkHub = normalTeamHub.blink(Second.of(0.5));
 
-    // the other code you had was outside of a constructor or other function so it didn't like that
+    private final LEDPattern halloween = LEDPattern.steps(Map.of(0, Color.kPurple, 0.30, new Color(248, 27,0), .70, Color.kPurple));
+    private final LEDPattern scrollingHalloween = halloween.scrollAtRelativeSpeed(Percent.per(Second).of(20.0)).atBrightness(Percent.of(150));
+
+    private final LEDPattern scrollForward = LEDPattern.gradient(
+        GradientType.kContinuous, 
+        new Color(248, 27,0), 
+        Color.kPurple
+    ).scrollAtRelativeSpeed(Frequency.ofRelativeUnits(0.3, Hertz));
+    private final LEDPattern scrollBackward = LEDPattern.gradient(
+        GradientType.kContinuous, 
+        Color.kPurple,
+        new Color(248, 27,0)
+    ).scrollAtRelativeSpeed(Frequency.ofRelativeUnits(-0.8, Hertz));
+    private final LEDPattern coolScrollingHalloween = scrollForward.blend(scrollBackward);
     // Taco belly
     public LED() {
         LED.setLength(LEDBuffer.getLength());
@@ -62,6 +80,14 @@ public class LED {
         solidYellow.applyTo(middleHopper);
         solidBlue.applyTo(rightHopper);
         //normalTeamHub.applyTo(LEDBuffer);
+    }
+
+    public void applyCoolHalloween() {
+        coolScrollingHalloween.applyTo(LEDBuffer);
+    }
+
+    public void applyHalloween() {
+        scrollingHalloween.applyTo(LEDBuffer);
     }
 
     public void applyPatrioticColors() {
