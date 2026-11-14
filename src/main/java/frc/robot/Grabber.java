@@ -42,6 +42,9 @@ public class Grabber {
     private final Timer jostleTimer = new Timer();
     private int jostleStep = 0;
 
+    // index for intake stutter
+    private int stutterCount = 0;
+
     // Motor variables
     private SparkBase pivotMotor;
     private TalonFX intakeKraken;
@@ -212,11 +215,20 @@ public class Grabber {
         // pivotEncoder.setPosition(0);
     }
 
+    public void stutterIntake() {
+        stutterCount = 3;
+    }
+
     /**
      * Runs the intake roller in the normal direction.
      */
     public void intake() {
-        intakeKraken.setVoltage(INTAKE_VOLTAGE);
+        if (stutterCount > 0) {
+            stutterCount -= 1;
+            outtake();
+        } else {
+            intakeKraken.setVoltage(INTAKE_VOLTAGE);
+        }
     }
 
     /**
@@ -231,5 +243,6 @@ public class Grabber {
      */
     public void stopWheel() {
         intakeKraken.stopMotor();
+        stutterCount = 0;
     }
 }

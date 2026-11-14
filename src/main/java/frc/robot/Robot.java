@@ -501,9 +501,14 @@ public class Robot extends TimedRobot {
     public void grabberControl() {
         boolean intakeUp = controls.getIntakeUp();
         boolean intakeDown = controls.getIntakeDown();
-        boolean runIntake = controls.getRunIntake();
+        boolean runIntake = controls.getRunIntake() || controls.getIntakeStutterButton();
         boolean reverseIntake = controls.getReverseIntake();
+        boolean stutterIntake = controls.getIntakeStutterButtonPressed();
         // boolean shootButton = controls.getShootButton();
+
+        if (stutterIntake) {
+            grabber.stutterIntake();
+        }
 
         if (runIntake /*|| shootButton*/) {
             grabber.intake();

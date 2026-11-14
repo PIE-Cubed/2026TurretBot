@@ -103,6 +103,14 @@ public class Controls {
         return manipController.getAButton();
     }
 
+    public boolean getIntakeStutterButtonPressed() {
+        return manipController.getBButtonPressed();
+    }
+
+    public boolean getIntakeStutterButton() {
+        return manipController.getBButton();
+    }
+
     public boolean getShootButton() {
         return manipController.getRightTriggerAxis() > 0.8;
     }
