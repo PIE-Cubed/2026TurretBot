@@ -15,7 +15,7 @@ import frc.robot.Shooter.TurretStatus;
 
 /** a */
 public class Hopper {
-    private final double INDEX_POWER_VOLTS = 8;
+    private final double INDEX_POWER_VOLTS = 10;
     private final double KICKER_POWER_VOLTS = 10;
 
     private final int LEFT_KICKER_ID = 23;
